@@ -1,6 +1,16 @@
 import { NextResponse } from "next/server"
+import { createClient } from "@/lib/supabase/server"
 
 export async function GET() {
-  // DB ping added in Phase 2 when Prisma is wired up
-  return NextResponse.json({ status: "ok", db: "pending" })
+  let db: "ok" | "error" = "error"
+
+  try {
+    const supabase = await createClient()
+    const { error } = await supabase.from("products").select("id").limit(1)
+    if (!error) db = "ok"
+  } catch {
+    // db stays "error"
+  }
+
+  return NextResponse.json({ status: "ok", db, ts: new Date().toISOString() })
 }

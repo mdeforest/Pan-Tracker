@@ -46,8 +46,11 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith("/auth/callback") ||
     pathname.startsWith("/api/health")
 
-  // Redirect unauthenticated users to login
-  if (!user && !isPublicPath) {
+  // API routes handle their own auth and return JSON 401 — don't redirect them
+  const isApiRoute = pathname.startsWith("/api/")
+
+  // Redirect unauthenticated users to login (skip API routes)
+  if (!user && !isPublicPath && !isApiRoute) {
     const loginUrl = request.nextUrl.clone()
     loginUrl.pathname = "/login"
     return NextResponse.redirect(loginUrl)

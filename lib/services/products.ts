@@ -29,7 +29,7 @@ export async function createProduct(
     brand: string
     name: string
     category: ProductCategory
-    notes?: string
+    notes?: string | null
     photo_url?: string | null
   }
 ) {

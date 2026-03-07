@@ -14,7 +14,7 @@ export const CreateProductSchema = z.object({
   brand: z.string().min(1, "Brand is required"),
   name: z.string().min(1, "Name is required"),
   category: z.enum(PRODUCT_CATEGORIES),
-  notes: z.string().optional(),
+  notes: z.string().nullable().optional(),
   photo_url: z.string().url().nullable().optional(),
 })
 

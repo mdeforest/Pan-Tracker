@@ -10,7 +10,7 @@ Project Pan Tracker is a Next.js 14 web app for beauty enthusiasts tracking "pro
 
 - **Frontend:** Next.js 14 App Router, TypeScript strict, Tailwind CSS, shadcn/ui
 - **Backend:** Next.js Route Handlers (no separate API server)
-- **Database:** Supabase (PostgreSQL) via Prisma ORM
+- **Database:** Supabase (PostgreSQL); native SQL migrations via Supabase CLI; typed via `lib/types/database.ts`
 - **Auth:** Supabase Auth with Google OAuth provider (via @supabase/ssr); session in cookies managed by middleware
 - **File Storage:** Supabase Storage (product photos)
 - **Hosting:** Vercel (Hobby or Pro)
@@ -19,13 +19,11 @@ Project Pan Tracker is a Next.js 14 web app for beauty enthusiasts tracking "pro
 
 ```bash
 npm run dev           # Start local dev server (localhost:3000)
-npm run build         # prisma generate + next build
+npm run build         # next build
 npm run lint          # ESLint
 npx tsc --noEmit      # Typecheck without emitting
-npx prisma migrate dev --name <name>   # Create and run a new migration
-npx prisma migrate deploy              # Run pending migrations (production)
-npx prisma db seed    # Seed dev database
-npx prisma studio     # Browse database in browser
+npx supabase db push --db-url "$DIRECT_URL"          # Apply pending migrations to remote DB
+npx supabase gen types typescript --linked > lib/types/database.ts  # Regenerate DB types
 ```
 
 ## Folder Structure
@@ -202,6 +200,14 @@ Note: NEXTAUTH_URL and NEXTAUTH_SECRET are in .env.local.example for reference b
 ## Current Status
 
 - ✅ **Phase 1 — Scaffolding** (2026-03-06): Next.js 14 initialized, Tailwind + shadcn/ui configured, Supabase SSR clients created, middleware wired, folder structure in place, bottom nav built, ESLint + TS strict passing, `npm run dev` starts clean.
+- ✅ **Phase 2 — Database Schema** (2026-03-06): Migration SQL written (`supabase/migrations/20260306000000_initial_schema.sql`), `supabase/config.toml` initialized, TypeScript types hand-written to `lib/types/database.ts`. **Pending:** `supabase db push` — requires DB password in `.env.local` (replace `[YOUR-PASSWORD]`) then run `npx supabase db push --db-url $DIRECT_URL`.
+
+## Phase 2 Deviations & Notes
+
+- **No Prisma:** Architecture section referenced Prisma ORM but Phase 2 used Supabase native SQL migrations. Prisma is not installed. All DB access uses the typed Supabase client with the `Database` type from `lib/types/database.ts`. Key Commands updated accordingly.
+- **Types hand-written vs. generated:** `supabase gen types typescript --linked` requires CLI auth. Types were written manually to match the migration. After running `supabase db push`, regenerate with: `npx supabase gen types typescript --linked > lib/types/database.ts`.
+- **Phase prompt schema vs PRD:** Phase 2 prompt described a `monthly_pans` table. PRD Section 8 and CLAUDE.md Data Model Summary use a flat `pan_entries` table with `started_month`/`started_year`. Implemented PRD schema as authoritative.
+- **`supabase db push` pending:** `.env.local` has `[YOUR-PASSWORD]` placeholder. To apply migrations: fill in the real DB password, then run `npx supabase db push --db-url "$DIRECT_URL"`.
 
 ## Phase 1 Deviations & Notes
 

@@ -21,21 +21,21 @@ function LoginContent() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-6">
-      <div className="w-full max-w-sm space-y-8">
-        <div className="space-y-2 text-center">
-          <h1 className="text-3xl font-bold tracking-tight">PanTracker</h1>
+      <div className="w-full max-w-sm space-y-6 rounded-2xl bg-card p-8 shadow-sm">
+        <div className="space-y-1 text-center">
+          <h1 className="text-2xl font-bold tracking-tight">PanTracker</h1>
           <p className="text-sm text-muted-foreground">
             Track your project pan journey
           </p>
         </div>
 
         {error && (
-          <p className="rounded-lg bg-destructive/10 px-4 py-3 text-center text-sm text-destructive">
+          <p className="rounded-xl bg-destructive/10 px-4 py-3 text-center text-sm text-destructive">
             Sign-in failed. Please try again.
           </p>
         )}
 
-        <Button onClick={signInWithGoogle} className="w-full" size="lg">
+        <Button onClick={signInWithGoogle} className="w-full rounded-xl" size="lg">
           Sign in with Google
         </Button>
       </div>

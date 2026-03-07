@@ -33,7 +33,7 @@ export function BottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background"
+      className="fixed bottom-0 left-0 right-0 z-50 bg-[oklch(0.13_0_0)]"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       aria-label="Main navigation"
     >
@@ -48,8 +48,8 @@ export function BottomNav() {
                 className={cn(
                   "flex flex-1 flex-col items-center justify-center gap-1 text-xs font-medium transition-colors",
                   isActive
-                    ? "text-foreground"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "text-white"
+                    : "text-white/40 hover:text-white/70"
                 )}
               >
                 <Icon

@@ -458,7 +458,7 @@ Phase 7: Hardening + Deployment + PWA
    - Verify all product photo uploads reject non-image MIME types server-side
 
 4. Image optimization:
-   - Add Supabase storage domain to next.config.js images.remotePatterns
+   - Add Supabase Storage domain to next.config.mjs images.remotePatterns (Google avatar domain `lh3.googleusercontent.com` already added in Phase 3)
    - All product photos rendered with Next/Image and appropriate sizes prop
 
 5. PWA (so Sophia can install the app on her phone home screen):

@@ -26,8 +26,8 @@ export default async function AppLayout({
 
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b bg-background px-4">
-        <span className="font-semibold">PanTracker</span>
+      <header className="sticky top-0 z-40 flex h-14 items-center justify-between bg-card px-4 shadow-sm">
+        <span className="text-base font-semibold tracking-tight">PanTracker</span>
         <UserMenu avatarUrl={avatarUrl} name={name} />
       </header>
       <main className="flex-1 pb-[calc(4rem+env(safe-area-inset-bottom))]">

@@ -133,6 +133,23 @@ Each build phase is one Claude Code session. Every phase prompt starts with "Rea
 
 **If a session goes sideways:** start a fresh session, paste the phase prompt again. Clean context beats trying to rescue a confused session.
 
+## Design System / Visual Theme
+
+All UI must follow this aesthetic (established after Phase 3):
+
+- **Background:** warm cream — `bg-background` resolves to `oklch(0.965 0.006 80)` (CSS var `--background`)
+- **Cards:** pure white — `bg-card` or `bg-white`; use `rounded-2xl shadow-sm` for card surfaces
+- **Border radius:** `--radius: 1rem` (16px) — shadcn lg/md/sm tokens scale from this; prefer `rounded-xl` or `rounded-2xl` on hand-authored elements
+- **Bottom nav:** solid near-black background (`oklch(0.13 0 0)`); white icons at full opacity when active, `white/40` when inactive
+- **Header:** `bg-card shadow-sm` — no border
+- **Typography:** Geist Sans; `font-bold tracking-tight` for headings; `text-muted-foreground` for secondary text
+- **Buttons:** `rounded-xl` on hand-authored buttons (shadcn Button inherits radius from `--radius` automatically)
+- **No border-based card separation** — use shadow + white card on cream background instead
+
+**`next.config.mjs` image domains:**
+- `lh3.googleusercontent.com` — Google avatar CDN (already added in Phase 3)
+- Supabase Storage domain — to be added in Phase 7
+
 ## Mobile-First Rules (enforce on every UI component)
 
 This app is used on a phone. These rules are non-negotiable:
@@ -201,6 +218,15 @@ Note: NEXTAUTH_URL and NEXTAUTH_SECRET are in .env.local.example for reference b
 
 - ✅ **Phase 1 — Scaffolding** (2026-03-06): Next.js 14 initialized, Tailwind + shadcn/ui configured, Supabase SSR clients created, middleware wired, folder structure in place, bottom nav built, ESLint + TS strict passing, `npm run dev` starts clean.
 - ✅ **Phase 2 — Database Schema** (2026-03-06): Migration SQL written (`supabase/migrations/20260306000000_initial_schema.sql`), `supabase/config.toml` initialized, TypeScript types hand-written to `lib/types/database.ts`. **Pending:** `supabase db push` — requires DB password in `.env.local` (replace `[YOUR-PASSWORD]`) then run `npx supabase db push --db-url $DIRECT_URL`.
+- ✅ **Phase 3 — Authentication** (2026-03-07): Login page with Google OAuth button, auth callback (code exchange → redirect to `/pan/year/month`), app layout upgraded with sticky header + `UserMenu`, server action for sign-out in `lib/actions/auth.ts`.
+
+## Phase 3 Deviations & Notes
+
+- **Route structure:** PRD Section 7 shows `/pan` but Phase 1 implemented `/pan/[year]/[month]`. Auth callback and middleware redirect to the full year/month path.
+- **UserMenu:** Simple client component with avatar/initials + backdrop-dismissed dropdown. No additional shadcn/ui components needed.
+- **Server action for sign-out:** Using Next.js 14 server action (`lib/actions/auth.ts`) called via `<form action={signOut}>` in `UserMenu`. Redirects to `/login` after sign-out.
+- **`next.config.mjs` image domain:** Added `lh3.googleusercontent.com` to `images.remotePatterns` so Next/Image can render Google OAuth avatars. Phase 7 will add the Supabase Storage domain.
+- **Design theme applied:** After Phase 3, a warm-cream / white-card / dark-nav visual theme was applied globally via `globals.css` CSS variable overrides and `BottomNav` class updates. See the Design System section above for the full spec.
 
 ## Phase 2 Deviations & Notes
 

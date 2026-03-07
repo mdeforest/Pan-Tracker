@@ -11,7 +11,7 @@ Project Pan Tracker is a Next.js 14 web app for beauty enthusiasts tracking "pro
 - **Frontend:** Next.js 14 App Router, TypeScript strict, Tailwind CSS, shadcn/ui
 - **Backend:** Next.js Route Handlers (no separate API server)
 - **Database:** Supabase (PostgreSQL) via Prisma ORM
-- **Auth:** NextAuth.js v5 (Auth.js) with Google OAuth provider; JWT in httpOnly cookie
+- **Auth:** Supabase Auth with Google OAuth provider (via @supabase/ssr); session in cookies managed by middleware
 - **File Storage:** Supabase Storage (product photos)
 - **Hosting:** Vercel (Hobby or Pro)
 
@@ -171,18 +171,24 @@ Key constraint: UNIQUE (user_id, product_id) WHERE pan_entries.status = 'active'
 
 Every server component and route handler that needs the current user calls:
 ```typescript
-import { getRequiredSession } from "@/lib/auth"
-const session = await getRequiredSession() // redirects to /login if unauthenticated
-const userId = session.user.id
+import { createClient } from "@/lib/supabase/server"
+const supabase = await createClient()
+const { data: { user } } = await supabase.auth.getUser()
+if (!user) redirect("/login")
+const userId = user.id
 ```
 
 All service functions take `userId` as their first argument and filter all queries by it.
+
+Middleware at `middleware.ts` handles session refresh and redirects unauthenticated users to `/login`.
 
 ## Environment Variables
 
 See `.env.local.example` for full list with descriptions. Never commit `.env.local`.
 
-Required: DATABASE_URL, DIRECT_URL, NEXTAUTH_URL, NEXTAUTH_SECRET, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
+Required: DATABASE_URL, DIRECT_URL, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY
+
+Note: NEXTAUTH_URL and NEXTAUTH_SECRET are in .env.local.example for reference but are NOT used — auth is handled by Supabase, not NextAuth.
 
 ## What NOT to Do
 
@@ -195,4 +201,12 @@ Required: DATABASE_URL, DIRECT_URL, NEXTAUTH_URL, NEXTAUTH_SECRET, GOOGLE_CLIENT
 
 ## Current Status
 
-Phase 1 scaffolding — update this as build plan phases complete.
+- ✅ **Phase 1 — Scaffolding** (2026-03-06): Next.js 14 initialized, Tailwind + shadcn/ui configured, Supabase SSR clients created, middleware wired, folder structure in place, bottom nav built, ESLint + TS strict passing, `npm run dev` starts clean.
+
+## Phase 1 Deviations & Notes
+
+- **shadcn/ui style:** Latest shadcn CLI no longer supports `--style new-york`. Default is "base-nova" with neutral base color (the modern equivalent). Can be changed later in `components.json`.
+- **Auth:** Phase 1 prompt specified Supabase Auth (`@supabase/ssr`) rather than NextAuth.js v5. Architecture section updated to reflect this. `lib/supabase/` has three clients: `client.ts` (browser), `server.ts` (server), `server-admin.ts` (API routes only).
+- **Pan route:** Uses `/pan/[year]/[month]` URL structure (from phase prompt) rather than just `/pan` (from PRD). Root page redirects to current month.
+- **Bottom nav:** 3 tabs — Pan / Empties / Products. Built as `components/shared/BottomNav.tsx` with `env(safe-area-inset-bottom)` padding and `aria-current="page"` on active tab.
+- **`NEXT_PUBLIC_SUPABASE_ANON_KEY`:** Added to `.env.local.example` (was missing from PRD env variable list).

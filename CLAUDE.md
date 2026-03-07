@@ -219,6 +219,16 @@ Note: NEXTAUTH_URL and NEXTAUTH_SECRET are in .env.local.example for reference b
 - ✅ **Phase 1 — Scaffolding** (2026-03-06): Next.js 14 initialized, Tailwind + shadcn/ui configured, Supabase SSR clients created, middleware wired, folder structure in place, bottom nav built, ESLint + TS strict passing, `npm run dev` starts clean.
 - ✅ **Phase 2 — Database Schema** (2026-03-06): Migration SQL written (`supabase/migrations/20260306000000_initial_schema.sql`), `supabase/config.toml` initialized, TypeScript types hand-written to `lib/types/database.ts`. **Pending:** `supabase db push` — requires DB password in `.env.local` (replace `[YOUR-PASSWORD]`) then run `npx supabase db push --db-url $DIRECT_URL`.
 - ✅ **Phase 3 — Authentication** (2026-03-07): Login page with Google OAuth button, auth callback (code exchange → redirect to `/pan/year/month`), app layout upgraded with sticky header + `UserMenu`, server action for sign-out in `lib/actions/auth.ts`.
+- ✅ **Phase 4 — Core API Routes** (2026-03-07): All 12 route handlers implemented with Zod validation and `{ data, error }` envelope. Service layer in `lib/services/`. Validation schemas in `lib/validations/`. `/api/health` includes db ping. Middleware updated to pass `/api/*` routes through for JSON 401 responses.
+
+## Phase 4 Deviations & Notes
+
+- **URL structure:** Phase prompt used `/api/pans/[year]/[month]` (plural) while existing stubs used `/api/pan`. New routes created under `/api/pans/` — old `/api/pan` stubs remain as 501 placeholders.
+- **No `/api/pans` table:** PRD data model has no `pans` table; GET `/api/pans/[year]/[month]` returns all active/paused `pan_entries` with product details and an `is_pick` flag derived from `monthly_picks`.
+- **carry-over:** Phase prompt mentioned `original_pan_id` which doesn't exist in the schema. Carry-over inserts new `pan_entries` for target month/year using the admin client; duplicates are skipped gracefully via `Promise.allSettled`.
+- **Middleware fix:** Middleware was redirecting all unauthenticated requests (including `/api/*`) to `/login`. Updated to pass API routes through so route handlers can return JSON `{ data: null, error: "Unauthorized" }` with 401.
+- **Photo upload endpoint:** Built at `/api/upload/product-photo` (FormData) per phase prompt — separate from the scaffolded `/api/products/[id]/photo` stub.
+- **zod added:** `npm install zod` added to dependencies.
 
 ## Phase 3 Deviations & Notes
 

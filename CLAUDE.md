@@ -220,6 +220,17 @@ Note: NEXTAUTH_URL and NEXTAUTH_SECRET are in .env.local.example for reference b
 - ✅ **Phase 2 — Database Schema** (2026-03-06): Migration SQL written (`supabase/migrations/20260306000000_initial_schema.sql`), `supabase/config.toml` initialized, TypeScript types hand-written to `lib/types/database.ts`. **Pending:** `supabase db push` — requires DB password in `.env.local` (replace `[YOUR-PASSWORD]`) then run `npx supabase db push --db-url $DIRECT_URL`.
 - ✅ **Phase 3 — Authentication** (2026-03-07): Login page with Google OAuth button, auth callback (code exchange → redirect to `/pan/year/month`), app layout upgraded with sticky header + `UserMenu`, server action for sign-out in `lib/actions/auth.ts`.
 - ✅ **Phase 4 — Core API Routes** (2026-03-07): All 12 route handlers implemented with Zod validation and `{ data, error }` envelope. Service layer in `lib/services/`. Validation schemas in `lib/validations/`. `/api/health` includes db ping. Middleware updated to pass `/api/*` routes through for JSON 401 responses.
+- ✅ **Phase 5 — Monthly Pan View** (2026-03-07): Full pan screen at `app/(app)/pan/[year]/[month]/page.tsx`. Month navigation, product cards grouped by category, progress bars, pick/months badges. BottomSheet primitive, ToastProvider, canvas-confetti on empty. ProductDetailSheet (slider + notes), EmptyLoggerSheet (repurchase + stars), AddProductSheet (search + create + photo), CarryOverBanner (past months). Skeleton loading.tsx.
+
+## Phase 5 Deviations & Notes
+
+- **`original_pan_id` not in schema:** Phase prompt specified "X months in pan badge if `original_pan_id` is set". Field doesn't exist (documented in Phase 4 notes). Badge instead shows months since `started_month`/`started_year` when > 0.
+- **`<img>` instead of Next/Image for product photos:** Used regular `<img>` tag in PanCard and ProductDetailSheet to avoid Next.js domain config for Supabase Storage (already added `*.supabase.co` to `next.config.mjs`; can switch to Next/Image in Phase 7 once confirmed).
+- **No react-hook-form in Phase 5 forms:** CLAUDE.md recommends react-hook-form for forms, but Phase 5 forms (EmptyLoggerSheet, AddProductSheet) use controlled state — complexity doesn't justify the dependency. Will add if forms grow.
+- **`canvas-confetti` + `@types/canvas-confetti` added:** Both packages added to dependencies.
+- **Supabase Storage domain added now (not Phase 7):** `*.supabase.co` added to `next.config.mjs` remotePatterns since Phase 5 adds product photos via upload.
+- **ToastProvider in root layout:** Added to `app/layout.tsx` so toasts are available across the whole app (not just pan routes).
+- **Carry-over "Remove from pan":** Maps to setting `status: "paused"` — no delete endpoint exists; paused entries are excluded from active pan view.
 
 ## Phase 4 Deviations & Notes
 

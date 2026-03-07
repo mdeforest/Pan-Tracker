@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useRef } from "react"
 import { X } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -13,7 +13,9 @@ interface BottomSheetProps {
 }
 
 export function BottomSheet({ open, onClose, title, children, className }: BottomSheetProps) {
-  // Lock body scroll when sheet is open
+  const sheetRef = useRef<HTMLDivElement>(null)
+
+  // Lock body scroll when open
   useEffect(() => {
     if (open) {
       document.body.style.overflow = "hidden"
@@ -22,6 +24,39 @@ export function BottomSheet({ open, onClose, title, children, className }: Botto
     }
     return () => {
       document.body.style.overflow = ""
+    }
+  }, [open])
+
+  // Visual Viewport API — repositions the sheet so it stays above the keyboard on iOS/Android.
+  // When the on-screen keyboard appears, the visual viewport shrinks. We compute the gap between
+  // the bottom of the visual viewport and the bottom of the layout viewport, then push the sheet
+  // up by that amount so it never hides behind the keyboard.
+  useEffect(() => {
+    if (!open) return
+
+    const vv = window.visualViewport
+    if (!vv) return
+
+    function update() {
+      if (!sheetRef.current || !vv) return
+      // Distance from bottom of visual viewport to bottom of layout viewport (keyboard height)
+      const keyboardHeight = Math.max(0, window.innerHeight - vv.offsetTop - vv.height)
+      sheetRef.current.style.bottom = `${keyboardHeight}px`
+      // Cap the sheet height to the visible viewport so the top never overflows off-screen
+      sheetRef.current.style.maxHeight = `${vv.height}px`
+    }
+
+    vv.addEventListener("resize", update)
+    vv.addEventListener("scroll", update)
+    update()
+
+    return () => {
+      vv.removeEventListener("resize", update)
+      vv.removeEventListener("scroll", update)
+      if (sheetRef.current) {
+        sheetRef.current.style.bottom = ""
+        sheetRef.current.style.maxHeight = ""
+      }
     }
   }, [open])
 
@@ -39,6 +74,7 @@ export function BottomSheet({ open, onClose, title, children, className }: Botto
 
       {/* Sheet */}
       <div
+        ref={sheetRef}
         role="dialog"
         aria-modal="true"
         className={cn(
@@ -46,7 +82,7 @@ export function BottomSheet({ open, onClose, title, children, className }: Botto
           open ? "translate-y-0" : "translate-y-full",
           className
         )}
-        style={{ maxHeight: "90vh" }}
+        style={{ maxHeight: "90dvh" }}
       >
         {/* Drag handle */}
         <div className="flex shrink-0 justify-center pt-3 pb-1">

@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server"
 import type { Database } from "@/lib/types/database"
 
 type WouldRepurchase = Database["public"]["Enums"]["would_repurchase"]
+type ProductCategory = Database["public"]["Enums"]["product_category"]
 
 export async function listEmpties(
   userId: string,
@@ -21,6 +22,9 @@ export async function listEmpties(
   }
   if (filters.month) {
     query = query.eq("finished_month", filters.month)
+  }
+  if (filters.category) {
+    query = query.eq("products.category", filters.category as ProductCategory)
   }
 
   return query

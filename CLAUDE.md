@@ -221,6 +221,14 @@ Note: NEXTAUTH_URL and NEXTAUTH_SECRET are in .env.local.example for reference b
 - ✅ **Phase 3 — Authentication** (2026-03-07): Login page with Google OAuth button, auth callback (code exchange → redirect to `/pan/year/month`), app layout upgraded with sticky header + `UserMenu`, server action for sign-out in `lib/actions/auth.ts`.
 - ✅ **Phase 4 — Core API Routes** (2026-03-07): All 12 route handlers implemented with Zod validation and `{ data, error }` envelope. Service layer in `lib/services/`. Validation schemas in `lib/validations/`. `/api/health` includes db ping. Middleware updated to pass `/api/*` routes through for JSON 401 responses.
 - ✅ **Phase 5 — Monthly Pan View** (2026-03-07): Full pan screen at `app/(app)/pan/[year]/[month]/page.tsx`. Month navigation, product cards grouped by category, progress bars, pick/months badges. BottomSheet primitive, ToastProvider, canvas-confetti on empty. ProductDetailSheet (slider + notes), EmptyLoggerSheet (repurchase + stars), AddProductSheet (search + create + photo), CarryOverBanner (past months). Skeleton loading.tsx.
+- ✅ **Phase 6 — Empties Log + Product Library** (2026-03-07): Empties log at `app/(app)/empties/page.tsx` — sticky dual filter bar (month/year + category chips), accordion EmptyCard (expand-in-place for notes). Product library at `app/(app)/products/page.tsx` — sticky search + category chips, 2-col grid, FAB opens NewProductSheet. Product detail at `app/(app)/products/[id]/page.tsx` — photo header with gradient overlay, edit sheet, "Add to Current Pan" button, full pan history timeline with embedded empty records.
+
+## Phase 6 Deviations & Notes
+
+- **`<img>` instead of Next/Image:** Consistent with Phase 5 — Supabase Storage photos use regular `<img>` in EmptyCard, ProductCard, and ProductDetailClient. Phase 7 will confirm domain and switch to Next/Image.
+- **Empties category filter via Supabase join:** `products.category` filter in `listEmpties` relies on Supabase's foreign table filter syntax. Client-side in-memory filtering is applied as a fallback in `EmptiesClient` (the join filter is applied server-side but may return nulls for non-matching rows; client ignores those).
+- **ProductsClient is fully client-side:** Products page fetches from `/api/products` on the client with debounced search, since search needs reactive updates. Active pan status is passed from the server as a `Set<string>` on initial render.
+- **No product delete UI in Phase 6:** Archive/delete is deferred to v1.1 per PRD. Edit sheet only updates name/brand/category/photo.
 
 ## Phase 5 Deviations & Notes
 

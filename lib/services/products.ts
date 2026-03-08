@@ -23,6 +23,30 @@ export async function listProducts(userId: string, q?: string, category?: string
   return query
 }
 
+export async function getProduct(userId: string, id: string) {
+  const supabase = await createClient()
+
+  return supabase
+    .from("products")
+    .select("*")
+    .eq("id", id)
+    .eq("user_id", userId)
+    .single()
+}
+
+export async function getProductPanHistory(userId: string, productId: string) {
+  const supabase = await createClient()
+
+  // Get all pan entries for this product, with empties joined
+  return supabase
+    .from("pan_entries")
+    .select("*, empties(*)")
+    .eq("user_id", userId)
+    .eq("product_id", productId)
+    .order("started_year", { ascending: false })
+    .order("started_month", { ascending: false })
+}
+
 export async function createProduct(
   userId: string,
   input: {

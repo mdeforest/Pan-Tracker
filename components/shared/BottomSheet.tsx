@@ -9,10 +9,11 @@ interface BottomSheetProps {
   onClose: () => void
   title?: string
   children: React.ReactNode
+  footer?: React.ReactNode
   className?: string
 }
 
-export function BottomSheet({ open, onClose, title, children, className }: BottomSheetProps) {
+export function BottomSheet({ open, onClose, title, children, footer, className }: BottomSheetProps) {
   const sheetRef = useRef<HTMLDivElement>(null)
 
   // Lock body scroll when open
@@ -65,7 +66,7 @@ export function BottomSheet({ open, onClose, title, children, className }: Botto
       {/* Backdrop */}
       <div
         className={cn(
-          "fixed inset-0 z-50 bg-black/50 transition-opacity duration-300",
+          "fixed inset-0 z-[60] bg-black/50 transition-opacity duration-300",
           open ? "opacity-100" : "opacity-0 pointer-events-none"
         )}
         onClick={onClose}
@@ -78,7 +79,7 @@ export function BottomSheet({ open, onClose, title, children, className }: Botto
         role="dialog"
         aria-modal="true"
         className={cn(
-          "fixed bottom-0 left-0 right-0 z-50 flex flex-col rounded-t-2xl bg-card shadow-2xl transition-transform duration-300 ease-out",
+          "fixed bottom-0 left-0 right-0 z-[60] flex flex-col rounded-t-2xl bg-card shadow-2xl transition-transform duration-300 ease-out",
           open ? "translate-y-0" : "translate-y-full",
           className
         )}
@@ -106,10 +107,20 @@ export function BottomSheet({ open, onClose, title, children, className }: Botto
         {/* Content */}
         <div
           className="flex-1 overflow-y-auto"
-          style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+          style={{ paddingBottom: footer ? undefined : "env(safe-area-inset-bottom)" }}
         >
           {children}
         </div>
+
+        {/* Sticky footer (outside scroll — always visible) */}
+        {footer && (
+          <div
+            className="shrink-0 border-t border-border px-4 py-3"
+            style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 0.75rem)" }}
+          >
+            {footer}
+          </div>
+        )}
       </div>
     </>
   )

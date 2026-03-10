@@ -56,12 +56,9 @@ export function ProductDetailSheet({
   const product = entry.products
   const category = product.category as ProductCategory
   const pct = USAGE_PERCENT[USAGE_LEVELS[usageLevelIdx]]
-  const isDirty =
-    USAGE_LEVELS[usageLevelIdx] !== (entry.usage_level as UsageLevel) ||
-    notes !== (entry.notes ?? "")
 
   async function handleSave() {
-    if (!entry || !isDirty) return
+    if (!entry) return
     setSaving(true)
     try {
       const res = await fetch(`/api/pans/${year}/${month}/entries/${entry.id}`, {
@@ -155,25 +152,30 @@ export function ProductDetailSheet({
           </div>
         </div>
 
-        {/* Usage level slider */}
+        {/* Usage level slider — 0 = almost_done (left), 4 = just_started (right) */}
         <div>
           <input
             type="range"
             min={0}
             max={4}
             step={1}
-            value={usageLevelIdx}
-            onChange={(e) => setUsageLevelIdx(parseInt(e.target.value, 10))}
+            value={4 - usageLevelIdx}
+            onChange={(e) => setUsageLevelIdx(4 - parseInt(e.target.value, 10))}
             className="usage-slider w-full"
             aria-label="Usage level"
           />
-          <div className="mt-1 flex justify-between">
-            {USAGE_LEVELS.map((level, i) => (
+          {/* Absolute positioning: thumb center at calc(i*25% + (14 - i*7)px) for 28px thumb */}
+          <div className="relative mt-1 h-4">
+            {[...USAGE_LEVELS].reverse().map((level, i) => (
               <span
                 key={level}
+                style={{ left: `calc(${i * 25}% + ${14 - i * 7}px)` }}
                 className={cn(
-                  "text-xs",
-                  i === usageLevelIdx ? "font-semibold text-foreground" : "text-muted-foreground"
+                  "absolute whitespace-nowrap text-xs",
+                  i === 0 && "translate-x-0",
+                  i > 0 && i < 4 && "-translate-x-1/2",
+                  i === 4 && "-translate-x-full",
+                  level === USAGE_LEVELS[usageLevelIdx] ? "text-foreground" : "text-muted-foreground"
                 )}
               >
                 {USAGE_SHORT_LABELS[level]}
@@ -197,16 +199,13 @@ export function ProductDetailSheet({
           />
         </div>
 
-        {/* Save button — only shown when dirty */}
-        {isDirty && (
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="flex h-12 w-full items-center justify-center rounded-xl bg-foreground text-base font-semibold text-background disabled:opacity-60 active:opacity-80"
-          >
-            {saving ? "Saving…" : "Save Changes"}
-          </button>
-        )}
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="flex h-12 w-full items-center justify-center rounded-xl bg-foreground text-base font-semibold text-background disabled:opacity-60 active:opacity-80"
+        >
+          {saving ? "Saving…" : "Save Changes"}
+        </button>
 
         {/* Mark Empty */}
         <button

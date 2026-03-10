@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { revalidateForPanMutation } from "@/lib/cache/tab-cache"
 import { createClient } from "@/lib/supabase/server"
 import { addToPan } from "@/lib/services/pan"
 import { AddToPanSchema } from "@/lib/validations/pan"
@@ -57,6 +58,8 @@ export async function POST(
     })
     return NextResponse.json({ data: null, error: error.message }, { status: 500 })
   }
+
+  revalidateForPanMutation(user.id, { year, month })
 
   return NextResponse.json({ data, error: null }, { status: 201 })
 }

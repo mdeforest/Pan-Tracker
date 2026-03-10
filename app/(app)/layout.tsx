@@ -1,17 +1,14 @@
 import { redirect } from "next/navigation"
-import { createClient } from "@/lib/supabase/server"
 import { BottomNav } from "@/components/shared/BottomNav"
 import { AppHeader } from "@/components/shared/AppHeader"
+import { getCurrentUser } from "@/lib/auth/get-current-user"
 
 export default async function AppLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const user = await getCurrentUser()
 
   if (!user) {
     redirect("/login")

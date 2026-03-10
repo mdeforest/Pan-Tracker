@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react"
 import { PanCard } from "./PanCard"
@@ -36,15 +36,21 @@ export function PanView({ year, month, entries, error }: PanViewProps) {
   const isPastMonth =
     year < nowYear || (year === nowYear && month < nowMonth)
 
+  const prevMonthHref = month === 1 ? `/pan/${year - 1}/12` : `/pan/${year}/${month - 1}`
+  const nextMonthHref = month === 12 ? `/pan/${year + 1}/1` : `/pan/${year}/${month + 1}`
+
   // Month nav
   function goToPrevMonth() {
-    if (month === 1) router.push(`/pan/${year - 1}/12`)
-    else router.push(`/pan/${year}/${month - 1}`)
+    router.push(prevMonthHref)
   }
   function goToNextMonth() {
-    if (month === 12) router.push(`/pan/${year + 1}/1`)
-    else router.push(`/pan/${year}/${month + 1}`)
+    router.push(nextMonthHref)
   }
+
+  useEffect(() => {
+    router.prefetch(prevMonthHref)
+    router.prefetch(nextMonthHref)
+  }, [nextMonthHref, prevMonthHref, router])
 
   const { activeEntries, emptyEntries, grouped } = useMemo(() => {
     const nextActive: PanEntryWithProduct[] = []

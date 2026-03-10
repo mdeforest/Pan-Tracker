@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { revalidateForPanMutation } from "@/lib/cache/tab-cache"
 import { createClient } from "@/lib/supabase/server"
 import { deletePick } from "@/lib/services/picks"
 
@@ -29,6 +30,8 @@ export async function DELETE(
   if (!data) {
     return NextResponse.json({ data: null, error: "Pick not found" }, { status: 404 })
   }
+
+  revalidateForPanMutation(user.id)
 
   return NextResponse.json({ data, error: null })
 }

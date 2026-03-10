@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { revalidateForProductMutation } from "@/lib/cache/tab-cache"
 import { createClient } from "@/lib/supabase/server"
 import { listProducts, createProduct } from "@/lib/services/products"
 import { CreateProductSchema } from "@/lib/validations/products"
@@ -59,6 +60,8 @@ export async function POST(req: NextRequest) {
     console.error("POST /api/products error", { userId: user.id, error: error.message })
     return NextResponse.json({ data: null, error: error.message }, { status: 500 })
   }
+
+  revalidateForProductMutation(user.id)
 
   return NextResponse.json({ data, error: null }, { status: 201 })
 }

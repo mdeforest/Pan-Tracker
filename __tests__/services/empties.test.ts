@@ -39,6 +39,21 @@ describe("listEmpties", () => {
     expect(b.eq).toHaveBeenCalledWith("user_id", USER_ID)
   })
 
+  it("selects a narrowed empties payload without pan_entries join", async () => {
+    const mock = createMockSupabase({ empties: { data: [mockEmpty], error: null } })
+    vi.mocked(createClient).mockResolvedValue(mock as never)
+
+    await listEmpties(USER_ID, {})
+
+    const b = mock._builders.empties
+    const [selectArg] = b.select.mock.calls[0] as [string]
+
+    expect(selectArg).toContain("id,finished_month,finished_year")
+    expect(selectArg).toContain("products:products!empties_product_id_fkey")
+    expect(selectArg).not.toContain("pan_entries")
+    expect(selectArg).not.toContain("products!empties_product_id_fkey(*)")
+  })
+
   it("applies year filter when provided", async () => {
     const mock = createMockSupabase({ empties: { data: [], error: null } })
     vi.mocked(createClient).mockResolvedValue(mock as never)

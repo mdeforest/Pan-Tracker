@@ -48,7 +48,9 @@ export async function listEmpties(
 
   let query = supabase
     .from("empties")
-    .select("*, products!empties_product_id_fkey(*), pan_entries(*)")
+    .select(
+      "id,finished_month,finished_year,rating,would_repurchase,review_notes,replacement_free_text,products:products!empties_product_id_fkey(id,name,brand,category,photo_url)"
+    )
     .eq("user_id", userId)
     .order("finished_year", { ascending: false })
     .order("finished_month", { ascending: false })

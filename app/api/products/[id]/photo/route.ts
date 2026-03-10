@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { revalidateForProductMutation } from "@/lib/cache/tab-cache"
 import { createClient } from "@/lib/supabase/server"
 import { updateProduct } from "@/lib/services/products"
 import { uploadProductPhoto, validatePhotoFile } from "@/lib/services/storage"
@@ -57,6 +58,8 @@ export async function POST(
   if (!data) {
     return NextResponse.json({ data: null, error: "Product not found" }, { status: 404 })
   }
+
+  revalidateForProductMutation(user.id)
 
   return NextResponse.json({ data, error: null }, { status: 201 })
 }

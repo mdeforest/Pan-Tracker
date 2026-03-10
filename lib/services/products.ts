@@ -2,16 +2,38 @@ import { createClient } from "@/lib/supabase/server"
 import type { Database } from "@/lib/types/database"
 
 type ProductCategory = Database["public"]["Enums"]["product_category"]
+type ServiceError = { message: string; code?: string }
 
-export async function listProducts(userId: string, q?: string, category?: string) {
+async function hasActivePanEntry(userId: string, productId: string): Promise<boolean> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from("pan_entries")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("product_id", productId)
+    .eq("status", "active")
+    .maybeSingle()
+
+  return !error && !!data
+}
+
+export async function listProducts(
+  userId: string,
+  q?: string,
+  category?: string,
+  includeArchived = false
+) {
   const supabase = await createClient()
 
   let query = supabase
     .from("products")
-    .select("id,name,brand,category,photo_url")
+    .select("id,name,brand,category,photo_url,archived_at")
     .eq("user_id", userId)
-    .is("archived_at", null)
     .order("created_at", { ascending: false })
+
+  if (!includeArchived) {
+    query = query.is("archived_at", null)
+  }
 
   if (q) {
     query = query.or(`name.ilike.%${q}%,brand.ilike.%${q}%`)
@@ -28,7 +50,7 @@ export async function getProduct(userId: string, id: string) {
 
   return supabase
     .from("products")
-    .select("id,name,brand,category,photo_url,notes")
+    .select("id,name,brand,category,photo_url,notes,archived_at")
     .eq("id", id)
     .eq("user_id", userId)
     .single()
@@ -98,6 +120,16 @@ export async function updateProduct(
 }
 
 export async function archiveProduct(userId: string, id: string) {
+  if (await hasActivePanEntry(userId, id)) {
+    return {
+      data: null,
+      error: {
+        message: "Cannot archive a product that is currently in your pan",
+        code: "PRODUCT_IN_ACTIVE_PAN",
+      } satisfies ServiceError,
+    }
+  }
+
   const supabase = await createClient()
 
   return supabase
@@ -105,6 +137,20 @@ export async function archiveProduct(userId: string, id: string) {
     .update({ archived_at: new Date().toISOString() })
     .eq("id", id)
     .eq("user_id", userId)
+    .is("archived_at", null)
+    .select()
+    .single()
+}
+
+export async function restoreProduct(userId: string, id: string) {
+  const supabase = await createClient()
+
+  return supabase
+    .from("products")
+    .update({ archived_at: null })
+    .eq("id", id)
+    .eq("user_id", userId)
+    .not("archived_at", "is", null)
     .select()
     .single()
 }

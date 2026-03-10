@@ -16,6 +16,7 @@ interface RawProduct {
   brand: string
   category: string
   photo_url: string | null
+  archived_at: string | null
 }
 
 interface ProductsClientProps {
@@ -31,6 +32,7 @@ function mapProducts(raw: RawProduct[], activeSet: Set<string>): ProductCardData
     category: p.category as ProductCategory,
     photo_url: p.photo_url,
     is_in_pan: activeSet.has(p.id),
+    is_archived: !!p.archived_at,
   }))
 }
 
@@ -38,11 +40,13 @@ export function ProductsClient({ activeProductIds, initialProducts }: ProductsCl
   const activeSet = useMemo(() => new Set(activeProductIds), [activeProductIds])
   const [query, setQuery] = useState("")
   const [category, setCategory] = useState<string>("all")
+  const [showArchived, setShowArchived] = useState(false)
   const deferredQuery = useDeferredValue(query)
   const [products, setProducts] = useState<ProductCardData[]>(() =>
     mapProducts(initialProducts, activeSet)
   )
   const [loading, setLoading] = useState(false)
+  const [restoringId, setRestoringId] = useState<string | null>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
   const searchRef = useRef<HTMLInputElement>(null)
@@ -61,7 +65,7 @@ export function ProductsClient({ activeProductIds, initialProducts }: ProductsCl
   }
 
   useEffect(() => {
-    if (!deferredQuery.trim() && category === "all") {
+    if (!deferredQuery.trim() && category === "all" && !showArchived) {
       setProducts(mapProducts(initialProducts, activeSet))
       setLoading(false)
       return
@@ -75,6 +79,7 @@ export function ProductsClient({ activeProductIds, initialProducts }: ProductsCl
         const trimmedQuery = deferredQuery.trim()
         if (trimmedQuery) params.set("q", trimmedQuery)
         if (category !== "all") params.set("category", category)
+        if (showArchived) params.set("include_archived", "true")
         const url = `/api/products${params.size > 0 ? `?${params}` : ""}`
         const res = await fetch(url, { signal: controller.signal })
         const json = (await res.json()) as { data?: RawProduct[] }
@@ -96,10 +101,10 @@ export function ProductsClient({ activeProductIds, initialProducts }: ProductsCl
       controller.abort()
       clearTimeout(timer)
     }
-  }, [deferredQuery, category, initialProducts, activeSet])
+  }, [deferredQuery, category, showArchived, initialProducts, activeSet])
 
   useEffect(() => {
-    if (!deferredQuery.trim() && category === "all") {
+    if (!deferredQuery.trim() && category === "all" && !showArchived) {
       setProducts(mapProducts(initialProducts, activeSet))
       return
     }
@@ -110,7 +115,7 @@ export function ProductsClient({ activeProductIds, initialProducts }: ProductsCl
         is_in_pan: activeSet.has(product.id),
       }))
     )
-  }, [activeSet, category, deferredQuery, initialProducts])
+  }, [activeSet, category, deferredQuery, showArchived, initialProducts])
 
   useEffect(() => {
     return () => {
@@ -124,6 +129,36 @@ export function ProductsClient({ activeProductIds, initialProducts }: ProductsCl
     setSheetOpen(false)
     showToast("Product created!")
     router.push(`/products/${productId}`)
+  }
+
+  async function handleRestore(productId: string) {
+    setRestoringId(productId)
+    try {
+      const res = await fetch(`/api/products/${productId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ restore: true }),
+      })
+      const json = (await res.json()) as { error?: unknown }
+      if (!res.ok || json.error) {
+        showToast(typeof json.error === "string" ? json.error : "Failed to restore product")
+        return
+      }
+
+      setProducts((prev) =>
+        prev
+          .map((product) =>
+            product.id === productId ? { ...product, is_archived: false } : product
+          )
+          .filter((product) => showArchived || !product.is_archived)
+      )
+      showToast("Product restored!")
+      router.refresh()
+    } catch {
+      showToast("Network error. Please try again.")
+    } finally {
+      setRestoringId(null)
+    }
   }
 
   return (
@@ -160,6 +195,11 @@ export function ProductsClient({ activeProductIds, initialProducts }: ProductsCl
               onClick={() => setCategory(cat)}
             />
           ))}
+          <CategoryChip
+            label="Show Archived"
+            active={showArchived}
+            onClick={() => setShowArchived((prev) => !prev)}
+          />
         </div>
       </div>
 
@@ -177,7 +217,12 @@ export function ProductsClient({ activeProductIds, initialProducts }: ProductsCl
         ) : (
           <div className="grid grid-cols-2 gap-3">
             {products.map((p) => (
-              <ProductCard key={p.id} product={p} />
+              <ProductCard
+                key={p.id}
+                product={p}
+                onRestore={p.is_archived ? handleRestore : undefined}
+                restoring={restoringId === p.id}
+              />
             ))}
           </div>
         )}

@@ -1,18 +1,14 @@
 import { redirect } from "next/navigation"
-import { createClient } from "@/lib/supabase/server"
-import { getPanEntries } from "@/lib/services/pan"
+import { getCurrentUser } from "@/lib/auth/get-current-user"
 import { PanView } from "@/components/pan/PanView"
-import type { PanEntryWithProduct } from "@/components/pan/types"
+import { getPanTabData } from "@/lib/loaders/tab-data"
 
 interface PanPageProps {
   params: { year: string; month: string }
 }
 
 export default async function PanPage({ params }: PanPageProps) {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const user = await getCurrentUser()
 
   if (!user) redirect("/login")
 
@@ -24,37 +20,7 @@ export default async function PanPage({ params }: PanPageProps) {
     redirect(`/pan/${now.getFullYear()}/${now.getMonth() + 1}`)
   }
 
-  const { entriesResult, picksResult } = await getPanEntries(user.id, year, month)
+  const { entries, error } = await getPanTabData(user.id, year, month)
 
-  if (entriesResult.error) {
-    console.error("PanPage: failed to fetch pan entries", {
-      userId: user.id,
-      error: entriesResult.error.message,
-    })
-    return (
-      <PanView
-        year={year}
-        month={month}
-        entries={[]}
-        error={entriesResult.error.message}
-      />
-    )
-  }
-
-  const pickIds = new Set((picksResult.data ?? []).map((p) => p.pan_entry_id))
-
-  // Supabase types `products` as an array due to relationship config, but runtime gives a single
-  // object. We cast explicitly to our clean PanEntryWithProduct type.
-  const entries = ((entriesResult.data ?? []) as unknown[]).map((row) => {
-    const r = row as Record<string, unknown>
-    const rawProducts = r.products
-    const product = Array.isArray(rawProducts) ? (rawProducts[0] ?? null) : (rawProducts ?? null)
-    return {
-      ...r,
-      products: product,
-      is_pick: pickIds.has(r.id as string),
-    } as PanEntryWithProduct
-  })
-
-  return <PanView year={year} month={month} entries={entries} />
+  return <PanView year={year} month={month} entries={entries} error={error ?? undefined} />
 }

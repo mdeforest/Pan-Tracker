@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { revalidateForPanMutation } from "@/lib/cache/tab-cache"
 import { createClient } from "@/lib/supabase/server"
 import { carryOverEntries } from "@/lib/services/pan"
 import { CarryOverSchema } from "@/lib/validations/pan"
@@ -59,6 +60,8 @@ export async function POST(
     })
     return NextResponse.json({ data: null, error: "Carry-over failed" }, { status: 500 })
   }
+
+  revalidateForPanMutation(user.id, { year, month })
 
   return NextResponse.json({ data, error: null }, { status: 201 })
 }

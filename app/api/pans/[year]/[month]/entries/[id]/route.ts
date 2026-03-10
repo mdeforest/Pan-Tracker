@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { revalidateForPanMutation } from "@/lib/cache/tab-cache"
 import { createClient } from "@/lib/supabase/server"
 import { updatePanEntry } from "@/lib/services/pan"
 import { UpdatePanEntrySchema } from "@/lib/validations/pan"
@@ -44,6 +45,14 @@ export async function PATCH(
 
   if (!data) {
     return NextResponse.json({ data: null, error: "Pan entry not found" }, { status: 404 })
+  }
+
+  const year = parseInt(params.year, 10)
+  const month = parseInt(params.month, 10)
+  if (!isNaN(year) && !isNaN(month)) {
+    revalidateForPanMutation(user.id, { year, month })
+  } else {
+    revalidateForPanMutation(user.id)
   }
 
   return NextResponse.json({ data, error: null })

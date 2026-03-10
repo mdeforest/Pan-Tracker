@@ -1,26 +1,14 @@
 import { redirect } from "next/navigation"
-import { createClient } from "@/lib/supabase/server"
 import { ProductsClient } from "@/components/products/ProductsClient"
-import { listProducts } from "@/lib/services/products"
+import { getCurrentUser } from "@/lib/auth/get-current-user"
+import { getProductsTabData } from "@/lib/loaders/tab-data"
 
 export default async function ProductsPage() {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const user = await getCurrentUser()
 
   if (!user) redirect("/login")
 
-  const [{ data: activeEntries }, { data: initialProducts }] = await Promise.all([
-    supabase
-      .from("pan_entries")
-      .select("product_id")
-      .eq("user_id", user.id)
-      .eq("status", "active"),
-    listProducts(user.id),
-  ])
-
-  const activeProductIds = (activeEntries ?? []).map((e) => e.product_id)
+  const { activeProductIds, initialProducts } = await getProductsTabData(user.id)
 
   return (
     <div>
@@ -29,7 +17,7 @@ export default async function ProductsPage() {
       </div>
       <ProductsClient
         activeProductIds={activeProductIds}
-        initialProducts={initialProducts ?? []}
+        initialProducts={initialProducts}
       />
     </div>
   )

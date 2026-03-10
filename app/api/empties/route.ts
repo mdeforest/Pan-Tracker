@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { revalidateForEmptiesMutation } from "@/lib/cache/tab-cache"
 import { createClient } from "@/lib/supabase/server"
 import { listEmpties, createEmpty } from "@/lib/services/empties"
 import { CreateEmptySchema } from "@/lib/validations/empties"
@@ -75,6 +76,11 @@ export async function POST(req: NextRequest) {
     console.error("POST /api/empties error", { userId: user.id, error: error.message })
     return NextResponse.json({ data: null, error: error.message }, { status: 500 })
   }
+
+  revalidateForEmptiesMutation(user.id, {
+    year: now.getFullYear(),
+    month: now.getMonth() + 1,
+  })
 
   return NextResponse.json({ data, error: null }, { status: 201 })
 }

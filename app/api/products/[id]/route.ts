@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { revalidateForProductMutation } from "@/lib/cache/tab-cache"
 import { createClient } from "@/lib/supabase/server"
 import { updateProduct, archiveProduct, restoreProduct } from "@/lib/services/products"
 import { RestoreProductSchema, UpdateProductSchema } from "@/lib/validations/products"
@@ -37,6 +38,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       return NextResponse.json({ data: null, error: "Product not found" }, { status: 404 })
     }
 
+    revalidateForProductMutation(user.id)
+
     return NextResponse.json({ data, error: null })
   }
 
@@ -62,6 +65,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   if (!data) {
     return NextResponse.json({ data: null, error: "Product not found" }, { status: 404 })
   }
+
+  revalidateForProductMutation(user.id)
 
   return NextResponse.json({ data, error: null })
 }
@@ -93,6 +98,8 @@ export async function DELETE(_req: NextRequest, { params }: { params: { id: stri
   if (!data) {
     return NextResponse.json({ data: null, error: "Product not found" }, { status: 404 })
   }
+
+  revalidateForProductMutation(user.id)
 
   return NextResponse.json({ data, error: null })
 }

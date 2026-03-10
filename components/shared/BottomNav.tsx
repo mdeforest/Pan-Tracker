@@ -1,7 +1,8 @@
 "use client"
 
+import { useEffect } from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { FlaskConical, Package, Sparkles } from "lucide-react"
 import { cn, currentYearMonth } from "@/lib/utils"
 
@@ -30,6 +31,15 @@ const NAV_ITEMS = [
 
 export function BottomNav() {
   const pathname = usePathname()
+  const router = useRouter()
+
+  useEffect(() => {
+    NAV_ITEMS.forEach(({ href, match }) => {
+      if (!match.test(pathname)) {
+        router.prefetch(href)
+      }
+    })
+  }, [pathname, router])
 
   return (
     <nav
@@ -44,6 +54,12 @@ export function BottomNav() {
             <li key={href} className="flex flex-1">
               <Link
                 href={href}
+                onMouseEnter={() => {
+                  if (!isActive) router.prefetch(href)
+                }}
+                onTouchStart={() => {
+                  if (!isActive) router.prefetch(href)
+                }}
                 aria-current={isActive ? "page" : undefined}
                 className={cn(
                   "flex flex-1 flex-col items-center justify-center gap-1 text-xs font-medium transition-colors",

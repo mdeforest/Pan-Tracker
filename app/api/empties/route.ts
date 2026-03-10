@@ -78,6 +78,9 @@ export async function POST(req: NextRequest) {
   })
 
   if (error) {
+    if (error.code === "PGRST116") {
+      return NextResponse.json({ data: null, error: error.message }, { status: 404 })
+    }
     console.error("POST /api/empties error", { userId: user.id, error: error.message })
     return NextResponse.json({ data: null, error: error.message }, { status: 500 })
   }

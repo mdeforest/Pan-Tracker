@@ -15,3 +15,14 @@ export function currentYearMonth(): { year: number; month: number } {
   const now = new Date()
   return { year: now.getFullYear(), month: now.getMonth() + 1 }
 }
+
+export function getSafeRedirectPath(
+  next: string | null | undefined,
+  fallback: string
+): string {
+  if (!next || !next.startsWith("/") || next.startsWith("//") || next.includes("\\")) {
+    return fallback
+  }
+
+  return next
+}

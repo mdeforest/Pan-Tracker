@@ -41,6 +41,18 @@ export async function POST(
   const { data, error } = await carryOverEntries(user.id, result.data.product_ids, year, month)
 
   if (error) {
+    if (error.code === "PGRST116") {
+      return NextResponse.json(
+        { data: null, error: "One or more products were not found" },
+        { status: 404 }
+      )
+    }
+    if (error.code === "23505") {
+      return NextResponse.json(
+        { data: null, error: "One or more products are already in your active pan" },
+        { status: 409 }
+      )
+    }
     console.error("POST /api/pans/[year]/[month]/carry-over error", {
       userId: user.id,
       error,

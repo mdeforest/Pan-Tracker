@@ -88,8 +88,8 @@ describe("createEmpty", () => {
 
   it("inserts empty record and updates pan_entry status atomically", async () => {
     const mock = createMockSupabase({
+      pan_entries: { data: { id: ENTRY_ID, product_id: PRODUCT_ID }, error: null },
       empties: { data: mockEmpty, error: null },
-      pan_entries: { data: null, error: null },
     })
     vi.mocked(createClient).mockResolvedValue(mock as never)
 
@@ -132,8 +132,8 @@ describe("createEmpty", () => {
 
   it("returns error if the empty insert fails", async () => {
     const mock = createMockSupabase({
+      pan_entries: { data: { id: ENTRY_ID, product_id: PRODUCT_ID }, error: null },
       empties: { data: null, error: { message: "insert failed" } },
-      pan_entries: { data: null, error: null },
     })
     vi.mocked(createClient).mockResolvedValue(mock as never)
 
@@ -146,7 +146,45 @@ describe("createEmpty", () => {
 
     expect(data).toBeNull()
     expect(error).toEqual({ message: "insert failed" })
-    // pan_entries update should NOT be called
-    expect(mock.from).not.toHaveBeenCalledWith("pan_entries")
+    const pb = mock._builders.pan_entries
+    expect(pb.update).not.toHaveBeenCalled()
+  })
+
+  it("rejects empties for pan entries the user does not own", async () => {
+    const mock = createMockSupabase({
+      pan_entries: { data: null, error: { message: "not found" } },
+    })
+    vi.mocked(createClient).mockResolvedValue(mock as never)
+
+    const { data, error } = await createEmpty(USER_ID, {
+      pan_entry_id: ENTRY_ID,
+      product_id: PRODUCT_ID,
+      finished_month: 3,
+      finished_year: 2026,
+    })
+
+    expect(data).toBeNull()
+    expect(error?.message).toBe("Pan entry not found")
+    expect(mock.from).not.toHaveBeenCalledWith("empties")
+  })
+
+  it("rejects replacement products the user does not own", async () => {
+    const mock = createMockSupabase({
+      pan_entries: { data: { id: ENTRY_ID, product_id: PRODUCT_ID }, error: null },
+      products: { data: null, error: { message: "not found" } },
+    })
+    vi.mocked(createClient).mockResolvedValue(mock as never)
+
+    const { data, error } = await createEmpty(USER_ID, {
+      pan_entry_id: ENTRY_ID,
+      product_id: PRODUCT_ID,
+      finished_month: 3,
+      finished_year: 2026,
+      replacement_product_id: "prod-999",
+    })
+
+    expect(data).toBeNull()
+    expect(error?.message).toBe("Replacement product not found")
+    expect(mock.from).not.toHaveBeenCalledWith("empties")
   })
 })

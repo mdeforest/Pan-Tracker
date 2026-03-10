@@ -3,6 +3,23 @@ import type { Database } from "@/lib/types/database"
 
 type WouldRepurchase = Database["public"]["Enums"]["would_repurchase"]
 type ProductCategory = Database["public"]["Enums"]["product_category"]
+type ServiceError = { message: string; code?: string }
+
+async function userOwnsProduct(
+  userId: string,
+  productId: string
+): Promise<boolean> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from("products")
+    .select("id")
+    .eq("id", productId)
+    .eq("user_id", userId)
+    .is("archived_at", null)
+    .single()
+
+  return !error && !!data
+}
 
 export async function listEmpties(
   userId: string,
@@ -45,6 +62,36 @@ export async function createEmpty(
   }
 ) {
   const supabase = await createClient()
+  const { data: panEntry, error: panEntryError } = await supabase
+    .from("pan_entries")
+    .select("id, product_id")
+    .eq("id", input.pan_entry_id)
+    .eq("user_id", userId)
+    .eq("product_id", input.product_id)
+    .single()
+
+  if (panEntryError || !panEntry) {
+    return {
+      data: null,
+      error: {
+        message: "Pan entry not found",
+        code: "PGRST116",
+      } satisfies ServiceError,
+    }
+  }
+
+  if (
+    input.replacement_product_id &&
+    !(await userOwnsProduct(userId, input.replacement_product_id))
+  ) {
+    return {
+      data: null,
+      error: {
+        message: "Replacement product not found",
+        code: "PGRST116",
+      } satisfies ServiceError,
+    }
+  }
 
   const { data: empty, error: emptyError } = await supabase
     .from("empties")

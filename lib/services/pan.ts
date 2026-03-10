@@ -1,9 +1,45 @@
 import { createClient } from "@/lib/supabase/server"
-import { createAdminClient } from "@/lib/supabase/server-admin"
 import type { Database } from "@/lib/types/database"
 
 type PanEntryStatus = Database["public"]["Enums"]["pan_entry_status"]
 type UsageLevel = Database["public"]["Enums"]["usage_level"]
+type ServiceError = { message: string; code?: string }
+
+async function userOwnsProduct(
+  userId: string,
+  productId: string
+): Promise<boolean> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from("products")
+    .select("id")
+    .eq("id", productId)
+    .eq("user_id", userId)
+    .is("archived_at", null)
+    .single()
+
+  return !error && !!data
+}
+
+async function userOwnsProducts(
+  userId: string,
+  productIds: string[]
+): Promise<boolean> {
+  if (productIds.length === 0) {
+    return true
+  }
+
+  const supabase = await createClient()
+  const uniqueIds = Array.from(new Set(productIds))
+  const { data, error } = await supabase
+    .from("products")
+    .select("id")
+    .eq("user_id", userId)
+    .is("archived_at", null)
+    .in("id", uniqueIds)
+
+  return !error && (data?.length ?? 0) === uniqueIds.length
+}
 
 export async function getPanEntries(userId: string, year: number, month: number) {
   const supabase = await createClient()
@@ -43,6 +79,16 @@ export async function addToPan(
   year: number,
   month: number
 ) {
+  if (!(await userOwnsProduct(userId, productId))) {
+    return {
+      data: null,
+      error: {
+        message: "Product not found",
+        code: "PGRST116",
+      } satisfies ServiceError,
+    }
+  }
+
   const supabase = await createClient()
 
   return supabase
@@ -81,28 +127,39 @@ export async function carryOverEntries(
   targetYear: number,
   targetMonth: number
 ) {
-  const admin = createAdminClient()
+  if (!(await userOwnsProducts(userId, productIds))) {
+    return {
+      data: null,
+      error: {
+        message: "One or more products were not found",
+        code: "PGRST116",
+      } satisfies ServiceError,
+    }
+  }
 
-  const results = await Promise.allSettled(
-    productIds.map((productId) =>
-      admin
-        .from("pan_entries")
-        .insert({
-          user_id: userId,
-          product_id: productId,
-          started_month: targetMonth,
-          started_year: targetYear,
-          status: "active" as const,
-          usage_level: "just_started" as const,
-        })
-        .select()
-        .single()
-    )
-  )
+  const supabase = await createClient()
+  const created: unknown[] = []
 
-  const created = results
-    .filter((r) => r.status === "fulfilled" && r.value.error === null)
-    .map((r) => (r as PromiseFulfilledResult<{ data: unknown }>).value.data)
+  for (const productId of Array.from(new Set(productIds))) {
+    const { data, error } = await supabase
+      .from("pan_entries")
+      .insert({
+        user_id: userId,
+        product_id: productId,
+        started_month: targetMonth,
+        started_year: targetYear,
+        status: "active" as const,
+        usage_level: "just_started" as const,
+      })
+      .select()
+      .single()
+
+    if (error) {
+      return { data: null, error }
+    }
+
+    created.push(data)
+  }
 
   return { data: created, error: null }
 }

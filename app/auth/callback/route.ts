@@ -1,13 +1,14 @@
 import { createServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
 import { type NextRequest, NextResponse } from "next/server"
+import { getSafeRedirectPath } from "@/lib/utils"
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get("code")
   const now = new Date()
   const defaultNext = `/pan/${now.getFullYear()}/${now.getMonth() + 1}`
-  const next = searchParams.get("next") ?? defaultNext
+  const next = getSafeRedirectPath(searchParams.get("next"), defaultNext)
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY

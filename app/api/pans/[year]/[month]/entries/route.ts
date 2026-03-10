@@ -41,6 +41,9 @@ export async function POST(
   const { data, error } = await addToPan(user.id, result.data.product_id, year, month)
 
   if (error) {
+    if (error.code === "PGRST116") {
+      return NextResponse.json({ data: null, error: "Product not found" }, { status: 404 })
+    }
     // Postgres unique constraint violation code
     if (error.code === "23505") {
       return NextResponse.json(

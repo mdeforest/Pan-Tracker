@@ -1,11 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { createMockSupabase, createMockAdminClient } from "../helpers/supabase-mock"
+import { createMockSupabase } from "../helpers/supabase-mock"
 
 vi.mock("@/lib/supabase/server", () => ({ createClient: vi.fn() }))
-vi.mock("@/lib/supabase/server-admin", () => ({ createAdminClient: vi.fn() }))
 
 import { createClient } from "@/lib/supabase/server"
-import { createAdminClient } from "@/lib/supabase/server-admin"
 import {
   getPanEntries,
   getPanEntry,
@@ -87,7 +85,10 @@ describe("addToPan", () => {
   beforeEach(() => vi.clearAllMocks())
 
   it("inserts a pan entry with default status and usage_level", async () => {
-    const mock = createMockSupabase({ pan_entries: { data: mockEntry, error: null } })
+    const mock = createMockSupabase({
+      products: { data: { id: PRODUCT_ID }, error: null },
+      pan_entries: { data: mockEntry, error: null },
+    })
     vi.mocked(createClient).mockResolvedValue(mock as never)
 
     await addToPan(USER_ID, PRODUCT_ID, 2026, 3)
@@ -103,6 +104,19 @@ describe("addToPan", () => {
         usage_level: "just_started",
       })
     )
+  })
+
+  it("rejects products the user does not own", async () => {
+    const mock = createMockSupabase({
+      products: { data: null, error: { message: "not found" } },
+    })
+    vi.mocked(createClient).mockResolvedValue(mock as never)
+
+    const { data, error } = await addToPan(USER_ID, PRODUCT_ID, 2026, 3)
+
+    expect(data).toBeNull()
+    expect(error?.message).toBe("Product not found")
+    expect(mock.from).not.toHaveBeenCalledWith("pan_entries")
   })
 })
 
@@ -135,16 +149,17 @@ describe("updatePanEntry", () => {
 describe("carryOverEntries", () => {
   beforeEach(() => vi.clearAllMocks())
 
-  it("inserts one pan_entry per product_id using the admin client", async () => {
-    const adminMock = createMockAdminClient({
+  it("inserts one pan_entry per product_id using the authenticated client", async () => {
+    const mock = createMockSupabase({
+      products: { data: [{ id: PRODUCT_ID }], error: null },
       pan_entries: { data: mockEntry, error: null },
     })
-    vi.mocked(createAdminClient).mockReturnValue(adminMock as never)
+    vi.mocked(createClient).mockResolvedValue(mock as never)
 
     await carryOverEntries(USER_ID, [PRODUCT_ID], 2026, 4)
 
-    expect(adminMock.from).toHaveBeenCalledWith("pan_entries")
-    const b = adminMock._builders.pan_entries
+    expect(mock.from).toHaveBeenCalledWith("pan_entries")
+    const b = mock._builders.pan_entries
     expect(b.insert).toHaveBeenCalledWith(
       expect.objectContaining({
         user_id: USER_ID,
@@ -158,14 +173,28 @@ describe("carryOverEntries", () => {
   })
 
   it("returns only successfully created entries", async () => {
-    const adminMock = createMockAdminClient({
+    const mock = createMockSupabase({
+      products: { data: [{ id: PRODUCT_ID }], error: null },
       pan_entries: { data: mockEntry, error: null },
     })
-    vi.mocked(createAdminClient).mockReturnValue(adminMock as never)
+    vi.mocked(createClient).mockResolvedValue(mock as never)
 
     const { data, error } = await carryOverEntries(USER_ID, [PRODUCT_ID], 2026, 4)
 
     expect(error).toBeNull()
     expect(Array.isArray(data)).toBe(true)
+  })
+
+  it("rejects carry-over when any product is not owned by the user", async () => {
+    const mock = createMockSupabase({
+      products: { data: [], error: null },
+    })
+    vi.mocked(createClient).mockResolvedValue(mock as never)
+
+    const { data, error } = await carryOverEntries(USER_ID, [PRODUCT_ID], 2026, 4)
+
+    expect(data).toBeNull()
+    expect(error?.message).toBe("One or more products were not found")
+    expect(mock.from).not.toHaveBeenCalledWith("pan_entries")
   })
 })

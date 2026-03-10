@@ -44,6 +44,8 @@ describe("getPanEntries", () => {
     expect(mock.from).toHaveBeenCalledWith("pan_entries")
     const b = mock._builders.pan_entries
     expect(b.eq).toHaveBeenCalledWith("user_id", USER_ID)
+    expect(b.eq).toHaveBeenCalledWith("started_year", 2026)
+    expect(b.eq).toHaveBeenCalledWith("started_month", 3)
     expect(b.in).toHaveBeenCalledWith("status", ["active", "paused"])
   })
 

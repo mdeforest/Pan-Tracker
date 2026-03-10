@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { BottomSheet } from "@/components/shared/BottomSheet"
 import { cn } from "@/lib/utils"
 import {
@@ -23,6 +23,8 @@ export function NewProductSheet({ open, onClose, onCreated, onError }: NewProduc
   const [category, setCategory] = useState<ProductCategory>("skincare")
   const [photoFile, setPhotoFile] = useState<File | null>(null)
   const [creating, setCreating] = useState(false)
+  const cameraInputRef = useRef<HTMLInputElement>(null)
+  const libraryInputRef = useRef<HTMLInputElement>(null)
 
   function reset() {
     setName("")
@@ -34,6 +36,10 @@ export function NewProductSheet({ open, onClose, onCreated, onError }: NewProduc
   function handleClose() {
     reset()
     onClose()
+  }
+
+  function handlePhotoSelected(file: File | null) {
+    setPhotoFile(file)
   }
 
   async function handleCreate() {
@@ -153,24 +159,56 @@ export function NewProductSheet({ open, onClose, onCreated, onError }: NewProduc
         {/* Photo */}
         <div>
           <label className="mb-1.5 block text-sm font-semibold">Photo (optional)</label>
-          <label
-            htmlFor="np-photo"
+          <div
             className={cn(
-              "flex h-11 w-full cursor-pointer items-center gap-2 rounded-xl border border-dashed px-3 text-sm",
-              photoFile
-                ? "border-foreground text-foreground"
-                : "border-muted-foreground/40 text-muted-foreground"
+              "rounded-2xl border border-dashed p-3",
+              photoFile ? "border-foreground bg-muted/30" : "border-muted-foreground/30 bg-white"
             )}
           >
-            {photoFile ? photoFile.name : "Choose photo…"}
+            <p className={cn("text-sm", photoFile ? "text-foreground" : "text-muted-foreground")}>
+              {photoFile ? photoFile.name : "No photo selected"}
+            </p>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => cameraInputRef.current?.click()}
+                className="flex h-11 items-center justify-center rounded-xl bg-foreground text-sm font-semibold text-background active:opacity-80"
+              >
+                Take Photo
+              </button>
+              <button
+                type="button"
+                onClick={() => libraryInputRef.current?.click()}
+                className="flex h-11 items-center justify-center rounded-xl border border-border bg-white text-sm font-semibold text-foreground active:opacity-80"
+              >
+                Choose Photo
+              </button>
+            </div>
+            {photoFile && (
+              <button
+                type="button"
+                onClick={() => setPhotoFile(null)}
+                className="mt-2 text-sm text-muted-foreground underline underline-offset-2"
+              >
+                Remove photo
+              </button>
+            )}
             <input
-              id="np-photo"
+              ref={cameraInputRef}
               type="file"
               accept="image/jpeg,image/png,image/webp"
               className="hidden"
-              onChange={(e) => setPhotoFile(e.target.files?.[0] ?? null)}
+              capture="environment"
+              onChange={(e) => handlePhotoSelected(e.target.files?.[0] ?? null)}
             />
-          </label>
+            <input
+              ref={libraryInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="hidden"
+              onChange={(e) => handlePhotoSelected(e.target.files?.[0] ?? null)}
+            />
+          </div>
         </div>
 
       </div>

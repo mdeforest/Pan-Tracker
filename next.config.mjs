@@ -38,7 +38,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' blob: data: https://lh3.googleusercontent.com https://*.supabase.co",
               "font-src 'self'",
-              "connect-src 'self' https://*.supabase.co https://accounts.google.com https://*.googleapis.com",
+              "connect-src 'self' https://*.supabase.co https://accounts.google.com https://*.googleapis.com http://127.0.0.1:54321 http://localhost:54321 ws://127.0.0.1:54321 ws://localhost:54321",
               "frame-src https://accounts.google.com",
               "frame-ancestors 'none'",
             ].join("; "),

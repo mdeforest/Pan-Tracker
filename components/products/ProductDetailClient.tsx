@@ -3,9 +3,10 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
-import { Star } from "lucide-react"
+import { AlertTriangle, Star } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ProductEditSheet } from "./ProductEditSheet"
+import { BottomSheet } from "@/components/shared/BottomSheet"
 import {
   CATEGORY_EMOJI,
   CATEGORY_BG,
@@ -51,6 +52,28 @@ interface ProductDetailClientProps {
   currentMonth: number
 }
 
+function getErrorMessage(error: unknown, fallback: string) {
+  if (typeof error === "string" && error.trim()) {
+    return error
+  }
+
+  if (error && typeof error === "object") {
+    for (const value of Object.values(error as Record<string, unknown>)) {
+      if (typeof value === "string" && value.trim()) {
+        return value
+      }
+      if (Array.isArray(value)) {
+        const firstString = value.find((item) => typeof item === "string" && item.trim())
+        if (typeof firstString === "string") {
+          return firstString
+        }
+      }
+    }
+  }
+
+  return fallback
+}
+
 function RepurchaseBadge({ value }: { value: WouldRepurchase | null }) {
   if (!value) return null
   const config = {
@@ -91,9 +114,11 @@ export function ProductDetailClient({
   currentMonth,
 }: ProductDetailClientProps) {
   const [editOpen, setEditOpen] = useState(false)
+  const [archiveConfirmOpen, setArchiveConfirmOpen] = useState(false)
   const [addingToPan, setAddingToPan] = useState(false)
   const [archiving, setArchiving] = useState(false)
   const [restoring, setRestoring] = useState(false)
+  const [archiveError, setArchiveError] = useState<string | null>(null)
   const [toast, setToast] = useState<string | null>(null)
   const router = useRouter()
   const cat = product.category
@@ -114,7 +139,7 @@ export function ProductDetailClient({
       })
       const json = (await res.json()) as { error?: unknown }
       if (!res.ok || json.error) {
-        showToast(typeof json.error === "string" ? json.error : "Failed to add to pan")
+        showToast(getErrorMessage(json.error, "Failed to add to pan"))
         return
       }
       showToast("Added to current pan!")
@@ -127,18 +152,16 @@ export function ProductDetailClient({
   }
 
   async function handleArchive() {
-    if (!window.confirm("Archive this product? You can restore it later from the archived products list.")) {
-      return
-    }
-
     setArchiving(true)
+    setArchiveError(null)
     try {
       const res = await fetch(`/api/products/${product.id}`, { method: "DELETE" })
       const json = (await res.json()) as { error?: unknown }
       if (!res.ok || json.error) {
-        showToast(typeof json.error === "string" ? json.error : "Failed to archive product")
+        setArchiveError(getErrorMessage(json.error, "Failed to archive product"))
         return
       }
+      setArchiveConfirmOpen(false)
       showToast("Product archived")
       router.refresh()
     } catch {
@@ -158,7 +181,7 @@ export function ProductDetailClient({
       })
       const json = (await res.json()) as { error?: unknown }
       if (!res.ok || json.error) {
-        showToast(typeof json.error === "string" ? json.error : "Failed to restore product")
+        showToast(getErrorMessage(json.error, "Failed to restore product"))
         return
       }
       showToast("Product restored!")
@@ -275,7 +298,10 @@ export function ProductDetailClient({
             </button>
           )}
           <button
-            onClick={handleArchive}
+            onClick={() => {
+              setArchiveError(null)
+              setArchiveConfirmOpen(true)
+            }}
             disabled={archiving}
             className={cn(
               "mt-3 flex h-11 w-full items-center justify-center rounded-xl border text-sm font-semibold disabled:opacity-50 active:opacity-80",
@@ -339,7 +365,7 @@ export function ProductDetailClient({
                         </span>
                       </div>
 
-                      {/* Progress bar */}
+                      {/* Remaining amount bar */}
                       <div className="mb-1">
                         <div className="flex items-center justify-between mb-1">
                           <span className="text-xs text-muted-foreground">
@@ -406,6 +432,59 @@ export function ProductDetailClient({
           onError={showToast}
         />
       )}
+
+      <BottomSheet
+        open={archiveConfirmOpen}
+        onClose={() => {
+          if (!archiving) setArchiveConfirmOpen(false)
+        }}
+        title="Archive Product"
+        footer={
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={() => setArchiveConfirmOpen(false)}
+              disabled={archiving}
+              className="flex h-12 flex-1 items-center justify-center rounded-xl border border-border bg-white text-sm font-semibold text-foreground disabled:opacity-50 active:opacity-80"
+            >
+              Keep Product
+            </button>
+            <button
+              type="button"
+              onClick={handleArchive}
+              disabled={archiving}
+              className="flex h-12 flex-1 items-center justify-center rounded-xl bg-red-500 text-sm font-semibold text-white disabled:opacity-50 active:opacity-80"
+            >
+              {archiving ? "Archiving…" : "Archive"}
+            </button>
+          </div>
+        }
+      >
+        <div className="px-4 pb-2">
+          <div className="rounded-2xl bg-red-50 p-4">
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 rounded-2xl bg-red-100 p-2 text-red-600">
+                <AlertTriangle className="h-5 w-5" />
+              </div>
+              <div className="space-y-2">
+                <p className="text-sm font-semibold text-foreground">
+                  Remove this product from your active library view
+                </p>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  Archived products are hidden by default, but all pan history and empties stay
+                  intact. You can restore <span className="font-medium text-foreground">{product.name}</span> later
+                  from the Products screen.
+                </p>
+              </div>
+            </div>
+          </div>
+          {archiveError && (
+            <p className="mt-3 rounded-xl bg-destructive/10 px-4 py-3 text-sm text-destructive">
+              {archiveError}
+            </p>
+          )}
+        </div>
+      </BottomSheet>
     </div>
   )
 }

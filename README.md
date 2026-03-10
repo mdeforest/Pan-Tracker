@@ -43,6 +43,24 @@ Open `.env.local` and fill in all required values:
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase project → Settings → API |
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase project → Settings → API (keep secret!) |
 
+For a fully local database instead of a hosted Supabase project, use:
+
+| Variable | Local value |
+|---|---|
+| `DATABASE_URL` | `postgresql://postgres:postgres@127.0.0.1:54322/postgres` |
+| `DIRECT_URL` | `postgresql://postgres:postgres@127.0.0.1:54322/postgres` |
+| `NEXT_PUBLIC_SUPABASE_URL` | `http://127.0.0.1:54321` |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Copy from `npm run db:status` |
+| `SUPABASE_SERVICE_ROLE_KEY` | Copy from `npm run db:status` |
+| `NEXT_PUBLIC_ENABLE_LOCAL_EMAIL_AUTH` | `true` to expose local-only email/password sign-in on `/login` |
+
+# Local Test Users
+TEST_USER_EMAIL_1="demo-pan@example.com"
+TEST_USER_PASSWORD_1="password123"
+
+TEST_USER_EMAIL_2="other-pan@example.com"
+TEST_USER_PASSWORD_2="password123"
+
 ### 3. Set up Supabase
 
 1. Create a project at [supabase.com](https://supabase.com)
@@ -56,6 +74,59 @@ npx supabase db push --db-url "$DIRECT_URL"
 ```
 
 This applies all SQL migrations under `supabase/migrations/` to your database, including the schema and storage bucket setup.
+
+## Local Postgres With Seeded Data
+
+This repo is configured to use the Supabase local stack, which includes a local Postgres instance plus seeded data via [`supabase/seed.sql`](./supabase/seed.sql).
+
+Prerequisites:
+
+- Docker Desktop (or another Docker runtime) running locally
+- Supabase CLI available through `npx`
+
+Start the local stack:
+
+```bash
+npm run db:start
+```
+
+Inspect local connection details and generated keys:
+
+```bash
+npm run db:status
+```
+
+Reset the local database and re-apply migrations plus seeds:
+
+```bash
+npm run db:reset
+```
+
+Stop the local stack:
+
+```bash
+npm run db:stop
+```
+
+The seeded dataset includes:
+
+- 2 users in `auth.users` and `public.users`
+- 5 demo products for the primary user, including 1 archived product
+- active, paused, and empty `pan_entries`
+- current `monthly_picks`
+- 1 historical `empties` record
+- a second user's product for ownership/RLS testing
+
+Seeded auth emails:
+
+- `demo-pan@example.com`
+- `other-pan@example.com`
+
+Password for both local auth users:
+
+- `password123`
+
+If `NEXT_PUBLIC_ENABLE_LOCAL_EMAIL_AUTH=true` and `NEXT_PUBLIC_SUPABASE_URL` points at `localhost`/`127.0.0.1`, the login page will also show a local-only email/password form for these seeded users.
 
 To regenerate TypeScript types after a schema change:
 
@@ -77,6 +148,10 @@ Open [http://localhost:3000](http://localhost:3000) — you'll be redirected to 
 npm run dev                                              # Start local dev server
 npm run build                                            # Build for production
 npm run lint                                             # Run ESLint
+npm run db:start                                         # Start local Supabase/Postgres stack
+npm run db:status                                        # Show local URLs, DB connection, anon/service keys
+npm run db:reset                                         # Recreate local DB, run migrations, load supabase/seed.sql
+npm run db:stop                                          # Stop local Supabase/Postgres stack
 npx tsc --noEmit                                         # Type-check without building
 npx supabase db push --db-url "$DIRECT_URL"              # Apply migrations to remote DB
 npx supabase gen types typescript --linked > lib/types/database.ts  # Regenerate types

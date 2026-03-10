@@ -195,11 +195,41 @@ export function ProductsClient({ activeProductIds, initialProducts }: ProductsCl
               onClick={() => setCategory(cat)}
             />
           ))}
-          <CategoryChip
-            label="Show Archived"
-            active={showArchived}
+        </div>
+
+        <div className="px-4 pb-2">
+          <button
+            type="button"
+            role="switch"
+            aria-checked={showArchived}
             onClick={() => setShowArchived((prev) => !prev)}
-          />
+            className={cn(
+              "flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left transition-colors active:opacity-80",
+              showArchived
+                ? "border-amber-300 bg-amber-50 text-amber-950"
+                : "border-border bg-white text-foreground"
+            )}
+          >
+            <div>
+              <p className="text-sm font-semibold">Show Archived</p>
+              <p className="text-xs text-muted-foreground">
+                Include archived products in your library results
+              </p>
+            </div>
+            <span
+              className={cn(
+                "relative inline-flex h-7 w-12 shrink-0 rounded-full transition-colors",
+                showArchived ? "bg-amber-500" : "bg-muted"
+              )}
+            >
+              <span
+                className={cn(
+                  "absolute top-1 h-5 w-5 rounded-full bg-white shadow-sm transition-transform",
+                  showArchived ? "left-6" : "left-1"
+                )}
+              />
+            </span>
+          </button>
         </div>
       </div>
 

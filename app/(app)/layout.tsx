@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { BottomNav } from "@/components/shared/BottomNav"
-import { UserMenu } from "@/components/shared/UserMenu"
+import { AppHeader } from "@/components/shared/AppHeader"
 
 export default async function AppLayout({
   children,
@@ -26,10 +26,7 @@ export default async function AppLayout({
 
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-40 flex h-14 items-center justify-between bg-card px-4 shadow-sm">
-        <span className="text-base font-semibold tracking-tight">PanTracker</span>
-        <UserMenu avatarUrl={avatarUrl} name={name} />
-      </header>
+      <AppHeader avatarUrl={avatarUrl} name={name} />
       <main className="flex-1 pb-[calc(4rem+env(safe-area-inset-bottom))]">
         {children}
       </main>

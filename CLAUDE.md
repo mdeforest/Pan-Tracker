@@ -21,6 +21,10 @@ Project Pan Tracker is a Next.js 14 web app for beauty enthusiasts tracking "pro
 npm run dev           # Start local dev server (localhost:3000)
 npm run build         # next build
 npm run lint          # ESLint
+npm run db:start      # Start local Supabase/Postgres stack via Docker
+npm run db:status     # Show local URLs, DB connection string, anon/service keys
+npm run db:reset      # Reset local DB, run migrations, and load supabase/seed.sql
+npm run db:stop       # Stop local Supabase stack
 npx tsc --noEmit      # Typecheck without emitting
 npx supabase db push --db-url "$DIRECT_URL"          # Apply pending migrations to remote DB
 npx supabase gen types typescript --linked > lib/types/database.ts  # Regenerate DB types
@@ -223,8 +227,13 @@ Note: NEXTAUTH_URL and NEXTAUTH_SECRET are in .env.local.example for reference b
 - ✅ **Phase 5 — Monthly Pan View** (2026-03-07): Full pan screen at `app/(app)/pan/[year]/[month]/page.tsx`. Month navigation, product cards grouped by category, progress bars, pick/months badges. BottomSheet primitive, ToastProvider, canvas-confetti on empty. ProductDetailSheet (slider + notes), EmptyLoggerSheet (repurchase + stars), AddProductSheet (search + create + photo), CarryOverBanner (past months). Skeleton loading.tsx.
 - ✅ **Phase 6 — Empties Log + Product Library** (2026-03-07): Empties log at `app/(app)/empties/page.tsx` — sticky dual filter bar (month/year + category chips), accordion EmptyCard (expand-in-place for notes). Product library at `app/(app)/products/page.tsx` — sticky search + category chips, 2-col grid, FAB opens NewProductSheet. Product detail at `app/(app)/products/[id]/page.tsx` — photo header with gradient overlay, edit sheet, "Add to Current Pan" button, full pan history timeline with embedded empty records.
 - ✅ **Phase 7 — Hardening + PWA + CI** (2026-03-10): Security headers (X-Frame-Options, X-Content-Type-Options, Referrer-Policy, CSP) in `next.config.mjs`. `app/error.tsx` and `app/not-found.tsx`. Zod schema audit (`.trim()` + max lengths). All `<img>` → `Next/Image`. PWA: `app/manifest.ts`, SVG icons in `public/icons/`, layout meta tags. GitHub Actions CI at `.github/workflows/ci.yml`. Storage migration `supabase/migrations/20260310000000_storage_product_photos.sql`. README updated.
+- ✅ **Post-Phase 7 API Completion** (2026-03-10): Fixed month-scoped pan queries so entries only appear in their `started_month`/`started_year`. Implemented `/api/picks` GET/POST and `/api/picks/[id]` DELETE backed by `monthly_picks`. Implemented legacy compatibility routes `/api/pan`, `/api/pan/[id]`, and `/api/products/[id]/photo` so no API route remains stubbed with 501.
 
 ## Phase 7 Deviations & Notes
+
+- **Local seed data added after Phase 7:** `supabase/config.toml` already pointed to `supabase/seed.sql`; that file now exists and seeds a deterministic local dataset for `supabase db reset`. Includes auth users, products, pan entries, picks, empties, and one archived product.
+- **Monthly pan views are now month-scoped:** Earlier builds mistakenly showed all active/paused pan entries in every month because `getPanEntries` did not filter by `started_month` and `started_year`. Fixed on 2026-03-10.
+- **Monthly picks API now exists, but picks UI still does not:** The backend endpoints and service layer are implemented; there is still no user-facing picks management UI in the app.
 
 - **SVG icons for PWA:** Used inline SVG files (lipstick design) at 192×192 and 512×512 rather than PNG bitmaps — simpler to create and fully scalable. Chrome DevTools Manifest panel accepts SVG. If a PWA install prompt requires PNG, generate PNGs from the SVGs in Phase 8.
 - **`purpose: "maskable"` on 512px icon only:** Next.js `MetadataRoute.Manifest` type doesn't accept `"any maskable"` as a combined string — split into separate `"any"` and `"maskable"` entries if both are needed; for now 192 is `"any"` and 512 is `"maskable"`.

@@ -7,7 +7,6 @@ import { BottomSheet } from "@/components/shared/BottomSheet"
 import {
   USAGE_LEVELS,
   USAGE_PERCENT,
-  USAGE_LABELS,
   USAGE_SHORT_LABELS,
   CATEGORY_BG,
   CATEGORY_TEXT,

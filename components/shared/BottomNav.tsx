@@ -3,7 +3,7 @@
 import { useEffect } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { FlaskConical, Package, Sparkles } from "lucide-react"
+import { BarChart2, FlaskConical, Package, Sparkles } from "lucide-react"
 import { cn, currentYearMonth } from "@/lib/utils"
 
 const { year, month } = currentYearMonth()
@@ -27,7 +27,13 @@ const NAV_ITEMS = [
     icon: Package,
     match: /^\/products/,
   },
-] as const
+  {
+    label: "Stats",
+    href: "/stats",
+    icon: BarChart2,
+    match: /^\/stats/,
+  },
+]
 
 export function BottomNav() {
   const pathname = usePathname()

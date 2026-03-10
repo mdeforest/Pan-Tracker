@@ -17,6 +17,15 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   title: "PanTracker",
   description: "Track your beauty project pan — finish products before buying new ones.",
+  themeColor: "#1a1a1a",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "PanTracker",
+  },
+  icons: {
+    apple: "/icons/icon-192.svg",
+  },
 }
 
 export default function RootLayout({

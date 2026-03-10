@@ -11,10 +11,10 @@ const PRODUCT_CATEGORIES = [
 ] as const
 
 export const CreateProductSchema = z.object({
-  brand: z.string().min(1, "Brand is required"),
-  name: z.string().min(1, "Name is required"),
+  brand: z.string().trim().min(1, "Brand is required").max(100, "Brand must be 100 characters or fewer"),
+  name: z.string().trim().min(1, "Name is required").max(200, "Name must be 200 characters or fewer"),
   category: z.enum(PRODUCT_CATEGORIES),
-  notes: z.string().nullable().optional(),
+  notes: z.string().trim().max(2000, "Notes must be 2000 characters or fewer").nullable().optional(),
   photo_url: z.string().url().nullable().optional(),
 })
 

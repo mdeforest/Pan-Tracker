@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Image from "next/image"
 import { cn } from "@/lib/utils"
 import { BottomSheet } from "@/components/shared/BottomSheet"
 import {
@@ -120,10 +121,11 @@ export function ProductDetailSheet({
             )}
           >
             {product.photo_url ? (
-              /* eslint-disable-next-line @next/next/no-img-element */
-              <img
+              <Image
                 src={product.photo_url}
                 alt={product.name}
+                width={64}
+                height={64}
                 className="h-full w-full object-cover"
               />
             ) : (

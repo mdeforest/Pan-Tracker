@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Background circle -->
+  <circle cx="256" cy="256" r="256" fill="#1a1a1a"/>
+  <!-- Lipstick body -->
+  <rect x="208" y="267" width="96" height="138" rx="16" fill="#e8c4c4"/>
+  <!-- Lipstick bullet -->
+  <path d="M208 267 Q208 192 256 160 Q304 192 304 267 Z" fill="#d94f70"/>
+  <!-- Highlight on bullet -->
+  <path d="M229 213 Q234 181 256 165 Q256 200 246 218 Z" fill="rgba(255,255,255,0.25)"/>
+  <!-- Gold band -->
+  <rect x="208" y="267" width="96" height="21" rx="0" fill="#c9a84c"/>
+</svg>

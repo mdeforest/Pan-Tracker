@@ -17,7 +17,7 @@ export const AddToPanSchema = z.object({
 export const UpdatePanEntrySchema = z
   .object({
     usage_level: z.enum(USAGE_LEVELS).optional(),
-    notes: z.string().nullable().optional(),
+    notes: z.string().trim().max(2000, "Notes must be 2000 characters or fewer").nullable().optional(),
     status: z.enum(PAN_ENTRY_STATUSES).optional(),
   })
   .refine((data) => Object.keys(data).some((k) => data[k as keyof typeof data] !== undefined), {

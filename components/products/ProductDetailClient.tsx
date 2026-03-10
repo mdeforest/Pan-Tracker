@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 import { Star } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ProductEditSheet } from "./ProductEditSheet"
@@ -130,13 +131,16 @@ export function ProductDetailClient({
   return (
     <div className="pb-6">
       {/* Photo header */}
-      <div className="relative" style={{ maxHeight: "280px", overflow: "hidden" }}>
+      <div className="relative h-64 overflow-hidden">
         {product.photo_url ? (
           <>
-            <img
+            <Image
               src={product.photo_url}
               alt={product.name}
-              className="h-64 w-full object-cover"
+              fill
+              sizes="100vw"
+              className="object-cover"
+              priority
             />
             {/* Gradient overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />

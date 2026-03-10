@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import { cn } from "@/lib/utils"
 import {
   USAGE_PERCENT,
@@ -58,10 +59,11 @@ export function PanCard({
         )}
       >
         {product.photo_url ? (
-          /* eslint-disable-next-line @next/next/no-img-element */
-          <img
+          <Image
             src={product.photo_url}
             alt={product.name}
+            width={48}
+            height={48}
             className="h-full w-full object-cover"
           />
         ) : (

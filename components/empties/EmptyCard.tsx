@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Image from "next/image"
 import { ChevronDown, ChevronUp, Star } from "lucide-react"
 import { cn } from "@/lib/utils"
 import {
@@ -83,9 +84,11 @@ export function EmptyCard({ empty }: EmptyCardProps) {
           )}
         >
           {product?.photo_url ? (
-            <img
+            <Image
               src={product.photo_url}
               alt={product.name}
+              width={40}
+              height={40}
               className="h-10 w-10 rounded-full object-cover"
             />
           ) : (

@@ -1,4 +1,5 @@
 import Link from "next/link"
+import Image from "next/image"
 import { cn } from "@/lib/utils"
 import {
   CATEGORY_EMOJI,
@@ -30,9 +31,11 @@ export function ProductCard({ product }: ProductCardProps) {
       {/* Photo area */}
       <div className={cn("flex items-center justify-center h-24 w-full", CATEGORY_BG[cat])}>
         {product.photo_url ? (
-          <img
+          <Image
             src={product.photo_url}
             alt={product.name}
+            width={64}
+            height={64}
             className="h-16 w-16 rounded-full object-cover"
           />
         ) : (

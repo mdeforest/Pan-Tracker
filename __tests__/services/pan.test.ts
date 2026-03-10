@@ -149,10 +149,10 @@ describe("updatePanEntry", () => {
 describe("carryOverEntries", () => {
   beforeEach(() => vi.clearAllMocks())
 
-  it("inserts one pan_entry per product_id using the authenticated client", async () => {
+  it("bulk inserts one pan_entry per product_id using the authenticated client", async () => {
     const mock = createMockSupabase({
       products: { data: [{ id: PRODUCT_ID }], error: null },
-      pan_entries: { data: mockEntry, error: null },
+      pan_entries: { data: [mockEntry], error: null },
     })
     vi.mocked(createClient).mockResolvedValue(mock as never)
 
@@ -161,21 +161,23 @@ describe("carryOverEntries", () => {
     expect(mock.from).toHaveBeenCalledWith("pan_entries")
     const b = mock._builders.pan_entries
     expect(b.insert).toHaveBeenCalledWith(
-      expect.objectContaining({
-        user_id: USER_ID,
-        product_id: PRODUCT_ID,
-        started_month: 4,
-        started_year: 2026,
-        status: "active",
-        usage_level: "just_started",
-      })
+      [
+        expect.objectContaining({
+          user_id: USER_ID,
+          product_id: PRODUCT_ID,
+          started_month: 4,
+          started_year: 2026,
+          status: "active",
+          usage_level: "just_started",
+        }),
+      ]
     )
   })
 
   it("returns only successfully created entries", async () => {
     const mock = createMockSupabase({
       products: { data: [{ id: PRODUCT_ID }], error: null },
-      pan_entries: { data: mockEntry, error: null },
+      pan_entries: { data: [mockEntry], error: null },
     })
     vi.mocked(createClient).mockResolvedValue(mock as never)
 
@@ -183,6 +185,7 @@ describe("carryOverEntries", () => {
 
     expect(error).toBeNull()
     expect(Array.isArray(data)).toBe(true)
+    expect(data).toEqual([mockEntry])
   })
 
   it("rejects carry-over when any product is not owned by the user", async () => {

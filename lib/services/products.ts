@@ -8,7 +8,7 @@ export async function listProducts(userId: string, q?: string, category?: string
 
   let query = supabase
     .from("products")
-    .select("*")
+    .select("id,name,brand,category,photo_url")
     .eq("user_id", userId)
     .is("archived_at", null)
     .order("created_at", { ascending: false })
@@ -28,7 +28,7 @@ export async function getProduct(userId: string, id: string) {
 
   return supabase
     .from("products")
-    .select("*")
+    .select("id,name,brand,category,photo_url,notes")
     .eq("id", id)
     .eq("user_id", userId)
     .single()
@@ -37,10 +37,11 @@ export async function getProduct(userId: string, id: string) {
 export async function getProductPanHistory(userId: string, productId: string) {
   const supabase = await createClient()
 
-  // Get all pan entries for this product, with empties joined
   return supabase
     .from("pan_entries")
-    .select("*, empties(*)")
+    .select(
+      "id,started_month,started_year,status,usage_level,notes,empties(id,finished_month,finished_year,rating,would_repurchase,review_notes,replacement_free_text)"
+    )
     .eq("user_id", userId)
     .eq("product_id", productId)
     .order("started_year", { ascending: false })

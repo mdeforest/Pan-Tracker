@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef, useMemo } from "react"
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react"
 import { Plus, Search } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
@@ -20,54 +20,105 @@ interface RawProduct {
 
 interface ProductsClientProps {
   activeProductIds: string[]
+  initialProducts: RawProduct[]
 }
 
-export function ProductsClient({ activeProductIds }: ProductsClientProps) {
+function mapProducts(raw: RawProduct[], activeSet: Set<string>): ProductCardData[] {
+  return raw.map((p) => ({
+    id: p.id,
+    name: p.name,
+    brand: p.brand,
+    category: p.category as ProductCategory,
+    photo_url: p.photo_url,
+    is_in_pan: activeSet.has(p.id),
+  }))
+}
+
+export function ProductsClient({ activeProductIds, initialProducts }: ProductsClientProps) {
   const activeSet = useMemo(() => new Set(activeProductIds), [activeProductIds])
   const [query, setQuery] = useState("")
   const [category, setCategory] = useState<string>("all")
-  const [products, setProducts] = useState<ProductCardData[]>([])
-  const [loading, setLoading] = useState(true)
+  const deferredQuery = useDeferredValue(query)
+  const [products, setProducts] = useState<ProductCardData[]>(() =>
+    mapProducts(initialProducts, activeSet)
+  )
+  const [loading, setLoading] = useState(false)
   const [sheetOpen, setSheetOpen] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
   const searchRef = useRef<HTMLInputElement>(null)
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const router = useRouter()
 
   function showToast(msg: string) {
+    if (toastTimerRef.current) {
+      clearTimeout(toastTimerRef.current)
+    }
     setToast(msg)
-    setTimeout(() => setToast(null), 3000)
+    toastTimerRef.current = setTimeout(() => {
+      setToast(null)
+      toastTimerRef.current = null
+    }, 3000)
   }
 
-  // Debounced fetch
   useEffect(() => {
-    setLoading(true)
+    if (!deferredQuery.trim() && category === "all") {
+      setProducts(mapProducts(initialProducts, activeSet))
+      setLoading(false)
+      return
+    }
+
+    const controller = new AbortController()
     const timer = setTimeout(async () => {
+      setLoading(true)
       try {
         const params = new URLSearchParams()
-        if (query.trim()) params.set("q", query.trim())
+        const trimmedQuery = deferredQuery.trim()
+        if (trimmedQuery) params.set("q", trimmedQuery)
         if (category !== "all") params.set("category", category)
         const url = `/api/products${params.size > 0 ? `?${params}` : ""}`
-        const res = await fetch(url)
+        const res = await fetch(url, { signal: controller.signal })
         const json = (await res.json()) as { data?: RawProduct[] }
         const raw = json.data ?? []
-        setProducts(
-          raw.map((p) => ({
-            id: p.id,
-            name: p.name,
-            brand: p.brand,
-            category: p.category as ProductCategory,
-            photo_url: p.photo_url,
-            is_in_pan: activeSet.has(p.id),
-          }))
-        )
+        setProducts(mapProducts(raw, activeSet))
       } catch {
+        if (controller.signal.aborted) {
+          return
+        }
         setProducts([])
       } finally {
-        setLoading(false)
+        if (!controller.signal.aborted) {
+          setLoading(false)
+        }
       }
     }, 300)
-    return () => clearTimeout(timer)
-  }, [query, category, activeProductIds, activeSet])
+
+    return () => {
+      controller.abort()
+      clearTimeout(timer)
+    }
+  }, [deferredQuery, category, initialProducts, activeSet])
+
+  useEffect(() => {
+    if (!deferredQuery.trim() && category === "all") {
+      setProducts(mapProducts(initialProducts, activeSet))
+      return
+    }
+
+    setProducts((prev) =>
+      prev.map((product) => ({
+        ...product,
+        is_in_pan: activeSet.has(product.id),
+      }))
+    )
+  }, [activeSet, category, deferredQuery, initialProducts])
+
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) {
+        clearTimeout(toastTimerRef.current)
+      }
+    }
+  }, [])
 
   function handleCreated(productId: string) {
     setSheetOpen(false)

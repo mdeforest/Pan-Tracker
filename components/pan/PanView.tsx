@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react"
 import { PanCard } from "./PanCard"
@@ -10,7 +10,7 @@ import { AddProductSheet } from "./AddProductSheet"
 import { CarryOverBanner } from "./CarryOverBanner"
 import { useToast } from "@/components/shared/ToastProvider"
 import { currentYearMonth } from "@/lib/utils"
-import { ALL_CATEGORIES, CATEGORY_LABELS, MONTH_NAMES } from "./utils"
+import { CATEGORY_LABELS, MONTH_NAMES } from "./utils"
 import type { PanEntryWithProduct } from "./types"
 import type { ProductCategory } from "@/lib/types/app"
 
@@ -46,21 +46,41 @@ export function PanView({ year, month, entries, error }: PanViewProps) {
     else router.push(`/pan/${year}/${month + 1}`)
   }
 
-  // Split entries by status
-  const activeEntries = entries.filter(
-    (e) => e.status === "active" || e.status === "paused"
-  )
-  const emptyEntries = entries.filter((e) => e.status === "empty")
+  const { activeEntries, emptyEntries, grouped } = useMemo(() => {
+    const nextActive: PanEntryWithProduct[] = []
+    const nextEmpty: PanEntryWithProduct[] = []
+    const nextGrouped = {} as Record<ProductCategory, PanEntryWithProduct[]>
 
-  // Group active entries by category (only non-empty categories)
-  const grouped = ALL_CATEGORIES.reduce<Record<ProductCategory, PanEntryWithProduct[]>>(
-    (acc, cat) => {
-      const items = activeEntries.filter((e) => e.products?.category === cat)
-      if (items.length > 0) acc[cat] = items
-      return acc
-    },
-    {} as Record<ProductCategory, PanEntryWithProduct[]>
-  )
+    for (const entry of entries) {
+      if (entry.status === "empty") {
+        nextEmpty.push(entry)
+        continue
+      }
+
+      if (entry.status !== "active" && entry.status !== "paused") {
+        continue
+      }
+
+      nextActive.push(entry)
+
+      const category = entry.products?.category as ProductCategory | undefined
+      if (!category) {
+        continue
+      }
+
+      if (!nextGrouped[category]) {
+        nextGrouped[category] = []
+      }
+
+      nextGrouped[category].push(entry)
+    }
+
+    return {
+      activeEntries: nextActive,
+      emptyEntries: nextEmpty,
+      grouped: nextGrouped,
+    }
+  }, [entries])
 
   function handleCardTap(entry: PanEntryWithProduct) {
     setSelectedEntry(entry)

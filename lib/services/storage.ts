@@ -22,12 +22,11 @@ export async function uploadProductPhoto(
   const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg"
   const filename = `${userId}/${Date.now()}.${ext}`
 
-  const arrayBuffer = await file.arrayBuffer()
-  const buffer = Buffer.from(arrayBuffer)
+  const fileData = await file.arrayBuffer()
 
   const { error: uploadError } = await admin.storage
     .from("product-photos")
-    .upload(filename, buffer, {
+    .upload(filename, fileData, {
       contentType: file.type,
       upsert: false,
     })

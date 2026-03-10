@@ -21,6 +21,25 @@ async function userOwnsProduct(
   return !error && !!data
 }
 
+async function getOwnedPanEntryProductId(
+  userId: string,
+  panEntryId: string
+): Promise<string | null> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from("pan_entries")
+    .select("product_id")
+    .eq("id", panEntryId)
+    .eq("user_id", userId)
+    .single()
+
+  if (error || !data) {
+    return null
+  }
+
+  return data.product_id
+}
+
 export async function listEmpties(
   userId: string,
   filters: { year?: number; month?: number; category?: string }
@@ -51,7 +70,6 @@ export async function createEmpty(
   userId: string,
   input: {
     pan_entry_id: string
-    product_id: string
     finished_month: number
     finished_year: number
     rating?: number
@@ -61,16 +79,14 @@ export async function createEmpty(
     replacement_free_text?: string
   }
 ) {
-  const supabase = await createClient()
-  const { data: panEntry, error: panEntryError } = await supabase
-    .from("pan_entries")
-    .select("id, product_id")
-    .eq("id", input.pan_entry_id)
-    .eq("user_id", userId)
-    .eq("product_id", input.product_id)
-    .single()
+  const [productId, replacementOwned] = await Promise.all([
+    getOwnedPanEntryProductId(userId, input.pan_entry_id),
+    input.replacement_product_id
+      ? userOwnsProduct(userId, input.replacement_product_id)
+      : Promise.resolve(true),
+  ])
 
-  if (panEntryError || !panEntry) {
+  if (!productId) {
     return {
       data: null,
       error: {
@@ -80,10 +96,7 @@ export async function createEmpty(
     }
   }
 
-  if (
-    input.replacement_product_id &&
-    !(await userOwnsProduct(userId, input.replacement_product_id))
-  ) {
+  if (input.replacement_product_id && !replacementOwned) {
     return {
       data: null,
       error: {
@@ -93,12 +106,14 @@ export async function createEmpty(
     }
   }
 
+  const supabase = await createClient()
+
   const { data: empty, error: emptyError } = await supabase
     .from("empties")
     .insert({
       user_id: userId,
       pan_entry_id: input.pan_entry_id,
-      product_id: input.product_id,
+      product_id: productId,
       finished_month: input.finished_month,
       finished_year: input.finished_year,
       rating: input.rating ?? null,

@@ -47,7 +47,9 @@ export async function getPanEntries(userId: string, year: number, month: number)
   const [entriesResult, picksResult] = await Promise.all([
     supabase
       .from("pan_entries")
-      .select("*, products(*)")
+      .select(
+        "id,user_id,product_id,status,usage_level,started_month,started_year,notes,created_at,updated_at,products(id,name,brand,category,photo_url)"
+      )
       .eq("user_id", userId)
       .in("status", ["active", "paused"] as PanEntryStatus[])
       .order("created_at", { ascending: false }),
@@ -67,7 +69,9 @@ export async function getPanEntry(userId: string, id: string) {
 
   return supabase
     .from("pan_entries")
-    .select("*, products(*)")
+    .select(
+      "id,user_id,product_id,status,usage_level,started_month,started_year,notes,created_at,updated_at,products(id,name,brand,category,photo_url)"
+    )
     .eq("id", id)
     .eq("user_id", userId)
     .single()
@@ -101,7 +105,9 @@ export async function addToPan(
       status: "active",
       usage_level: "just_started",
     })
-    .select("*, products(*)")
+    .select(
+      "id,user_id,product_id,status,usage_level,started_month,started_year,notes,created_at,updated_at,products(id,name,brand,category,photo_url)"
+    )
     .single()
 }
 
@@ -117,7 +123,9 @@ export async function updatePanEntry(
     .update({ ...input, updated_at: new Date().toISOString() })
     .eq("id", id)
     .eq("user_id", userId)
-    .select("*, products(*)")
+    .select(
+      "id,user_id,product_id,status,usage_level,started_month,started_year,notes,created_at,updated_at,products(id,name,brand,category,photo_url)"
+    )
     .single()
 }
 
@@ -138,28 +146,19 @@ export async function carryOverEntries(
   }
 
   const supabase = await createClient()
-  const created: unknown[] = []
+  const uniqueIds = Array.from(new Set(productIds))
 
-  for (const productId of Array.from(new Set(productIds))) {
-    const { data, error } = await supabase
-      .from("pan_entries")
-      .insert({
+  return supabase
+    .from("pan_entries")
+    .insert(
+      uniqueIds.map((productId) => ({
         user_id: userId,
         product_id: productId,
         started_month: targetMonth,
         started_year: targetYear,
         status: "active" as const,
         usage_level: "just_started" as const,
-      })
-      .select()
-      .single()
-
-    if (error) {
-      return { data: null, error }
-    }
-
-    created.push(data)
-  }
-
-  return { data: created, error: null }
+      }))
+    )
+    .select("id,user_id,product_id,status,usage_level,started_month,started_year,notes,created_at,updated_at")
 }

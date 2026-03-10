@@ -1,7 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 import { listEmpties, createEmpty } from "@/lib/services/empties"
-import { getPanEntry } from "@/lib/services/pan"
 import { CreateEmptySchema } from "@/lib/validations/empties"
 
 export async function GET(req: NextRequest) {
@@ -56,18 +55,10 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  // Look up the pan_entry to get product_id and verify ownership
-  const { data: entry, error: entryError } = await getPanEntry(user.id, result.data.pan_entry_id)
-
-  if (entryError || !entry) {
-    return NextResponse.json({ data: null, error: "Pan entry not found" }, { status: 404 })
-  }
-
   const now = new Date()
 
   const { data, error } = await createEmpty(user.id, {
     pan_entry_id: result.data.pan_entry_id,
-    product_id: entry.product_id,
     finished_month: now.getMonth() + 1,
     finished_year: now.getFullYear(),
     rating: result.data.rating,

@@ -95,7 +95,6 @@ describe("createEmpty", () => {
 
     const { data, error } = await createEmpty(USER_ID, {
       pan_entry_id: ENTRY_ID,
-      product_id: PRODUCT_ID,
       finished_month: 3,
       finished_year: 2026,
       rating: 4,
@@ -139,7 +138,6 @@ describe("createEmpty", () => {
 
     const { data, error } = await createEmpty(USER_ID, {
       pan_entry_id: ENTRY_ID,
-      product_id: PRODUCT_ID,
       finished_month: 3,
       finished_year: 2026,
     })
@@ -158,7 +156,6 @@ describe("createEmpty", () => {
 
     const { data, error } = await createEmpty(USER_ID, {
       pan_entry_id: ENTRY_ID,
-      product_id: PRODUCT_ID,
       finished_month: 3,
       finished_year: 2026,
     })
@@ -177,7 +174,6 @@ describe("createEmpty", () => {
 
     const { data, error } = await createEmpty(USER_ID, {
       pan_entry_id: ENTRY_ID,
-      product_id: PRODUCT_ID,
       finished_month: 3,
       finished_year: 2026,
       replacement_product_id: "prod-999",

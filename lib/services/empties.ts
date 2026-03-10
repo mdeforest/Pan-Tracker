@@ -12,7 +12,7 @@ export async function listEmpties(
 
   let query = supabase
     .from("empties")
-    .select("*, products(*), pan_entries(*)")
+    .select("*, products!empties_product_id_fkey(*), pan_entries(*)")
     .eq("user_id", userId)
     .order("finished_year", { ascending: false })
     .order("finished_month", { ascending: false })
@@ -24,7 +24,7 @@ export async function listEmpties(
     query = query.eq("finished_month", filters.month)
   }
   if (filters.category) {
-    query = query.eq("products.category", filters.category as ProductCategory)
+    query = query.eq("products!empties_product_id_fkey.category", filters.category as ProductCategory)
   }
 
   return query
@@ -60,7 +60,7 @@ export async function createEmpty(
       replacement_product_id: input.replacement_product_id ?? null,
       replacement_free_text: input.replacement_free_text ?? null,
     })
-    .select("*, products(*), pan_entries(*)")
+    .select("*, products!empties_product_id_fkey(*), pan_entries(*)")
     .single()
 
   if (emptyError) {

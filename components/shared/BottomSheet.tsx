@@ -51,12 +51,13 @@ export function BottomSheet({ open, onClose, title, children, footer, className 
     vv.addEventListener("scroll", update)
     update()
 
+    const sheet = sheetRef.current
     return () => {
       vv.removeEventListener("resize", update)
       vv.removeEventListener("scroll", update)
-      if (sheetRef.current) {
-        sheetRef.current.style.bottom = ""
-        sheetRef.current.style.maxHeight = ""
+      if (sheet) {
+        sheet.style.bottom = ""
+        sheet.style.maxHeight = ""
       }
     }
   }, [open])

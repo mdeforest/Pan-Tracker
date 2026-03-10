@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useMemo } from "react"
 import { Plus, Search } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
@@ -23,7 +23,7 @@ interface ProductsClientProps {
 }
 
 export function ProductsClient({ activeProductIds }: ProductsClientProps) {
-  const activeSet = new Set(activeProductIds)
+  const activeSet = useMemo(() => new Set(activeProductIds), [activeProductIds])
   const [query, setQuery] = useState("")
   const [category, setCategory] = useState<string>("all")
   const [products, setProducts] = useState<ProductCardData[]>([])
@@ -67,7 +67,7 @@ export function ProductsClient({ activeProductIds }: ProductsClientProps) {
       }
     }, 300)
     return () => clearTimeout(timer)
-  }, [query, category, activeProductIds])
+  }, [query, category, activeProductIds, activeSet])
 
   function handleCreated(productId: string) {
     setSheetOpen(false)

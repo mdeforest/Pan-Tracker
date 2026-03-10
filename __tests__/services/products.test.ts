@@ -5,7 +5,14 @@ import { createMockSupabase } from "../helpers/supabase-mock"
 vi.mock("@/lib/supabase/server", () => ({ createClient: vi.fn() }))
 
 import { createClient } from "@/lib/supabase/server"
-import { listProducts, createProduct, updateProduct, archiveProduct } from "@/lib/services/products"
+import {
+  listProducts,
+  createProduct,
+  updateProduct,
+  archiveProduct,
+  restoreProduct,
+  getProduct,
+} from "@/lib/services/products"
 
 const USER_ID = "user-111"
 const PRODUCT_ID = "prod-222"
@@ -40,10 +47,18 @@ describe("listProducts", () => {
 
     expect(mock.from).toHaveBeenCalledWith("products")
     const b = mock._builders.products
-    expect(b.select).toHaveBeenCalledWith("id,name,brand,category,photo_url")
+    expect(b.select).toHaveBeenCalledWith("id,name,brand,category,photo_url,archived_at")
     expect(b.eq).toHaveBeenCalledWith("user_id", USER_ID)
     expect(b.is).toHaveBeenCalledWith("archived_at", null)
     expect(b.order).toHaveBeenCalledWith("created_at", { ascending: false })
+  })
+
+  it("omits the archived filter when includeArchived is true", async () => {
+    const mock = setup({ products: { data: [mockProduct], error: null } })
+    await listProducts(USER_ID, undefined, undefined, true)
+
+    const b = mock._builders.products
+    expect(b.is).not.toHaveBeenCalledWith("archived_at", null)
   })
 
   it("applies the q filter via .or() when provided", async () => {
@@ -131,12 +146,34 @@ describe("updateProduct", () => {
   })
 })
 
+describe("getProduct", () => {
+  beforeEach(() => vi.clearAllMocks())
+
+  it("fetches archived products for the owner", async () => {
+    const mock = setup()
+    await getProduct(USER_ID, PRODUCT_ID)
+
+    const b = mock._builders.products
+    expect(b.select).toHaveBeenCalledWith("id,name,brand,category,photo_url,notes,archived_at")
+    expect(b.eq).toHaveBeenCalledWith("id", PRODUCT_ID)
+    expect(b.eq).toHaveBeenCalledWith("user_id", USER_ID)
+    expect(b.is).not.toHaveBeenCalledWith("archived_at", null)
+  })
+})
+
 describe("archiveProduct", () => {
   beforeEach(() => vi.clearAllMocks())
 
   it("sets archived_at and verifies ownership", async () => {
-    const mock = setup()
+    const mock = setup({
+      pan_entries: { data: null, error: null },
+    })
     await archiveProduct(USER_ID, PRODUCT_ID)
+
+    expect(mock.from).toHaveBeenCalledWith("pan_entries")
+    const panBuilder = mock._builders.pan_entries
+    expect(panBuilder.eq).toHaveBeenCalledWith("status", "active")
+    expect(panBuilder.maybeSingle).toHaveBeenCalled()
 
     const b = mock._builders.products
     expect(b.update).toHaveBeenCalledWith(
@@ -144,12 +181,46 @@ describe("archiveProduct", () => {
     )
     expect(b.eq).toHaveBeenCalledWith("id", PRODUCT_ID)
     expect(b.eq).toHaveBeenCalledWith("user_id", USER_ID)
+    expect(b.is).toHaveBeenCalledWith("archived_at", null)
     expect(b.single).toHaveBeenCalled()
   })
 
   it("returns error when Supabase reports an error", async () => {
-    setup({ products: { data: null, error: { message: "not found" } } })
+    setup({
+      pan_entries: { data: null, error: null },
+      products: { data: null, error: { message: "not found" } },
+    })
     const { error } = await archiveProduct(USER_ID, PRODUCT_ID)
     expect(error).toEqual({ message: "not found" })
+  })
+
+  it("rejects archive when the product is currently in an active pan", async () => {
+    const mock = setup({
+      pan_entries: { data: { id: "entry-1" }, error: null },
+    })
+    const { data, error } = await archiveProduct(USER_ID, PRODUCT_ID)
+
+    expect(data).toBeNull()
+    expect(error).toEqual({
+      message: "Cannot archive a product that is currently in your pan",
+      code: "PRODUCT_IN_ACTIVE_PAN",
+    })
+    expect(mock.from).not.toHaveBeenCalledWith("products")
+  })
+})
+
+describe("restoreProduct", () => {
+  beforeEach(() => vi.clearAllMocks())
+
+  it("clears archived_at for the owned product", async () => {
+    const mock = setup()
+    await restoreProduct(USER_ID, PRODUCT_ID)
+
+    const b = mock._builders.products
+    expect(b.update).toHaveBeenCalledWith({ archived_at: null })
+    expect(b.eq).toHaveBeenCalledWith("id", PRODUCT_ID)
+    expect(b.eq).toHaveBeenCalledWith("user_id", USER_ID)
+    expect(b.not).toHaveBeenCalledWith("archived_at", "is", null)
+    expect(b.single).toHaveBeenCalled()
   })
 })

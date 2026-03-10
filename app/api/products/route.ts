@@ -16,8 +16,9 @@ export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl
   const q = searchParams.get("q") ?? undefined
   const category = searchParams.get("category") ?? undefined
+  const includeArchived = searchParams.get("include_archived") === "true"
 
-  const { data, error } = await listProducts(user.id, q, category)
+  const { data, error } = await listProducts(user.id, q, category, includeArchived)
 
   if (error) {
     console.error("GET /api/products error", { userId: user.id, error: error.message })

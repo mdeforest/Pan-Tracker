@@ -23,5 +23,10 @@ export const UpdateProductSchema = CreateProductSchema.partial().refine(
   { message: "At least one field must be provided" }
 )
 
+export const RestoreProductSchema = z.object({
+  restore: z.literal(true),
+})
+
 export type CreateProductInput = z.infer<typeof CreateProductSchema>
 export type UpdateProductInput = z.infer<typeof UpdateProductSchema>
+export type RestoreProductInput = z.infer<typeof RestoreProductSchema>

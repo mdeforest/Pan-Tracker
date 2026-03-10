@@ -9,19 +9,27 @@ export const USAGE_LEVELS: UsageLevel[] = [
 ]
 
 export const USAGE_PERCENT: Record<UsageLevel, number> = {
-  just_started: 5,
-  quarter: 25,
+  just_started: 95,
+  quarter: 75,
   half: 50,
-  three_quarters: 75,
-  almost_done: 95,
+  three_quarters: 25,
+  almost_done: 5,
 }
 
 export const USAGE_LABELS: Record<UsageLevel, string> = {
-  just_started: "Just Started",
-  quarter: "Quarter",
+  just_started: "Full",
+  quarter: "Three Quarters Left",
+  half: "Half Full",
+  three_quarters: "Low",
+  almost_done: "Almost Empty",
+}
+
+export const USAGE_SHORT_LABELS: Record<UsageLevel, string> = {
+  just_started: "Full",
+  quarter: "3/4 Left",
   half: "Half",
-  three_quarters: "¾ Done",
-  almost_done: "Almost Done",
+  three_quarters: "Low",
+  almost_done: "Almost Empty",
 }
 
 export function progressColor(pct: number): string {

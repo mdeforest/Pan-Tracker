@@ -80,6 +80,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
         category: product.category as ProductCategory,
         photo_url: product.photo_url ?? null,
         notes: product.notes ?? null,
+        archived_at: product.archived_at ?? null,
       }}
       panHistory={panHistory}
       isInPan={!!activeResult.data}

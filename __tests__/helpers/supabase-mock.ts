@@ -11,6 +11,7 @@ export function createQueryBuilder<T>(result: MockResult<T>) {
     select: vi.fn().mockReturnThis(),
     eq: vi.fn().mockReturnThis(),
     neq: vi.fn().mockReturnThis(),
+    not: vi.fn().mockReturnThis(),
     is: vi.fn().mockReturnThis(),
     or: vi.fn().mockReturnThis(),
     ilike: vi.fn().mockReturnThis(),
@@ -24,6 +25,7 @@ export function createQueryBuilder<T>(result: MockResult<T>) {
     upsert: vi.fn().mockReturnThis(),
     // terminal: single-row queries
     single: vi.fn().mockResolvedValue(result),
+    maybeSingle: vi.fn().mockResolvedValue(result),
     // make the builder itself awaitable (for list queries)
     then: (
       resolve: (v: MockResult<T>) => unknown,

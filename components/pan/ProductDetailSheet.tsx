@@ -7,7 +7,7 @@ import { BottomSheet } from "@/components/shared/BottomSheet"
 import {
   USAGE_LEVELS,
   USAGE_PERCENT,
-  USAGE_LABELS,
+  USAGE_SHORT_LABELS,
   CATEGORY_BG,
   CATEGORY_TEXT,
   CATEGORY_EMOJI,
@@ -141,7 +141,7 @@ export function ProductDetailSheet({
         {/* Progress display */}
         <div>
           <div className="mb-1 flex items-center justify-between">
-            <span className="text-sm font-medium">Progress</span>
+            <span className="text-sm font-medium">Remaining</span>
             <span className="text-base font-bold">{pct}%</span>
           </div>
           <div className="relative h-2.5 overflow-hidden rounded-full bg-muted">
@@ -176,7 +176,7 @@ export function ProductDetailSheet({
                   i === usageLevelIdx ? "font-semibold text-foreground" : "text-muted-foreground"
                 )}
               >
-                {USAGE_LABELS[level].split(" ")[0]}
+                {USAGE_SHORT_LABELS[level]}
               </span>
             ))}
           </div>

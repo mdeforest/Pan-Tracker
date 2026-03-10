@@ -51,6 +51,8 @@ export async function getPanEntries(userId: string, year: number, month: number)
         "id,user_id,product_id,status,usage_level,started_month,started_year,notes,created_at,updated_at,products(id,name,brand,category,photo_url)"
       )
       .eq("user_id", userId)
+      .eq("started_year", year)
+      .eq("started_month", month)
       .in("status", ["active", "paused"] as PanEntryStatus[])
       .order("created_at", { ascending: false }),
     supabase

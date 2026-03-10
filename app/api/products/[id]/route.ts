@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
-import { updateProduct, archiveProduct } from "@/lib/services/products"
-import { UpdateProductSchema } from "@/lib/validations/products"
+import { updateProduct, archiveProduct, restoreProduct } from "@/lib/services/products"
+import { RestoreProductSchema, UpdateProductSchema } from "@/lib/validations/products"
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   const supabase = await createClient()
@@ -20,15 +20,35 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     return NextResponse.json({ data: null, error: "Invalid JSON" }, { status: 400 })
   }
 
-  const result = UpdateProductSchema.safeParse(body)
-  if (!result.success) {
+  const restoreResult = RestoreProductSchema.safeParse(body)
+  if (restoreResult.success) {
+    const { data, error } = await restoreProduct(user.id, params.id)
+
+    if (error) {
+      console.error("PATCH /api/products/[id] restore error", {
+        userId: user.id,
+        id: params.id,
+        error: error.message,
+      })
+      return NextResponse.json({ data: null, error: error.message }, { status: 500 })
+    }
+
+    if (!data) {
+      return NextResponse.json({ data: null, error: "Product not found" }, { status: 404 })
+    }
+
+    return NextResponse.json({ data, error: null })
+  }
+
+  const updateResult = UpdateProductSchema.safeParse(body)
+  if (!updateResult.success) {
     return NextResponse.json(
-      { data: null, error: result.error.flatten().fieldErrors },
+      { data: null, error: updateResult.error.flatten().fieldErrors },
       { status: 400 }
     )
   }
 
-  const { data, error } = await updateProduct(user.id, params.id, result.data)
+  const { data, error } = await updateProduct(user.id, params.id, updateResult.data)
 
   if (error) {
     console.error("PATCH /api/products/[id] error", {
@@ -64,6 +84,9 @@ export async function DELETE(_req: NextRequest, { params }: { params: { id: stri
       id: params.id,
       error: error.message,
     })
+    if (error.code === "PRODUCT_IN_ACTIVE_PAN") {
+      return NextResponse.json({ data: null, error: error.message }, { status: 409 })
+    }
     return NextResponse.json({ data: null, error: error.message }, { status: 500 })
   }
 

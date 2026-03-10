@@ -57,7 +57,7 @@ export function PanView({ year, month, entries, error }: PanViewProps) {
         continue
       }
 
-      if (entry.status !== "active" && entry.status !== "paused") {
+      if (entry.status !== "active") {
         continue
       }
 

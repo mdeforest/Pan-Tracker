@@ -3,9 +3,10 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
-import { Star } from "lucide-react"
+import { AlertTriangle, Star } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ProductEditSheet } from "./ProductEditSheet"
+import { BottomSheet } from "@/components/shared/BottomSheet"
 import {
   CATEGORY_EMOJI,
   CATEGORY_BG,
@@ -43,11 +44,34 @@ interface ProductDetailClientProps {
     category: ProductCategory
     photo_url: string | null
     notes: string | null
+    archived_at: string | null
   }
   panHistory: PanHistoryEntry[]
   isInPan: boolean
   currentYear: number
   currentMonth: number
+}
+
+function getErrorMessage(error: unknown, fallback: string) {
+  if (typeof error === "string" && error.trim()) {
+    return error
+  }
+
+  if (error && typeof error === "object") {
+    for (const value of Object.values(error as Record<string, unknown>)) {
+      if (typeof value === "string" && value.trim()) {
+        return value
+      }
+      if (Array.isArray(value)) {
+        const firstString = value.find((item) => typeof item === "string" && item.trim())
+        if (typeof firstString === "string") {
+          return firstString
+        }
+      }
+    }
+  }
+
+  return fallback
 }
 
 function RepurchaseBadge({ value }: { value: WouldRepurchase | null }) {
@@ -90,10 +114,15 @@ export function ProductDetailClient({
   currentMonth,
 }: ProductDetailClientProps) {
   const [editOpen, setEditOpen] = useState(false)
+  const [archiveConfirmOpen, setArchiveConfirmOpen] = useState(false)
   const [addingToPan, setAddingToPan] = useState(false)
+  const [archiving, setArchiving] = useState(false)
+  const [restoring, setRestoring] = useState(false)
+  const [archiveError, setArchiveError] = useState<string | null>(null)
   const [toast, setToast] = useState<string | null>(null)
   const router = useRouter()
   const cat = product.category
+  const isArchived = !!product.archived_at
 
   function showToast(msg: string) {
     setToast(msg)
@@ -110,7 +139,7 @@ export function ProductDetailClient({
       })
       const json = (await res.json()) as { error?: unknown }
       if (!res.ok || json.error) {
-        showToast(typeof json.error === "string" ? json.error : "Failed to add to pan")
+        showToast(getErrorMessage(json.error, "Failed to add to pan"))
         return
       }
       showToast("Added to current pan!")
@@ -119,6 +148,48 @@ export function ProductDetailClient({
       showToast("Network error. Please try again.")
     } finally {
       setAddingToPan(false)
+    }
+  }
+
+  async function handleArchive() {
+    setArchiving(true)
+    setArchiveError(null)
+    try {
+      const res = await fetch(`/api/products/${product.id}`, { method: "DELETE" })
+      const json = (await res.json()) as { error?: unknown }
+      if (!res.ok || json.error) {
+        setArchiveError(getErrorMessage(json.error, "Failed to archive product"))
+        return
+      }
+      setArchiveConfirmOpen(false)
+      showToast("Product archived")
+      router.refresh()
+    } catch {
+      showToast("Network error. Please try again.")
+    } finally {
+      setArchiving(false)
+    }
+  }
+
+  async function handleRestore() {
+    setRestoring(true)
+    try {
+      const res = await fetch(`/api/products/${product.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ restore: true }),
+      })
+      const json = (await res.json()) as { error?: unknown }
+      if (!res.ok || json.error) {
+        showToast(getErrorMessage(json.error, "Failed to restore product"))
+        return
+      }
+      showToast("Product restored!")
+      router.refresh()
+    } catch {
+      showToast("Network error. Please try again.")
+    } finally {
+      setRestoring(false)
     }
   }
 
@@ -145,12 +216,14 @@ export function ProductDetailClient({
             {/* Gradient overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
             {/* Edit button */}
-            <button
-              onClick={() => setEditOpen(true)}
-              className="absolute top-4 right-4 flex h-11 min-w-[44px] items-center justify-center rounded-xl bg-black/40 px-3 text-sm font-medium text-white backdrop-blur-sm active:opacity-80"
-            >
-              Edit
-            </button>
+            {!isArchived && (
+              <button
+                onClick={() => setEditOpen(true)}
+                className="absolute top-4 right-4 flex h-11 min-w-[44px] items-center justify-center rounded-xl bg-black/40 px-3 text-sm font-medium text-white backdrop-blur-sm active:opacity-80"
+              >
+                Edit
+              </button>
+            )}
             {/* Name + brand over photo */}
             <div className="absolute bottom-4 left-4 right-4">
               <p className="text-xl font-bold text-white leading-tight">{product.name}</p>
@@ -165,12 +238,14 @@ export function ProductDetailClient({
               <span className="text-7xl">{CATEGORY_EMOJI[cat]}</span>
             </div>
             {/* Edit button */}
-            <button
-              onClick={() => setEditOpen(true)}
-              className="absolute top-4 right-4 flex h-11 min-w-[44px] items-center justify-center rounded-xl bg-black/10 px-3 text-sm font-medium text-foreground active:opacity-80"
-            >
-              Edit
-            </button>
+            {!isArchived && (
+              <button
+                onClick={() => setEditOpen(true)}
+                className="absolute top-4 right-4 flex h-11 min-w-[44px] items-center justify-center rounded-xl bg-black/10 px-3 text-sm font-medium text-foreground active:opacity-80"
+              >
+                Edit
+              </button>
+            )}
           </>
         )}
       </div>
@@ -185,20 +260,57 @@ export function ProductDetailClient({
 
       {/* Category chip */}
       <div className="px-4 pt-3">
-        <span className="rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
-          {CATEGORY_LABELS[cat]}
-        </span>
+        <div className="flex flex-wrap gap-2">
+          <span className="rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
+            {CATEGORY_LABELS[cat]}
+          </span>
+          {isArchived && (
+            <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-900">
+              Archived
+            </span>
+          )}
+        </div>
       </div>
 
-      {/* Add to Pan button */}
-      {!isInPan && (
+      {/* Primary actions */}
+      {isArchived ? (
         <div className="px-4 pt-4">
           <button
-            onClick={handleAddToPan}
-            disabled={addingToPan}
-            className="flex h-12 w-full items-center justify-center rounded-xl bg-foreground text-base font-semibold text-background disabled:opacity-50 active:opacity-80"
+            onClick={handleRestore}
+            disabled={restoring}
+            className="flex h-12 w-full items-center justify-center rounded-xl bg-amber-500 text-base font-semibold text-amber-950 disabled:opacity-50 active:opacity-80"
           >
-            {addingToPan ? "Adding…" : "Add to Current Pan"}
+            {restoring ? "Restoring…" : "Restore Product"}
+          </button>
+          <p className="pt-2 text-sm text-muted-foreground">
+            Restore this product to add it back to your active library.
+          </p>
+        </div>
+      ) : (
+        <div className="px-4 pt-4">
+          {!isInPan && (
+            <button
+              onClick={handleAddToPan}
+              disabled={addingToPan}
+              className="flex h-12 w-full items-center justify-center rounded-xl bg-foreground text-base font-semibold text-background disabled:opacity-50 active:opacity-80"
+            >
+              {addingToPan ? "Adding…" : "Add to Current Pan"}
+            </button>
+          )}
+          <button
+            onClick={() => {
+              setArchiveError(null)
+              setArchiveConfirmOpen(true)
+            }}
+            disabled={archiving}
+            className={cn(
+              "mt-3 flex h-11 w-full items-center justify-center rounded-xl border text-sm font-semibold disabled:opacity-50 active:opacity-80",
+              isInPan
+                ? "border-red-200 bg-red-50 text-red-700"
+                : "border-border bg-white text-foreground"
+            )}
+          >
+            {archiving ? "Archiving…" : "Archive Product"}
           </button>
         </div>
       )}
@@ -253,7 +365,7 @@ export function ProductDetailClient({
                         </span>
                       </div>
 
-                      {/* Progress bar */}
+                      {/* Remaining amount bar */}
                       <div className="mb-1">
                         <div className="flex items-center justify-between mb-1">
                           <span className="text-xs text-muted-foreground">
@@ -308,16 +420,71 @@ export function ProductDetailClient({
       )}
 
       {/* Edit sheet */}
-      <ProductEditSheet
-        open={editOpen}
-        productId={product.id}
-        initialName={product.name}
-        initialBrand={product.brand}
-        initialCategory={product.category}
-        onClose={() => setEditOpen(false)}
-        onSaved={handleEditSaved}
-        onError={showToast}
-      />
+      {!isArchived && (
+        <ProductEditSheet
+          open={editOpen}
+          productId={product.id}
+          initialName={product.name}
+          initialBrand={product.brand}
+          initialCategory={product.category}
+          onClose={() => setEditOpen(false)}
+          onSaved={handleEditSaved}
+          onError={showToast}
+        />
+      )}
+
+      <BottomSheet
+        open={archiveConfirmOpen}
+        onClose={() => {
+          if (!archiving) setArchiveConfirmOpen(false)
+        }}
+        title="Archive Product"
+        footer={
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={() => setArchiveConfirmOpen(false)}
+              disabled={archiving}
+              className="flex h-12 flex-1 items-center justify-center rounded-xl border border-border bg-white text-sm font-semibold text-foreground disabled:opacity-50 active:opacity-80"
+            >
+              Keep Product
+            </button>
+            <button
+              type="button"
+              onClick={handleArchive}
+              disabled={archiving}
+              className="flex h-12 flex-1 items-center justify-center rounded-xl bg-red-500 text-sm font-semibold text-white disabled:opacity-50 active:opacity-80"
+            >
+              {archiving ? "Archiving…" : "Archive"}
+            </button>
+          </div>
+        }
+      >
+        <div className="px-4 pb-2">
+          <div className="rounded-2xl bg-red-50 p-4">
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 rounded-2xl bg-red-100 p-2 text-red-600">
+                <AlertTriangle className="h-5 w-5" />
+              </div>
+              <div className="space-y-2">
+                <p className="text-sm font-semibold text-foreground">
+                  Remove this product from your active library view
+                </p>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  Archived products are hidden by default, but all pan history and empties stay
+                  intact. You can restore <span className="font-medium text-foreground">{product.name}</span> later
+                  from the Products screen.
+                </p>
+              </div>
+            </div>
+          </div>
+          {archiveError && (
+            <p className="mt-3 rounded-xl bg-destructive/10 px-4 py-3 text-sm text-destructive">
+              {archiveError}
+            </p>
+          )}
+        </div>
+      </BottomSheet>
     </div>
   )
 }

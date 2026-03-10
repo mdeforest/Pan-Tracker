@@ -1,4 +1,4 @@
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import localFont from "next/font/local"
 import "./globals.css"
 import { ToastProvider } from "@/components/shared/ToastProvider"
@@ -17,7 +17,6 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   title: "PanTracker",
   description: "Track your beauty project pan — finish products before buying new ones.",
-  themeColor: "#1a1a1a",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
@@ -26,6 +25,10 @@ export const metadata: Metadata = {
   icons: {
     apple: "/icons/icon-192.svg",
   },
+}
+
+export const viewport: Viewport = {
+  themeColor: "#1a1a1a",
 }
 
 export default function RootLayout({

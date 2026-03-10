@@ -4,6 +4,10 @@ export function panTabTag(userId: string) {
   return `tab:pan:${userId}`
 }
 
+export function statsTabTag(userId: string) {
+  return `tab:stats:${userId}`
+}
+
 export function panMonthTabTag(userId: string, year: number, month: number) {
   return `tab:pan:${userId}:${year}:${month}`
 }
@@ -33,6 +37,7 @@ export function revalidateForEmptiesMutation(
   params?: { year?: number; month?: number }
 ) {
   revalidateTag(emptiesTabTag(userId))
+  revalidateTag(statsTabTag(userId))
   revalidateForPanMutation(userId, params)
 }
 
@@ -40,4 +45,5 @@ export function revalidateForProductMutation(userId: string) {
   revalidateTag(productsTabTag(userId))
   revalidateTag(panTabTag(userId))
   revalidateTag(emptiesTabTag(userId))
+  revalidateTag(statsTabTag(userId))
 }

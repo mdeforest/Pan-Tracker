@@ -1,9 +1,10 @@
 import { unstable_cache } from "next/cache"
 import type { EmptyCardData } from "@/components/empties/EmptyCard"
 import type { PanEntryWithProduct } from "@/components/pan/types"
-import { emptiesTabTag, panMonthTabTag, panTabTag, productsTabTag } from "@/lib/cache/tab-cache"
+import { emptiesTabTag, panMonthTabTag, panTabTag, productsTabTag, statsTabTag } from "@/lib/cache/tab-cache"
 import { createAdminClient } from "@/lib/supabase/server-admin"
 import type { ProductCategory, WouldRepurchase } from "@/lib/types/app"
+import { getStatsData, type StatsData } from "@/lib/services/stats"
 
 const TAB_REVALIDATE_SECONDS = 30
 
@@ -180,6 +181,17 @@ export async function getEmptiesTabData(userId: string): Promise<EmptiesTabData>
     {
       revalidate: TAB_REVALIDATE_SECONDS,
       tags: [emptiesTabTag(userId)],
+    }
+  )()
+}
+
+export async function getStatsTabData(userId: string): Promise<StatsData> {
+  return unstable_cache(
+    () => getStatsData(userId),
+    ["tab-stats-data", userId],
+    {
+      revalidate: TAB_REVALIDATE_SECONDS,
+      tags: [statsTabTag(userId)],
     }
   )()
 }

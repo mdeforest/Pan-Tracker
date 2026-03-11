@@ -4,7 +4,7 @@ import { PanView } from "@/components/pan/PanView"
 import { getPanTabData, getWishlistProductIds } from "@/lib/loaders/tab-data"
 
 interface PanPageProps {
-  params: { year: string; month: string }
+  params: Promise<{ year: string; month: string }>
 }
 
 export default async function PanPage({ params }: PanPageProps) {
@@ -12,8 +12,9 @@ export default async function PanPage({ params }: PanPageProps) {
 
   if (!user) redirect("/login")
 
-  const year = parseInt(params.year, 10)
-  const month = parseInt(params.month, 10)
+  const { year: yearParam, month: monthParam } = await params
+  const year = parseInt(yearParam, 10)
+  const month = parseInt(monthParam, 10)
 
   if (isNaN(year) || isNaN(month) || month < 1 || month > 12) {
     const now = new Date()

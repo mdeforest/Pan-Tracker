@@ -6,7 +6,7 @@ import { UpdatePanEntrySchema } from "@/lib/validations/pan"
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const supabase = await createClient()
   const {
@@ -32,12 +32,13 @@ export async function PATCH(
     )
   }
 
-  const { data, error } = await updatePanEntry(user.id, params.id, result.data)
+  const { id } = await params
+  const { data, error } = await updatePanEntry(user.id, id, result.data)
 
   if (error) {
     console.error("PATCH /api/pan/[id] error", {
       userId: user.id,
-      id: params.id,
+      id,
       error: error.message,
     })
     return NextResponse.json({ data: null, error: error.message }, { status: 500 })

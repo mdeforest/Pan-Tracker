@@ -17,7 +17,7 @@ export async function createClient() {
     )
   }
 
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
 
   return createServerClient<Database>(url, key, {
     cookies: {

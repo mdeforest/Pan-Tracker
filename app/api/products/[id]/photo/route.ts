@@ -6,7 +6,7 @@ import { uploadProductPhoto, validatePhotoFile } from "@/lib/services/storage"
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const supabase = await createClient()
   const {
@@ -42,14 +42,15 @@ export async function POST(
     )
   }
 
-  const { data, error } = await updateProduct(user.id, params.id, {
+  const { id } = await params
+  const { data, error } = await updateProduct(user.id, id, {
     photo_url: uploadResult.data.url,
   })
 
   if (error) {
     console.error("POST /api/products/[id]/photo error", {
       userId: user.id,
-      id: params.id,
+      id,
       error: error.message,
     })
     return NextResponse.json({ data: null, error: error.message }, { status: 500 })

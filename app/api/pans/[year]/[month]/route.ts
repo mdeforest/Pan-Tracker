@@ -4,7 +4,7 @@ import { getPanEntries } from "@/lib/services/pan"
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { year: string; month: string } }
+  { params }: { params: Promise<{ year: string; month: string }> }
 ) {
   const supabase = await createClient()
   const {
@@ -15,8 +15,9 @@ export async function GET(
     return NextResponse.json({ data: null, error: "Unauthorized" }, { status: 401 })
   }
 
-  const year = parseInt(params.year, 10)
-  const month = parseInt(params.month, 10)
+  const { year: yearParam, month: monthParam } = await params
+  const year = parseInt(yearParam, 10)
+  const month = parseInt(monthParam, 10)
 
   if (isNaN(year) || isNaN(month) || month < 1 || month > 12) {
     return NextResponse.json({ data: null, error: "Invalid year or month" }, { status: 400 })

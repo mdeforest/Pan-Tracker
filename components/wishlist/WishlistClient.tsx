@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { Check, Pencil, Plus, RotateCcw, Trash2 } from "lucide-react"
+import { Check, Pencil, Plus, RotateCcw, Search, Trash2, X } from "lucide-react"
 import { BottomSheet } from "@/components/shared/BottomSheet"
 import { useToast } from "@/components/shared/ToastProvider"
 import type { RawWishlistItem, WishlistProductOption } from "@/lib/loaders/tab-data"
@@ -91,6 +91,22 @@ export function WishlistClient({ initialItems, productOptions }: WishlistClientP
   const [saving, setSaving] = useState(false)
   const [busyIds, setBusyIds] = useState<Set<string>>(new Set())
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+  const [productSearch, setProductSearch] = useState("")
+
+  const filteredProductOptions = useMemo(() => {
+    const q = productSearch.trim().toLowerCase()
+    const matches = q
+      ? productOptions.filter(
+          (opt) => opt.brand.toLowerCase().includes(q) || opt.name.toLowerCase().includes(q)
+        )
+      : productOptions
+    return matches.slice(0, 6)
+  }, [productOptions, productSearch])
+
+  const selectedProductOption = useMemo(
+    () => (form.product_id ? productOptions.find((opt) => opt.id === form.product_id) ?? null : null),
+    [form.product_id, productOptions]
+  )
 
   const filteredItems = useMemo(() => {
     return items.filter((item) => {
@@ -126,6 +142,7 @@ export function WishlistClient({ initialItems, productOptions }: WishlistClientP
     setForm(emptyForm())
     setSaving(false)
     setConfirmDeleteId(null)
+    setProductSearch("")
   }
 
   function openCreateSheet() {
@@ -457,23 +474,64 @@ export function WishlistClient({ initialItems, productOptions }: WishlistClientP
       >
         <div className="flex flex-col gap-4 p-4">
           <div>
-            <label htmlFor="wishlist-product" className="mb-1.5 block text-sm font-semibold">
-              Link Existing Product (optional)
-            </label>
-            <select
-              id="wishlist-product"
-              value={form.product_id ?? ""}
-              onChange={(event) => handleProductSelected(event.target.value)}
-              className="h-11 w-full rounded-xl border border-input bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-              style={{ fontSize: "16px" }}
-            >
-              <option value="">No linked product</option>
-              {productOptions.map((option) => (
-                <option key={option.id} value={option.id}>
-                  {option.brand} - {option.name}
-                </option>
-              ))}
-            </select>
+            <p className="mb-1.5 text-sm font-semibold">Link Existing Product (optional)</p>
+            {selectedProductOption ? (
+              <div className="flex items-center gap-3 rounded-xl border border-sky-200 bg-sky-50 px-3 py-2.5">
+                <Check className="h-4 w-4 shrink-0 text-sky-600" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs text-sky-700">{selectedProductOption.brand}</p>
+                  <p className="truncate text-sm font-semibold leading-tight text-sky-900">
+                    {selectedProductOption.name}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setField("product_id", null)
+                    setProductSearch("")
+                  }}
+                  aria-label="Remove linked product"
+                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-sky-700 active:bg-sky-200"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            ) : (
+              <div>
+                <div className="relative">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <input
+                    type="text"
+                    value={productSearch}
+                    onChange={(e) => setProductSearch(e.target.value)}
+                    placeholder="Search your product library…"
+                    className="h-11 w-full rounded-xl border border-input bg-white pl-9 pr-3 placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    style={{ fontSize: "16px" }}
+                  />
+                </div>
+                {filteredProductOptions.length > 0 && (
+                  <div className="mt-1 max-h-44 overflow-y-auto rounded-xl border border-border bg-white shadow-sm">
+                    {filteredProductOptions.map((option) => (
+                      <button
+                        key={option.id}
+                        type="button"
+                        onClick={() => {
+                          handleProductSelected(option.id)
+                          setProductSearch("")
+                        }}
+                        className="flex w-full flex-col items-start px-3 py-2.5 text-left active:bg-muted"
+                      >
+                        <span className="text-xs text-muted-foreground">{option.brand}</span>
+                        <span className="text-sm font-medium leading-tight">{option.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {productSearch.trim() !== "" && filteredProductOptions.length === 0 && (
+                  <p className="mt-2 text-center text-xs text-muted-foreground">No products match &ldquo;{productSearch}&rdquo;</p>
+                )}
+              </div>
+            )}
           </div>
 
           <div>

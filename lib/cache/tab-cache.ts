@@ -1,5 +1,7 @@
 import { revalidateTag } from "next/cache"
 
+const REVALIDATE_PROFILE = "max"
+
 export function panTabTag(userId: string) {
   return `tab:pan:${userId}`
 }
@@ -28,11 +30,11 @@ export function revalidateForPanMutation(
   userId: string,
   params?: { year?: number; month?: number }
 ) {
-  revalidateTag(panTabTag(userId))
-  revalidateTag(productsTabTag(userId))
+  revalidateTag(panTabTag(userId), REVALIDATE_PROFILE)
+  revalidateTag(productsTabTag(userId), REVALIDATE_PROFILE)
 
   if (params?.year !== undefined && params?.month !== undefined) {
-    revalidateTag(panMonthTabTag(userId, params.year, params.month))
+    revalidateTag(panMonthTabTag(userId, params.year, params.month), REVALIDATE_PROFILE)
   }
 }
 
@@ -40,19 +42,19 @@ export function revalidateForEmptiesMutation(
   userId: string,
   params?: { year?: number; month?: number }
 ) {
-  revalidateTag(emptiesTabTag(userId))
-  revalidateTag(statsTabTag(userId))
+  revalidateTag(emptiesTabTag(userId), REVALIDATE_PROFILE)
+  revalidateTag(statsTabTag(userId), REVALIDATE_PROFILE)
   revalidateForPanMutation(userId, params)
 }
 
 export function revalidateForProductMutation(userId: string) {
-  revalidateTag(productsTabTag(userId))
-  revalidateTag(panTabTag(userId))
-  revalidateTag(emptiesTabTag(userId))
-  revalidateTag(statsTabTag(userId))
-  revalidateTag(wishlistTabTag(userId))
+  revalidateTag(productsTabTag(userId), REVALIDATE_PROFILE)
+  revalidateTag(panTabTag(userId), REVALIDATE_PROFILE)
+  revalidateTag(emptiesTabTag(userId), REVALIDATE_PROFILE)
+  revalidateTag(statsTabTag(userId), REVALIDATE_PROFILE)
+  revalidateTag(wishlistTabTag(userId), REVALIDATE_PROFILE)
 }
 
 export function revalidateForWishlistMutation(userId: string) {
-  revalidateTag(wishlistTabTag(userId))
+  revalidateTag(wishlistTabTag(userId), REVALIDATE_PROFILE)
 }

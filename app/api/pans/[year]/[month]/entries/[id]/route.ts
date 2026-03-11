@@ -6,7 +6,7 @@ import { UpdatePanEntrySchema } from "@/lib/validations/pan"
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { year: string; month: string; id: string } }
+  { params }: { params: Promise<{ year: string; month: string; id: string }> }
 ) {
   const supabase = await createClient()
   const {
@@ -32,12 +32,13 @@ export async function PATCH(
     )
   }
 
-  const { data, error } = await updatePanEntry(user.id, params.id, result.data)
+  const { year: yearParam, month: monthParam, id } = await params
+  const { data, error } = await updatePanEntry(user.id, id, result.data)
 
   if (error) {
     console.error("PATCH /api/pans/[year]/[month]/entries/[id] error", {
       userId: user.id,
-      id: params.id,
+      id,
       error: error.message,
     })
     return NextResponse.json({ data: null, error: error.message }, { status: 500 })
@@ -47,8 +48,8 @@ export async function PATCH(
     return NextResponse.json({ data: null, error: "Pan entry not found" }, { status: 404 })
   }
 
-  const year = parseInt(params.year, 10)
-  const month = parseInt(params.month, 10)
+  const year = parseInt(yearParam, 10)
+  const month = parseInt(monthParam, 10)
   if (!isNaN(year) && !isNaN(month)) {
     revalidateForPanMutation(user.id, { year, month })
   } else {

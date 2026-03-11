@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server"
 import { updateProduct, archiveProduct, restoreProduct } from "@/lib/services/products"
 import { RestoreProductSchema, UpdateProductSchema } from "@/lib/validations/products"
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient()
   const {
     data: { user },
@@ -21,14 +21,15 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     return NextResponse.json({ data: null, error: "Invalid JSON" }, { status: 400 })
   }
 
+  const { id } = await params
   const restoreResult = RestoreProductSchema.safeParse(body)
   if (restoreResult.success) {
-    const { data, error } = await restoreProduct(user.id, params.id)
+    const { data, error } = await restoreProduct(user.id, id)
 
     if (error) {
       console.error("PATCH /api/products/[id] restore error", {
         userId: user.id,
-        id: params.id,
+        id,
         error: error.message,
       })
       return NextResponse.json({ data: null, error: error.message }, { status: 500 })
@@ -51,12 +52,12 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     )
   }
 
-  const { data, error } = await updateProduct(user.id, params.id, updateResult.data)
+  const { data, error } = await updateProduct(user.id, id, updateResult.data)
 
   if (error) {
     console.error("PATCH /api/products/[id] error", {
       userId: user.id,
-      id: params.id,
+      id,
       error: error.message,
     })
     return NextResponse.json({ data: null, error: error.message }, { status: 500 })
@@ -71,7 +72,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   return NextResponse.json({ data, error: null })
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient()
   const {
     data: { user },
@@ -81,12 +82,13 @@ export async function DELETE(_req: NextRequest, { params }: { params: { id: stri
     return NextResponse.json({ data: null, error: "Unauthorized" }, { status: 401 })
   }
 
-  const { data, error } = await archiveProduct(user.id, params.id)
+  const { id } = await params
+  const { data, error } = await archiveProduct(user.id, id)
 
   if (error) {
     console.error("DELETE /api/products/[id] error", {
       userId: user.id,
-      id: params.id,
+      id,
       error: error.message,
     })
     if (error.code === "PRODUCT_IN_ACTIVE_PAN") {

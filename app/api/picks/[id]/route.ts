@@ -5,7 +5,7 @@ import { deletePick } from "@/lib/services/picks"
 
 export async function DELETE(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const supabase = await createClient()
   const {
@@ -16,12 +16,13 @@ export async function DELETE(
     return NextResponse.json({ data: null, error: "Unauthorized" }, { status: 401 })
   }
 
-  const { data, error } = await deletePick(user.id, params.id)
+  const { id } = await params
+  const { data, error } = await deletePick(user.id, id)
 
   if (error) {
     console.error("DELETE /api/picks/[id] error", {
       userId: user.id,
-      id: params.id,
+      id,
       error: error.message,
     })
     return NextResponse.json({ data: null, error: error.message }, { status: 500 })

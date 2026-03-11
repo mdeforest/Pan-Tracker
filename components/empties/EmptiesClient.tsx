@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo } from "react"
 import { cn } from "@/lib/utils"
 import { EmptyCard } from "./EmptyCard"
 import { CATEGORY_LABELS, ALL_CATEGORIES, MONTH_NAMES } from "@/components/pan/utils"
@@ -22,7 +22,10 @@ const PAGE_SIZE = 5
 export function EmptiesClient({ empties }: EmptiesClientProps) {
   const [selectedMonth, setSelectedMonth] = useState<string>("all") // "all" or "YYYY-MM"
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
+  const [visibleByFilter, setVisibleByFilter] = useState({
+    key: "all|all",
+    count: PAGE_SIZE,
+  })
 
   // Derive unique months from data, sorted newest first
   const monthOptions = useMemo<MonthYear[]>(() => {
@@ -55,10 +58,8 @@ export function EmptiesClient({ empties }: EmptiesClientProps) {
     })
   }, [empties, selectedMonth, selectedCategory])
 
-  // Reset visible count when filters change
-  useEffect(() => {
-    setVisibleCount(PAGE_SIZE)
-  }, [selectedMonth, selectedCategory])
+  const filterKey = `${selectedMonth}|${selectedCategory}`
+  const visibleCount = visibleByFilter.key === filterKey ? visibleByFilter.count : PAGE_SIZE
 
   const visible = filtered.slice(0, visibleCount)
   const remaining = filtered.length - visibleCount
@@ -133,11 +134,16 @@ export function EmptiesClient({ empties }: EmptiesClientProps) {
           <>
             {visible.map((empty) => <EmptyCard key={empty.id} empty={empty} />)}
             {remaining > 0 && (
-              <button
-                type="button"
-                onClick={() => setVisibleCount((prev) => prev + PAGE_SIZE)}
-                className="mt-2 flex h-11 w-full items-center justify-center rounded-xl border border-border bg-white text-sm font-semibold text-foreground active:opacity-70"
-              >
+                <button
+                  type="button"
+                  onClick={() =>
+                    setVisibleByFilter((prev) => {
+                      const currentCount = prev.key === filterKey ? prev.count : PAGE_SIZE
+                      return { key: filterKey, count: currentCount + PAGE_SIZE }
+                    })
+                  }
+                  className="mt-2 flex h-11 w-full items-center justify-center rounded-xl border border-border bg-white text-sm font-semibold text-foreground active:opacity-70"
+                >
                 Load {Math.min(remaining, PAGE_SIZE)} more
               </button>
             )}

@@ -18,6 +18,7 @@ import {
 } from "@/lib/cache/tab-cache"
 
 const USER_ID = "user-111"
+const REVALIDATE_PROFILE = "max"
 
 describe("tab cache tag helpers", () => {
   it("builds stable tab tags", () => {
@@ -35,32 +36,32 @@ describe("tab cache invalidation", () => {
   it("revalidates pan + products and an optional month tag", () => {
     revalidateForPanMutation(USER_ID, { year: 2026, month: 3 })
 
-    expect(revalidateTag).toHaveBeenCalledWith("tab:pan:user-111")
-    expect(revalidateTag).toHaveBeenCalledWith("tab:products:user-111")
-    expect(revalidateTag).toHaveBeenCalledWith("tab:pan:user-111:2026:3")
+    expect(revalidateTag).toHaveBeenCalledWith("tab:pan:user-111", REVALIDATE_PROFILE)
+    expect(revalidateTag).toHaveBeenCalledWith("tab:products:user-111", REVALIDATE_PROFILE)
+    expect(revalidateTag).toHaveBeenCalledWith("tab:pan:user-111:2026:3", REVALIDATE_PROFILE)
   })
 
   it("revalidates empties, pan, and products for empties mutations", () => {
     revalidateForEmptiesMutation(USER_ID, { year: 2026, month: 3 })
 
-    expect(revalidateTag).toHaveBeenCalledWith("tab:empties:user-111")
-    expect(revalidateTag).toHaveBeenCalledWith("tab:pan:user-111")
-    expect(revalidateTag).toHaveBeenCalledWith("tab:products:user-111")
-    expect(revalidateTag).toHaveBeenCalledWith("tab:pan:user-111:2026:3")
+    expect(revalidateTag).toHaveBeenCalledWith("tab:empties:user-111", REVALIDATE_PROFILE)
+    expect(revalidateTag).toHaveBeenCalledWith("tab:pan:user-111", REVALIDATE_PROFILE)
+    expect(revalidateTag).toHaveBeenCalledWith("tab:products:user-111", REVALIDATE_PROFILE)
+    expect(revalidateTag).toHaveBeenCalledWith("tab:pan:user-111:2026:3", REVALIDATE_PROFILE)
   })
 
   it("revalidates all tab roots for product mutations", () => {
     revalidateForProductMutation(USER_ID)
 
-    expect(revalidateTag).toHaveBeenCalledWith("tab:products:user-111")
-    expect(revalidateTag).toHaveBeenCalledWith("tab:pan:user-111")
-    expect(revalidateTag).toHaveBeenCalledWith("tab:empties:user-111")
-    expect(revalidateTag).toHaveBeenCalledWith("tab:wishlist:user-111")
+    expect(revalidateTag).toHaveBeenCalledWith("tab:products:user-111", REVALIDATE_PROFILE)
+    expect(revalidateTag).toHaveBeenCalledWith("tab:pan:user-111", REVALIDATE_PROFILE)
+    expect(revalidateTag).toHaveBeenCalledWith("tab:empties:user-111", REVALIDATE_PROFILE)
+    expect(revalidateTag).toHaveBeenCalledWith("tab:wishlist:user-111", REVALIDATE_PROFILE)
   })
 
   it("revalidates wishlist root for wishlist mutations", () => {
     revalidateForWishlistMutation(USER_ID)
 
-    expect(revalidateTag).toHaveBeenCalledWith("tab:wishlist:user-111")
+    expect(revalidateTag).toHaveBeenCalledWith("tab:wishlist:user-111", REVALIDATE_PROFILE)
   })
 })

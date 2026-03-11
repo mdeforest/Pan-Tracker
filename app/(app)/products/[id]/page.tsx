@@ -5,7 +5,7 @@ import { ProductDetailClient } from "@/components/products/ProductDetailClient"
 import type { ProductCategory, UsageLevel, WouldRepurchase } from "@/lib/types/app"
 
 interface ProductDetailPageProps {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 export default async function ProductDetailPage({ params }: ProductDetailPageProps) {
@@ -16,14 +16,16 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
 
   if (!user) redirect("/login")
 
+  const { id } = await params
+
   const [productResult, historyResult, activeResult] = await Promise.all([
-    getProduct(user.id, params.id),
-    getProductPanHistory(user.id, params.id),
+    getProduct(user.id, id),
+    getProductPanHistory(user.id, id),
     supabase
       .from("pan_entries")
       .select("id")
       .eq("user_id", user.id)
-      .eq("product_id", params.id)
+      .eq("product_id", id)
       .eq("status", "active")
       .maybeSingle(),
   ])
@@ -32,7 +34,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
     if (productResult.error?.code === "PGRST116") notFound()
     console.error("ProductDetailPage: failed to fetch product", {
       userId: user.id,
-      productId: params.id,
+      productId: id,
       error: productResult.error?.message,
     })
     notFound()

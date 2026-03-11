@@ -40,7 +40,7 @@ describe("PATCH /api/wishlist/[id]", () => {
       json: vi.fn().mockResolvedValue({ name: "Updated name" }),
     } as unknown as NextRequest
 
-    const res = await PATCH(req, { params: { id: ITEM_ID } })
+    const res = await PATCH(req, { params: Promise.resolve({ id: ITEM_ID }) })
 
     expect(res.status).toBe(200)
     expect(updateWishlistItem).toHaveBeenCalledWith(USER_ID, ITEM_ID, { name: "Updated name" })
@@ -57,7 +57,7 @@ describe("PATCH /api/wishlist/[id]", () => {
       json: vi.fn().mockResolvedValue({ name: "Updated name" }),
     } as unknown as NextRequest
 
-    const res = await PATCH(req, { params: { id: ITEM_ID } })
+    const res = await PATCH(req, { params: Promise.resolve({ id: ITEM_ID }) })
 
     expect(res.status).toBe(500)
     expect(revalidateForWishlistMutation).not.toHaveBeenCalled()
@@ -80,7 +80,7 @@ describe("DELETE /api/wishlist/[id]", () => {
       error: null,
     } as never)
 
-    const res = await DELETE({} as NextRequest, { params: { id: ITEM_ID } })
+    const res = await DELETE({} as NextRequest, { params: Promise.resolve({ id: ITEM_ID }) })
 
     expect(res.status).toBe(200)
     expect(deleteWishlistItem).toHaveBeenCalledWith(USER_ID, ITEM_ID)
@@ -93,7 +93,7 @@ describe("DELETE /api/wishlist/[id]", () => {
       error: { message: "delete failed" },
     } as never)
 
-    const res = await DELETE({} as NextRequest, { params: { id: ITEM_ID } })
+    const res = await DELETE({} as NextRequest, { params: Promise.resolve({ id: ITEM_ID }) })
 
     expect(res.status).toBe(500)
     expect(revalidateForWishlistMutation).not.toHaveBeenCalled()

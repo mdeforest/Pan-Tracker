@@ -21,9 +21,10 @@ interface PanViewProps {
   month: number
   entries: PanEntryWithProduct[]
   error?: string
+  wishlistedProductIds?: Set<string>
 }
 
-export function PanView({ year, month, entries, error }: PanViewProps) {
+export function PanView({ year, month, entries, error, wishlistedProductIds }: PanViewProps) {
   const router = useRouter()
   const { toast } = useToast()
 
@@ -182,6 +183,7 @@ export function PanView({ year, month, entries, error }: PanViewProps) {
                     currentMonth={month}
                     currentYear={year}
                     justEmptied={justEmptied.has(entry.id)}
+                    isWishlisted={!!entry.products && (wishlistedProductIds?.has(entry.products.id) ?? false)}
                     onTap={() => handleCardTap(entry)}
                   />
                 ))}
@@ -204,6 +206,7 @@ export function PanView({ year, month, entries, error }: PanViewProps) {
                   currentMonth={month}
                   currentYear={year}
                   justEmptied={justEmptied.has(entry.id)}
+                  isWishlisted={!!entry.products && (wishlistedProductIds?.has(entry.products.id) ?? false)}
                   onTap={() => {}} // Empty entries are read-only
                 />
               ))}

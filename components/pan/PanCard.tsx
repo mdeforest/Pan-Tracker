@@ -18,6 +18,7 @@ interface PanCardProps {
   currentMonth: number
   currentYear: number
   justEmptied: boolean
+  isWishlisted: boolean
   onTap: () => void
 }
 
@@ -26,6 +27,7 @@ export function PanCard({
   currentMonth,
   currentYear,
   justEmptied,
+  isWishlisted,
   onTap,
 }: PanCardProps) {
   const product = entry.products
@@ -91,6 +93,11 @@ export function PanCard({
             {entry.is_pick && (
               <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
                 Pick ★
+              </span>
+            )}
+            {isWishlisted && (
+              <span className="rounded-full bg-sky-100 px-2 py-0.5 text-xs font-medium text-sky-700">
+                🛍️ Wishlist
               </span>
             )}
             {months > 0 && !isEmpty && (

@@ -225,6 +225,27 @@ export async function getStatsTabData(userId: string): Promise<StatsData> {
   )()
 }
 
+export async function getWishlistProductIds(userId: string): Promise<string[]> {
+  return unstable_cache(
+    async () => {
+      const supabase = createAdminClient()
+      const { data } = await supabase
+        .from("wishlist_items")
+        .select("product_id")
+        .eq("user_id", userId)
+        .not("product_id", "is", null)
+        .is("purchased_at", null)
+
+      return (data ?? []).map((row) => row.product_id as string)
+    },
+    ["tab-wishlist-product-ids", userId],
+    {
+      revalidate: TAB_REVALIDATE_SECONDS,
+      tags: [wishlistTabTag(userId)],
+    }
+  )()
+}
+
 export async function getWishlistTabData(userId: string): Promise<WishlistTabData> {
   return unstable_cache(
     async () => {

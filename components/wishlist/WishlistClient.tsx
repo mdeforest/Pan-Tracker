@@ -525,9 +525,6 @@ export function WishlistClient({ initialItems, productOptions }: WishlistClientP
                     ))}
                   </div>
                 )}
-                {productSearch.trim() !== "" && filteredProductOptions.length === 0 && (
-                  <p className="mt-2 text-center text-xs text-muted-foreground">No products match &ldquo;{productSearch}&rdquo;</p>
-                )}
               </div>
             )}
           </div>

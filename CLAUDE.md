@@ -24,6 +24,7 @@ npm run lint          # ESLint
 npm run db:start      # Start local Supabase/Postgres stack via Docker
 npm run db:status     # Show local URLs, DB connection string, anon/service keys
 npm run db:reset      # Reset local DB, run migrations, and load supabase/seed.sql
+npm run db:seed       # Idempotent seed: insert only missing rows (no deletes, safe to re-run)
 npm run db:stop       # Stop local Supabase stack
 npx tsc --noEmit      # Typecheck without emitting
 npx supabase db push --db-url "$DIRECT_URL"          # Apply pending migrations to remote DB

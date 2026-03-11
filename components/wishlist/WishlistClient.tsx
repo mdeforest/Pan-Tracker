@@ -95,12 +95,10 @@ export function WishlistClient({ initialItems, productOptions }: WishlistClientP
 
   const filteredProductOptions = useMemo(() => {
     const q = productSearch.trim().toLowerCase()
-    const matches = q
-      ? productOptions.filter(
-          (opt) => opt.brand.toLowerCase().includes(q) || opt.name.toLowerCase().includes(q)
-        )
-      : productOptions
-    return matches.slice(0, 6)
+    if (!q) return []
+    return productOptions
+      .filter((opt) => opt.brand.toLowerCase().includes(q) || opt.name.toLowerCase().includes(q))
+      .slice(0, 6)
   }, [productOptions, productSearch])
 
   const selectedProductOption = useMemo(

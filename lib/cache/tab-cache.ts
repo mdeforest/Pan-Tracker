@@ -20,6 +20,10 @@ export function emptiesTabTag(userId: string) {
   return `tab:empties:${userId}`
 }
 
+export function wishlistTabTag(userId: string) {
+  return `tab:wishlist:${userId}`
+}
+
 export function revalidateForPanMutation(
   userId: string,
   params?: { year?: number; month?: number }
@@ -46,4 +50,9 @@ export function revalidateForProductMutation(userId: string) {
   revalidateTag(panTabTag(userId))
   revalidateTag(emptiesTabTag(userId))
   revalidateTag(statsTabTag(userId))
+  revalidateTag(wishlistTabTag(userId))
+}
+
+export function revalidateForWishlistMutation(userId: string) {
+  revalidateTag(wishlistTabTag(userId))
 }

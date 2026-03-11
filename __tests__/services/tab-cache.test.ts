@@ -13,6 +13,8 @@ import {
   revalidateForEmptiesMutation,
   revalidateForPanMutation,
   revalidateForProductMutation,
+  revalidateForWishlistMutation,
+  wishlistTabTag,
 } from "@/lib/cache/tab-cache"
 
 const USER_ID = "user-111"
@@ -23,6 +25,7 @@ describe("tab cache tag helpers", () => {
     expect(panMonthTabTag(USER_ID, 2026, 3)).toBe("tab:pan:user-111:2026:3")
     expect(productsTabTag(USER_ID)).toBe("tab:products:user-111")
     expect(emptiesTabTag(USER_ID)).toBe("tab:empties:user-111")
+    expect(wishlistTabTag(USER_ID)).toBe("tab:wishlist:user-111")
   })
 })
 
@@ -52,5 +55,12 @@ describe("tab cache invalidation", () => {
     expect(revalidateTag).toHaveBeenCalledWith("tab:products:user-111")
     expect(revalidateTag).toHaveBeenCalledWith("tab:pan:user-111")
     expect(revalidateTag).toHaveBeenCalledWith("tab:empties:user-111")
+    expect(revalidateTag).toHaveBeenCalledWith("tab:wishlist:user-111")
+  })
+
+  it("revalidates wishlist root for wishlist mutations", () => {
+    revalidateForWishlistMutation(USER_ID)
+
+    expect(revalidateTag).toHaveBeenCalledWith("tab:wishlist:user-111")
   })
 })

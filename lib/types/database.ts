@@ -223,6 +223,7 @@ export type Database = {
           category: Database["public"]["Enums"]["product_category"]
           created_at: string
           id: string
+          last_bought_at: string
           name: string
           notes: string | null
           photo_url: string | null
@@ -234,6 +235,7 @@ export type Database = {
           category: Database["public"]["Enums"]["product_category"]
           created_at?: string
           id?: string
+          last_bought_at?: string
           name: string
           notes?: string | null
           photo_url?: string | null
@@ -245,6 +247,7 @@ export type Database = {
           category?: Database["public"]["Enums"]["product_category"]
           created_at?: string
           id?: string
+          last_bought_at?: string
           name?: string
           notes?: string | null
           photo_url?: string | null
@@ -253,6 +256,57 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "products_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wishlist_items: {
+        Row: {
+          brand: string
+          created_at: string
+          estimated_price: number | null
+          id: string
+          name: string
+          notes: string | null
+          product_id: string | null
+          purchased_at: string | null
+          user_id: string
+        }
+        Insert: {
+          brand: string
+          created_at?: string
+          estimated_price?: number | null
+          id?: string
+          name: string
+          notes?: string | null
+          product_id?: string | null
+          purchased_at?: string | null
+          user_id: string
+        }
+        Update: {
+          brand?: string
+          created_at?: string
+          estimated_price?: number | null
+          id?: string
+          name?: string
+          notes?: string | null
+          product_id?: string | null
+          purchased_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wishlist_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wishlist_items_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
@@ -462,4 +516,3 @@ export const Constants = {
     },
   },
 } as const
-

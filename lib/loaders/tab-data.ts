@@ -1,7 +1,14 @@
 import { unstable_cache } from "next/cache"
 import type { EmptyCardData } from "@/components/empties/EmptyCard"
 import type { PanEntryWithProduct } from "@/components/pan/types"
-import { emptiesTabTag, panMonthTabTag, panTabTag, productsTabTag, statsTabTag } from "@/lib/cache/tab-cache"
+import {
+  emptiesTabTag,
+  panMonthTabTag,
+  panTabTag,
+  productsTabTag,
+  statsTabTag,
+  wishlistTabTag,
+} from "@/lib/cache/tab-cache"
 import { createAdminClient } from "@/lib/supabase/server-admin"
 import type { ProductCategory, WouldRepurchase } from "@/lib/types/app"
 import { getStatsData, type StatsData } from "@/lib/services/stats"
@@ -15,6 +22,7 @@ export interface RawProduct {
   category: string
   photo_url: string | null
   archived_at: string | null
+  last_bought_at: string
 }
 
 interface PanTabData {
@@ -29,6 +37,28 @@ interface ProductsTabData {
 
 interface EmptiesTabData {
   empties: EmptyCardData[]
+}
+
+export interface RawWishlistItem {
+  id: string
+  product_id: string | null
+  brand: string
+  name: string
+  notes: string | null
+  estimated_price: number | null
+  purchased_at: string | null
+  created_at: string
+}
+
+export interface WishlistProductOption {
+  id: string
+  brand: string
+  name: string
+}
+
+interface WishlistTabData {
+  wishlistItems: RawWishlistItem[]
+  productOptions: WishlistProductOption[]
 }
 
 export async function getPanTabData(
@@ -109,7 +139,7 @@ export async function getProductsTabData(userId: string): Promise<ProductsTabDat
           .eq("status", "active"),
         supabase
           .from("products")
-          .select("id,name,brand,category,photo_url,archived_at")
+          .select("id,name,brand,category,photo_url,archived_at,last_bought_at")
           .eq("user_id", userId)
           .is("archived_at", null)
           .order("created_at", { ascending: false }),
@@ -192,6 +222,59 @@ export async function getStatsTabData(userId: string): Promise<StatsData> {
     {
       revalidate: TAB_REVALIDATE_SECONDS,
       tags: [statsTabTag(userId)],
+    }
+  )()
+}
+
+export async function getWishlistProductIds(userId: string): Promise<string[]> {
+  return unstable_cache(
+    async () => {
+      const supabase = createAdminClient()
+      const { data } = await supabase
+        .from("wishlist_items")
+        .select("product_id")
+        .eq("user_id", userId)
+        .not("product_id", "is", null)
+        .is("purchased_at", null)
+
+      return (data ?? []).map((row) => row.product_id as string)
+    },
+    ["tab-wishlist-product-ids", userId],
+    {
+      revalidate: TAB_REVALIDATE_SECONDS,
+      tags: [wishlistTabTag(userId)],
+    }
+  )()
+}
+
+export async function getWishlistTabData(userId: string): Promise<WishlistTabData> {
+  return unstable_cache(
+    async () => {
+      const supabase = createAdminClient()
+      const [{ data: wishlistRows }, { data: productRows }] = await Promise.all([
+        supabase
+          .from("wishlist_items")
+          .select("id,product_id,brand,name,notes,estimated_price,purchased_at,created_at")
+          .eq("user_id", userId)
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("products")
+          .select("id,brand,name")
+          .eq("user_id", userId)
+          .is("archived_at", null)
+          .order("brand", { ascending: true })
+          .order("name", { ascending: true }),
+      ])
+
+      return {
+        wishlistItems: (wishlistRows ?? []) as RawWishlistItem[],
+        productOptions: (productRows ?? []) as WishlistProductOption[],
+      }
+    },
+    ["tab-wishlist-data", userId],
+    {
+      revalidate: TAB_REVALIDATE_SECONDS,
+      tags: [wishlistTabTag(userId), productsTabTag(userId)],
     }
   )()
 }

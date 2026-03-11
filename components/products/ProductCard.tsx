@@ -15,7 +15,10 @@ export interface ProductCardData {
   photo_url: string | null
   is_in_pan: boolean
   is_archived: boolean
+  last_bought_at: string
 }
+
+const DATE_FMT = new Intl.DateTimeFormat("en-US", { month: "short", year: "numeric" })
 
 interface ProductCardProps {
   product: ProductCardData
@@ -79,6 +82,9 @@ export function ProductCard({ product, onRestore, restoring = false }: ProductCa
                 Archived
               </span>
             )}
+            <span className="inline-block rounded-full bg-violet-100 px-2 py-0.5 text-xs font-medium text-violet-700">
+              Bought {DATE_FMT.format(new Date(product.last_bought_at))}
+            </span>
           </div>
         </div>
       </Link>

@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Image from "next/image"
+import Link from "next/link"
 import { signOut } from "@/lib/actions/auth"
 
 interface UserMenuProps {
@@ -52,6 +53,13 @@ export function UserMenu({ avatarUrl, name }: UserMenuProps) {
           />
           {/* Dropdown */}
           <div className="absolute right-0 top-11 z-50 min-w-[140px] rounded-lg border bg-background shadow-lg">
+            <Link
+              href="/wishlist"
+              onClick={() => setOpen(false)}
+              className="flex w-full items-center px-4 py-3 text-sm text-foreground hover:bg-muted"
+            >
+              Wishlist
+            </Link>
             <form action={signOut}>
               <button
                 type="submit"

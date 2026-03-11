@@ -4,6 +4,12 @@
 BEGIN;
 
 -- Remove any previous copies of these deterministic seed users.
+DELETE FROM public.wishlist_items
+WHERE user_id IN (
+  '11111111-1111-4111-8111-111111111111',
+  '22222222-2222-4222-8222-222222222222'
+);
+
 DELETE FROM public.empties
 WHERE user_id IN (
   '11111111-1111-4111-8111-111111111111',
@@ -139,7 +145,8 @@ INSERT INTO public.products (
   photo_url,
   notes,
   archived_at,
-  created_at
+  created_at,
+  last_bought_at
 ) VALUES
   (
     '10000000-0000-4000-8000-000000000001',
@@ -150,6 +157,7 @@ INSERT INTO public.products (
     null,
     'Current blush in rotation.',
     null,
+    now() - interval '90 days',
     now() - interval '90 days'
   ),
   (
@@ -161,6 +169,7 @@ INSERT INTO public.products (
     null,
     'Almost done, use twice a week.',
     null,
+    now() - interval '80 days',
     now() - interval '80 days'
   ),
   (
@@ -172,6 +181,7 @@ INSERT INTO public.products (
     null,
     'Carry-over from last month.',
     null,
+    now() - interval '70 days',
     now() - interval '70 days'
   ),
   (
@@ -183,6 +193,7 @@ INSERT INTO public.products (
     null,
     'Archived sample product.',
     now() - interval '14 days',
+    now() - interval '60 days',
     now() - interval '60 days'
   ),
   (
@@ -194,6 +205,7 @@ INSERT INTO public.products (
     null,
     'Finished last month.',
     null,
+    now() - interval '120 days',
     now() - interval '120 days'
   ),
   (
@@ -205,7 +217,119 @@ INSERT INTO public.products (
     null,
     'Belongs to another user for ownership testing.',
     null,
+    now() - interval '30 days',
     now() - interval '30 days'
+  );
+
+INSERT INTO public.wishlist_items (
+  id,
+  user_id,
+  product_id,
+  brand,
+  name,
+  notes,
+  estimated_price,
+  purchased_at,
+  created_at
+) VALUES
+  (
+    '60000000-0000-4000-8000-000000000001',
+    '11111111-1111-4111-8111-111111111111',
+    '10000000-0000-4000-8000-000000000001',
+    'Rare Beauty',
+    'Soft Pinch Liquid Blush',
+    'Repurchase when my current one is fully gone.',
+    23.00,
+    null,
+    now() - interval '9 days'
+  ),
+  (
+    '60000000-0000-4000-8000-000000000002',
+    '11111111-1111-4111-8111-111111111111',
+    null,
+    'Summer Fridays',
+    'Lip Butter Balm',
+    'Try the vanilla beige shade.',
+    24.00,
+    null,
+    now() - interval '6 days'
+  ),
+  (
+    '60000000-0000-4000-8000-000000000003',
+    '11111111-1111-4111-8111-111111111111',
+    null,
+    'Hourglass',
+    'Vanish Airbrush Concealer',
+    'Wait for the next Sephora sale.',
+    38.00,
+    null,
+    now() - interval '20 days'
+  ),
+  (
+    '60000000-0000-4000-8000-000000000004',
+    '11111111-1111-4111-8111-111111111111',
+    '10000000-0000-4000-8000-000000000002',
+    'Paula''s Choice',
+    '2% BHA Liquid Exfoliant',
+    'Restock before I run out.',
+    35.00,
+    null,
+    now() - interval '15 days'
+  ),
+  (
+    '60000000-0000-4000-8000-000000000005',
+    '11111111-1111-4111-8111-111111111111',
+    null,
+    'Laneige',
+    'Water Sleeping Mask',
+    'Try the lavender scent this time.',
+    27.00,
+    null,
+    now() - interval '12 days'
+  ),
+  (
+    '60000000-0000-4000-8000-000000000006',
+    '11111111-1111-4111-8111-111111111111',
+    null,
+    'Tatcha',
+    'The Dewy Skin Cream',
+    null,
+    68.00,
+    null,
+    now() - interval '8 days'
+  ),
+  (
+    '60000000-0000-4000-8000-000000000007',
+    '11111111-1111-4111-8111-111111111111',
+    null,
+    'The Ordinary',
+    'Niacinamide 10% + Zinc 1%',
+    'Running low — order soon.',
+    6.90,
+    null,
+    now() - interval '4 days'
+  ),
+  (
+    '60000000-0000-4000-8000-000000000008',
+    '11111111-1111-4111-8111-111111111111',
+    null,
+    'Rhode',
+    'Peptide Lip Treatment',
+    'Vanilla one specifically.',
+    16.00,
+    null,
+    now() - interval '2 days'
+  ),
+  (
+    '60000000-0000-4000-8000-000000000009',
+    '22222222-2222-4222-8222-222222222222',
+    '20000000-0000-4000-8000-000000000001',
+    'Tower 28',
+    'ShineOn Lip Jelly',
+    null,
+    16.00,
+    null,
+    now() - interval '5 days'
   );
 
 INSERT INTO public.pan_entries (
@@ -340,79 +464,79 @@ INSERT INTO public.empties (
 -- ---------------------------------------------------------------------------
 
 INSERT INTO public.products (
-  id, user_id, brand, name, category, photo_url, notes, archived_at, created_at
+  id, user_id, brand, name, category, photo_url, notes, archived_at, created_at, last_bought_at
 ) VALUES
   (
     '10000000-0000-4000-8000-000000000006',
     '11111111-1111-4111-8111-111111111111',
     'Charlotte Tilbury', 'Airbrush Flawless Foundation', 'makeup',
-    null, null, null, now() - interval '200 days'
+    null, null, null, now() - interval '200 days', now() - interval '200 days'
   ),
   (
     '10000000-0000-4000-8000-000000000007',
     '11111111-1111-4111-8111-111111111111',
     'CeraVe', 'Hydrating Cleanser', 'skincare',
-    null, null, null, now() - interval '340 days'
+    null, null, null, now() - interval '340 days', now() - interval '340 days'
   ),
   (
     '10000000-0000-4000-8000-000000000008',
     '11111111-1111-4111-8111-111111111111',
     'Olaplex', 'No. 3 Hair Perfector', 'haircare',
-    null, null, null, now() - interval '340 days'
+    null, null, null, now() - interval '340 days', now() - interval '340 days'
   ),
   (
     '10000000-0000-4000-8000-000000000009',
     '11111111-1111-4111-8111-111111111111',
     'Sol de Janeiro', 'Brazilian Bum Bum Cream', 'bodycare',
-    null, null, null, now() - interval '280 days'
+    null, null, null, now() - interval '280 days', now() - interval '280 days'
   ),
   (
     '10000000-0000-4000-8000-000000000010',
     '11111111-1111-4111-8111-111111111111',
     'Jo Malone London', 'Lime Basil & Mandarin Cologne', 'fragrance',
-    null, null, null, now() - interval '310 days'
+    null, null, null, now() - interval '310 days', now() - interval '310 days'
   ),
   (
     '10000000-0000-4000-8000-000000000011',
     '11111111-1111-4111-8111-111111111111',
     'NARS', 'Radiant Creamy Concealer', 'makeup',
-    null, null, null, now() - interval '310 days'
+    null, null, null, now() - interval '310 days', now() - interval '310 days'
   ),
   (
     '10000000-0000-4000-8000-000000000012',
     '11111111-1111-4111-8111-111111111111',
     'The Ordinary', 'Niacinamide 10% + Zinc 1%', 'skincare',
-    null, null, null, now() - interval '160 days'
+    null, null, null, now() - interval '160 days', now() - interval '160 days'
   ),
   (
     '10000000-0000-4000-8000-000000000013',
     '11111111-1111-4111-8111-111111111111',
     'Moroccanoil', 'Treatment Oil', 'haircare',
-    null, null, null, now() - interval '225 days'
+    null, null, null, now() - interval '225 days', now() - interval '225 days'
   ),
   (
     '10000000-0000-4000-8000-000000000014',
     '11111111-1111-4111-8111-111111111111',
     'Rare Beauty', 'Soft Pinch Tinted Lip Oil', 'makeup',
-    null, null, null, now() - interval '100 days'
+    null, null, null, now() - interval '100 days', now() - interval '100 days'
   ),
   (
     '10000000-0000-4000-8000-000000000015',
     '11111111-1111-4111-8111-111111111111',
     'Paula''s Choice', 'Calm Repairing Serum', 'skincare',
-    null, null, null, now() - interval '190 days'
+    null, null, null, now() - interval '190 days', now() - interval '190 days'
   ),
   (
     '10000000-0000-4000-8000-000000000016',
     '11111111-1111-4111-8111-111111111111',
     'NARS', 'Sheer Glow Foundation', 'makeup',
-    null, null, null, now() - interval '160 days'
+    null, null, null, now() - interval '160 days', now() - interval '160 days'
   ),
   (
     '10000000-0000-4000-8000-000000000017',
     '11111111-1111-4111-8111-111111111111',
     'Ouai', 'Scalp Serum', 'haircare',
-    null, null, null, now() - interval '130 days'
+    null, null, null, now() - interval '130 days', now() - interval '130 days'
   );
 
 -- Pan entries (all status = 'empty') for the historical empties above.
@@ -630,5 +754,61 @@ INSERT INTO public.empties (
     2, 2026, 5, 'yes', 'Best lip product I own. Comfortable all day.',
     null, null, now() - interval '37 days'
   );
+
+-- ---------------------------------------------------------------------------
+-- Extra data for empties pagination testing (13 + 12 = 25 empties total).
+-- Spans Jan–Dec 2024 across diverse categories.
+-- ---------------------------------------------------------------------------
+
+INSERT INTO public.products (
+  id, user_id, brand, name, category, photo_url, notes, archived_at, created_at, last_bought_at
+) VALUES
+  ('10000000-0000-4000-8000-000000000018', '11111111-1111-4111-8111-111111111111', 'Tatcha',         'The Water Cream',                    'skincare',  null, null, null, now() - interval '730 days', now() - interval '730 days'),
+  ('10000000-0000-4000-8000-000000000019', '11111111-1111-4111-8111-111111111111', 'Dior Beauty',    'Lip Glow Oil',                       'makeup',    null, null, null, now() - interval '700 days', now() - interval '700 days'),
+  ('10000000-0000-4000-8000-000000000020', '11111111-1111-4111-8111-111111111111', 'Laneige',        'Lip Sleeping Mask',                  'makeup',    null, null, null, now() - interval '670 days', now() - interval '670 days'),
+  ('10000000-0000-4000-8000-000000000021', '11111111-1111-4111-8111-111111111111', 'Drunk Elephant', 'Protini Polypeptide Cream',          'skincare',  null, null, null, now() - interval '640 days', now() - interval '640 days'),
+  ('10000000-0000-4000-8000-000000000022', '11111111-1111-4111-8111-111111111111', 'Fenty Beauty',   'Pro Filt''r Powder Foundation',      'makeup',    null, null, null, now() - interval '610 days', now() - interval '610 days'),
+  ('10000000-0000-4000-8000-000000000023', '11111111-1111-4111-8111-111111111111', 'Kérastase',      'Elixir Ultime Hair Oil',             'haircare',  null, null, null, now() - interval '580 days', now() - interval '580 days'),
+  ('10000000-0000-4000-8000-000000000024', '11111111-1111-4111-8111-111111111111', 'Necessaire',     'The Body Lotion',                    'bodycare',  null, null, null, now() - interval '550 days', now() - interval '550 days'),
+  ('10000000-0000-4000-8000-000000000025', '11111111-1111-4111-8111-111111111111', 'Diptyque',       'Eau Rose Eau de Toilette',           'fragrance', null, null, null, now() - interval '520 days', now() - interval '520 days'),
+  ('10000000-0000-4000-8000-000000000026', '11111111-1111-4111-8111-111111111111', 'Glow Recipe',    'Watermelon Glow Niacinamide Toner', 'skincare',  null, null, null, now() - interval '490 days', now() - interval '490 days'),
+  ('10000000-0000-4000-8000-000000000027', '11111111-1111-4111-8111-111111111111', 'MAC',            'Studio Fix Fluid Foundation',       'makeup',    null, null, null, now() - interval '460 days', now() - interval '460 days'),
+  ('10000000-0000-4000-8000-000000000028', '11111111-1111-4111-8111-111111111111', 'Sunday Riley',   'Good Genes Lactic Acid Treatment',  'skincare',  null, null, null, now() - interval '430 days', now() - interval '430 days'),
+  ('10000000-0000-4000-8000-000000000029', '11111111-1111-4111-8111-111111111111', 'Amika',          'The Kure Bond Repair Mask',          'haircare',  null, null, null, now() - interval '400 days', now() - interval '400 days');
+
+INSERT INTO public.pan_entries (
+  id, user_id, product_id, status, usage_level,
+  started_month, started_year, notes, created_at, updated_at
+) VALUES
+  ('30000000-0000-4000-8000-000000000017', '11111111-1111-4111-8111-111111111111', '10000000-0000-4000-8000-000000000018', 'empty', 'almost_done',  1, 2024, null, now() - interval '730 days', now() - interval '700 days'),
+  ('30000000-0000-4000-8000-000000000018', '11111111-1111-4111-8111-111111111111', '10000000-0000-4000-8000-000000000019', 'empty', 'almost_done',  2, 2024, null, now() - interval '700 days', now() - interval '670 days'),
+  ('30000000-0000-4000-8000-000000000019', '11111111-1111-4111-8111-111111111111', '10000000-0000-4000-8000-000000000020', 'empty', 'almost_done',  3, 2024, null, now() - interval '670 days', now() - interval '640 days'),
+  ('30000000-0000-4000-8000-000000000020', '11111111-1111-4111-8111-111111111111', '10000000-0000-4000-8000-000000000021', 'empty', 'almost_done',  4, 2024, null, now() - interval '640 days', now() - interval '610 days'),
+  ('30000000-0000-4000-8000-000000000021', '11111111-1111-4111-8111-111111111111', '10000000-0000-4000-8000-000000000022', 'empty', 'almost_done',  5, 2024, null, now() - interval '610 days', now() - interval '580 days'),
+  ('30000000-0000-4000-8000-000000000022', '11111111-1111-4111-8111-111111111111', '10000000-0000-4000-8000-000000000023', 'empty', 'almost_done',  6, 2024, null, now() - interval '580 days', now() - interval '550 days'),
+  ('30000000-0000-4000-8000-000000000023', '11111111-1111-4111-8111-111111111111', '10000000-0000-4000-8000-000000000024', 'empty', 'almost_done',  7, 2024, null, now() - interval '550 days', now() - interval '520 days'),
+  ('30000000-0000-4000-8000-000000000024', '11111111-1111-4111-8111-111111111111', '10000000-0000-4000-8000-000000000025', 'empty', 'almost_done',  8, 2024, null, now() - interval '520 days', now() - interval '490 days'),
+  ('30000000-0000-4000-8000-000000000025', '11111111-1111-4111-8111-111111111111', '10000000-0000-4000-8000-000000000026', 'empty', 'almost_done',  9, 2024, null, now() - interval '490 days', now() - interval '460 days'),
+  ('30000000-0000-4000-8000-000000000026', '11111111-1111-4111-8111-111111111111', '10000000-0000-4000-8000-000000000027', 'empty', 'almost_done', 10, 2024, null, now() - interval '460 days', now() - interval '430 days'),
+  ('30000000-0000-4000-8000-000000000027', '11111111-1111-4111-8111-111111111111', '10000000-0000-4000-8000-000000000028', 'empty', 'almost_done', 11, 2024, null, now() - interval '430 days', now() - interval '400 days'),
+  ('30000000-0000-4000-8000-000000000028', '11111111-1111-4111-8111-111111111111', '10000000-0000-4000-8000-000000000029', 'empty', 'almost_done', 12, 2024, null, now() - interval '400 days', now() - interval '370 days');
+
+INSERT INTO public.empties (
+  id, user_id, pan_entry_id, product_id,
+  finished_month, finished_year, rating, would_repurchase,
+  review_notes, replacement_product_id, replacement_free_text, created_at
+) VALUES
+  ('50000000-0000-4000-8000-000000000014', '11111111-1111-4111-8111-111111111111', '30000000-0000-4000-8000-000000000017', '10000000-0000-4000-8000-000000000018',  1, 2024, 5, 'yes',   'Lightweight and hydrating. Replaced my heavy moisturiser.', null, null, now() - interval '700 days'),
+  ('50000000-0000-4000-8000-000000000015', '11111111-1111-4111-8111-111111111111', '30000000-0000-4000-8000-000000000018', '10000000-0000-4000-8000-000000000019',  2, 2024, 4, 'yes',   'Beautiful subtle shine. A little goes a long way.',         null, null, now() - interval '670 days'),
+  ('50000000-0000-4000-8000-000000000016', '11111111-1111-4111-8111-111111111111', '30000000-0000-4000-8000-000000000019', '10000000-0000-4000-8000-000000000020',  3, 2024, 5, 'yes',   'Woke up with noticeably softer lips every morning.',        null, null, now() - interval '640 days'),
+  ('50000000-0000-4000-8000-000000000017', '11111111-1111-4111-8111-111111111111', '30000000-0000-4000-8000-000000000020', '10000000-0000-4000-8000-000000000021',  4, 2024, 4, 'maybe', 'Great texture but very pricey. Would try dupes first.',     null, null, now() - interval '610 days'),
+  ('50000000-0000-4000-8000-000000000018', '11111111-1111-4111-8111-111111111111', '30000000-0000-4000-8000-000000000021', '10000000-0000-4000-8000-000000000022',  5, 2024, 3, 'no',    'Too cakey for my skin type. Switching back to liquid.',     null, null, now() - interval '580 days'),
+  ('50000000-0000-4000-8000-000000000019', '11111111-1111-4111-8111-111111111111', '30000000-0000-4000-8000-000000000022', '10000000-0000-4000-8000-000000000023',  6, 2024, 5, 'yes',   'Softest hair I''ve had. Worth the splurge.',                null, null, now() - interval '550 days'),
+  ('50000000-0000-4000-8000-000000000020', '11111111-1111-4111-8111-111111111111', '30000000-0000-4000-8000-000000000023', '10000000-0000-4000-8000-000000000024',  7, 2024, 4, 'yes',   'Absorbed quickly, no greasiness. Would pan again.',         null, null, now() - interval '520 days'),
+  ('50000000-0000-4000-8000-000000000021', '11111111-1111-4111-8111-111111111111', '30000000-0000-4000-8000-000000000024', '10000000-0000-4000-8000-000000000025',  8, 2024, 5, 'yes',   'Subtle and feminine. Lasted longer than expected.',         null, null, now() - interval '490 days'),
+  ('50000000-0000-4000-8000-000000000022', '11111111-1111-4111-8111-111111111111', '30000000-0000-4000-8000-000000000025', '10000000-0000-4000-8000-000000000026',  9, 2024, 4, 'yes',   'Glow without the irritation. Gentle enough for daily.',     null, null, now() - interval '460 days'),
+  ('50000000-0000-4000-8000-000000000023', '11111111-1111-4111-8111-111111111111', '30000000-0000-4000-8000-000000000026', '10000000-0000-4000-8000-000000000027', 10, 2024, 2, 'no',    'Oxidised on my skin. Will try a different undertone.',      null, null, now() - interval '430 days'),
+  ('50000000-0000-4000-8000-000000000024', '11111111-1111-4111-8111-111111111111', '30000000-0000-4000-8000-000000000027', '10000000-0000-4000-8000-000000000028', 11, 2024, 5, 'yes',   'Smoothed texture within a week. Worth every penny.',        null, null, now() - interval '400 days'),
+  ('50000000-0000-4000-8000-000000000025', '11111111-1111-4111-8111-111111111111', '30000000-0000-4000-8000-000000000028', '10000000-0000-4000-8000-000000000029', 12, 2024, 4, 'yes',   'Hair felt stronger after 3 uses. Great for damaged ends.',  null, null, now() - interval '370 days');
 
 COMMIT;

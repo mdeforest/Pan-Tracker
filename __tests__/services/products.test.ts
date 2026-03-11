@@ -47,7 +47,7 @@ describe("listProducts", () => {
 
     expect(mock.from).toHaveBeenCalledWith("products")
     const b = mock._builders.products
-    expect(b.select).toHaveBeenCalledWith("id,name,brand,category,photo_url,archived_at")
+    expect(b.select).toHaveBeenCalledWith("id,name,brand,category,photo_url,archived_at,last_bought_at")
     expect(b.eq).toHaveBeenCalledWith("user_id", USER_ID)
     expect(b.is).toHaveBeenCalledWith("archived_at", null)
     expect(b.order).toHaveBeenCalledWith("created_at", { ascending: false })

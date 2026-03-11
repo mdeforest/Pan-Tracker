@@ -21,9 +21,10 @@ interface PanViewProps {
   month: number
   entries: PanEntryWithProduct[]
   error?: string
+  wishlistedProductIds?: Set<string>
 }
 
-export function PanView({ year, month, entries, error }: PanViewProps) {
+export function PanView({ year, month, entries, error, wishlistedProductIds }: PanViewProps) {
   const router = useRouter()
   const { toast } = useToast()
 
@@ -31,6 +32,7 @@ export function PanView({ year, month, entries, error }: PanViewProps) {
   const [activeSheet, setActiveSheet] = useState<ActiveSheet>(null)
   // Track entries that were just emptied (for overlay badge)
   const [justEmptied, setJustEmptied] = useState<Set<string>>(new Set())
+  const [showWishlistPrompt, setShowWishlistPrompt] = useState(false)
 
   const { year: nowYear, month: nowMonth } = currentYearMonth()
   const isPastMonth =
@@ -107,6 +109,7 @@ export function PanView({ year, month, entries, error }: PanViewProps) {
     setJustEmptied((prev) => new Set(Array.from(prev).concat(entryId)))
     setActiveSheet(null)
     setSelectedEntry(null)
+    setShowWishlistPrompt(true)
     router.refresh()
     // Clear the overlay badge after a short delay
     setTimeout(() => {
@@ -116,6 +119,9 @@ export function PanView({ year, month, entries, error }: PanViewProps) {
         return next
       })
     }, 4000)
+    setTimeout(() => {
+      setShowWishlistPrompt(false)
+    }, 8000)
   }
 
   return (
@@ -177,6 +183,7 @@ export function PanView({ year, month, entries, error }: PanViewProps) {
                     currentMonth={month}
                     currentYear={year}
                     justEmptied={justEmptied.has(entry.id)}
+                    isWishlisted={!!entry.products && (wishlistedProductIds?.has(entry.products.id) ?? false)}
                     onTap={() => handleCardTap(entry)}
                   />
                 ))}
@@ -199,6 +206,7 @@ export function PanView({ year, month, entries, error }: PanViewProps) {
                   currentMonth={month}
                   currentYear={year}
                   justEmptied={justEmptied.has(entry.id)}
+                  isWishlisted={!!entry.products && (wishlistedProductIds?.has(entry.products.id) ?? false)}
                   onTap={() => {}} // Empty entries are read-only
                 />
               ))}
@@ -268,6 +276,39 @@ export function PanView({ year, month, entries, error }: PanViewProps) {
         }}
         onError={(msg) => toast(msg, "error")}
       />
+
+      {showWishlistPrompt && (
+        <div
+          className="fixed left-4 right-4 z-50 rounded-2xl border border-amber-200 bg-amber-50 p-4 shadow-lg"
+          style={{
+            bottom: "calc(4rem + env(safe-area-inset-bottom) + 5.5rem)",
+          }}
+        >
+          <p className="text-sm font-semibold text-amber-950">Empty logged. Nice work.</p>
+          <p className="mt-1 text-xs text-amber-800">
+            Want a reward queued up? Check your wishlist.
+          </p>
+          <div className="mt-3 flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setShowWishlistPrompt(false)
+                router.push("/wishlist")
+              }}
+              className="flex h-10 items-center justify-center rounded-xl bg-amber-500 px-3 text-sm font-semibold text-amber-950 active:opacity-80"
+            >
+              View Wishlist
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowWishlistPrompt(false)}
+              className="flex h-10 items-center justify-center rounded-xl border border-amber-200 bg-white px-3 text-sm font-semibold text-amber-900 active:opacity-80"
+            >
+              Dismiss
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

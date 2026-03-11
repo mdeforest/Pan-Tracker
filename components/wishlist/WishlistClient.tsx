@@ -495,9 +495,9 @@ export function WishlistClient({ initialItems, productOptions }: WishlistClientP
                 </button>
               </div>
             ) : (
-              <div>
-                <div className="relative">
-                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <div className="relative">
+                <div>
+                  <Search className="pointer-events-none absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
                   <input
                     type="text"
                     value={productSearch}
@@ -508,7 +508,7 @@ export function WishlistClient({ initialItems, productOptions }: WishlistClientP
                   />
                 </div>
                 {filteredProductOptions.length > 0 && (
-                  <div className="mt-1 max-h-44 overflow-y-auto rounded-xl border border-border bg-white shadow-sm">
+                  <div className="absolute left-0 right-0 top-[calc(100%+4px)] z-50 max-h-44 overflow-y-auto rounded-xl border border-border bg-white shadow-lg">
                     {filteredProductOptions.map((option) => (
                       <button
                         key={option.id}

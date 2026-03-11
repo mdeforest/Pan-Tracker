@@ -260,6 +260,57 @@ export type Database = {
           },
         ]
       }
+      wishlist_items: {
+        Row: {
+          brand: string
+          created_at: string
+          estimated_price: number | null
+          id: string
+          name: string
+          notes: string | null
+          product_id: string | null
+          purchased_at: string | null
+          user_id: string
+        }
+        Insert: {
+          brand: string
+          created_at?: string
+          estimated_price?: number | null
+          id?: string
+          name: string
+          notes?: string | null
+          product_id?: string | null
+          purchased_at?: string | null
+          user_id: string
+        }
+        Update: {
+          brand?: string
+          created_at?: string
+          estimated_price?: number | null
+          id?: string
+          name?: string
+          notes?: string | null
+          product_id?: string | null
+          purchased_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wishlist_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wishlist_items_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       users: {
         Row: {
           avatar_url: string | null
@@ -462,4 +513,3 @@ export const Constants = {
     },
   },
 } as const
-

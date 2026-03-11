@@ -4,6 +4,12 @@
 BEGIN;
 
 -- Remove any previous copies of these deterministic seed users.
+DELETE FROM public.wishlist_items
+WHERE user_id IN (
+  '11111111-1111-4111-8111-111111111111',
+  '22222222-2222-4222-8222-222222222222'
+);
+
 DELETE FROM public.empties
 WHERE user_id IN (
   '11111111-1111-4111-8111-111111111111',
@@ -206,6 +212,62 @@ INSERT INTO public.products (
     'Belongs to another user for ownership testing.',
     null,
     now() - interval '30 days'
+  );
+
+INSERT INTO public.wishlist_items (
+  id,
+  user_id,
+  product_id,
+  brand,
+  name,
+  notes,
+  estimated_price,
+  purchased_at,
+  created_at
+) VALUES
+  (
+    '60000000-0000-4000-8000-000000000001',
+    '11111111-1111-4111-8111-111111111111',
+    '10000000-0000-4000-8000-000000000001',
+    'Rare Beauty',
+    'Soft Pinch Liquid Blush',
+    'Repurchase when my current one is fully gone.',
+    23.00,
+    null,
+    now() - interval '9 days'
+  ),
+  (
+    '60000000-0000-4000-8000-000000000002',
+    '11111111-1111-4111-8111-111111111111',
+    null,
+    'Summer Fridays',
+    'Lip Butter Balm',
+    'Try the vanilla beige shade.',
+    24.00,
+    null,
+    now() - interval '6 days'
+  ),
+  (
+    '60000000-0000-4000-8000-000000000003',
+    '11111111-1111-4111-8111-111111111111',
+    null,
+    'Hourglass',
+    'Vanish Airbrush Concealer',
+    'Purchased during sale.',
+    38.00,
+    now() - interval '2 days',
+    now() - interval '20 days'
+  ),
+  (
+    '60000000-0000-4000-8000-000000000004',
+    '22222222-2222-4222-8222-222222222222',
+    '20000000-0000-4000-8000-000000000001',
+    'Tower 28',
+    'ShineOn Lip Jelly',
+    null,
+    16.00,
+    null,
+    now() - interval '5 days'
   );
 
 INSERT INTO public.pan_entries (

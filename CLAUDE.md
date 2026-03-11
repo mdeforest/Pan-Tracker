@@ -106,6 +106,24 @@ At the end of every session:
 3. Open a PR to `main` (or note that one should be opened — don't merge without CI passing)
 4. Update the Current Status section of this file
 
+## Workflow Preferences (user-configured)
+
+**Autonomy:** Operate more autonomously. Proceed without asking for most actions. Only pause to confirm truly destructive or irreversible operations (force push, drop table, deleting branches with unmerged work, mass deletes). Flag surprises in the response but don't block on approval.
+
+**Verbosity:** Detailed. Explain decisions, trade-offs, and next steps. Don't pad with filler, but don't skip context that helps the user understand what was done and why.
+
+**Scope/bugs found in passing:** Fix small bugs or code smells encountered during a task without asking. Mention what was fixed. Surface larger issues as a note and move on — don't fix them unilaterally.
+
+**TypeScript / lint errors:** Fix all errors encountered immediately, including pre-existing ones, not just those introduced by the current change.
+
+**Memory:** Proactively update `.claude/projects/*/memory/` files as stable patterns and preferences are confirmed. Don't wait to be asked.
+
+**Session end (always do all of these):**
+1. Run `npm run lint` and `npx tsc --noEmit` — fix any errors
+2. Commit all changes at logical checkpoints (already in the Git section above)
+3. Push branch and open a PR to `main`
+4. Update CLAUDE.md (Current Status, deviations, new conventions)
+
 ## Doc Management (Claude Code must follow this every session)
 
 At the end of every session, before finishing:
@@ -228,6 +246,15 @@ Note: NEXTAUTH_URL and NEXTAUTH_SECRET are in .env.local.example for reference b
 - ✅ **Phase 6 — Empties Log + Product Library** (2026-03-07): Empties log at `app/(app)/empties/page.tsx` — sticky dual filter bar (month/year + category chips), accordion EmptyCard (expand-in-place for notes). Product library at `app/(app)/products/page.tsx` — sticky search + category chips, 2-col grid, FAB opens NewProductSheet. Product detail at `app/(app)/products/[id]/page.tsx` — photo header with gradient overlay, edit sheet, "Add to Current Pan" button, full pan history timeline with embedded empty records.
 - ✅ **Phase 7 — Hardening + PWA + CI** (2026-03-10): Security headers (X-Frame-Options, X-Content-Type-Options, Referrer-Policy, CSP) in `next.config.mjs`. `app/error.tsx` and `app/not-found.tsx`. Zod schema audit (`.trim()` + max lengths). All `<img>` → `Next/Image`. PWA: `app/manifest.ts`, SVG icons in `public/icons/`, layout meta tags. GitHub Actions CI at `.github/workflows/ci.yml`. Storage migration `supabase/migrations/20260310000000_storage_product_photos.sql`. README updated.
 - ✅ **Post-Phase 7 API Completion** (2026-03-10): Fixed month-scoped pan queries so entries only appear in their `started_month`/`started_year`. Implemented `/api/picks` GET/POST and `/api/picks/[id]` DELETE backed by `monthly_picks`. Implemented legacy compatibility routes `/api/pan`, `/api/pan/[id]`, and `/api/products/[id]/photo` so no API route remains stubbed with 501.
+- ✅ **Wishlist Feature** (2026-03-10): DB migration `supabase/migrations/20260310000003_wishlist_items.sql` (table + RLS + ownership trigger + indexes). API routes `GET/POST /api/wishlist` and `PATCH/DELETE /api/wishlist/[id]`. Service layer `lib/services/wishlist.ts`, Zod schemas `lib/validations/wishlist.ts`. SSR loader `getWishlistTabData` with `unstable_cache`. `/wishlist` page + `WishlistClient` (summary card, status filter chips, add/edit bottom sheet, inline delete confirmation, toggle purchased, linked product autofill). Wishlist link in `UserMenu`. Post-empty CTA prompt in `PanView`. `wishlist_items` seed data. Full test coverage (validations, services, API routes, cache tags). Lint, typecheck, and 134 tests all pass.
+
+## Wishlist Deviations & Notes
+
+- **No new bottom-nav tab:** Wishlist is exposed via the user menu to avoid crowding the 3-tab mobile nav.
+- **Inline delete confirmation:** Used state-based confirm flow in the card footer instead of `window.confirm` for better mobile UX.
+- **Money-saved total not in stats:** Wishlist summary (estimated to-buy total) lives only on the wishlist page for now; stats dashboard is unchanged.
+- **Linked products are optional:** Wishlist items can exist as free-text entries (brand + name only) or be linked to an existing product in the user's library via `product_id`. DB-level ownership is enforced by a trigger.
+- **Post-empty prompt auto-dismisses:** The "Want a reward?" banner in `PanView` appears for 8 seconds after logging an empty, then dismisses automatically. Users can also dismiss early.
 
 ## Phase 7 Deviations & Notes
 

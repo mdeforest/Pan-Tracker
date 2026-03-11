@@ -19,6 +19,18 @@ export type UsageLevel =
   | "almost_done"
 
 export type WouldRepurchase = "yes" | "no" | "maybe"
+export type WishlistStatus = "to_buy" | "purchased" | "all"
+
+export interface WishlistItem {
+  id: string
+  product_id: string | null
+  brand: string
+  name: string
+  notes: string | null
+  estimated_price: number | null
+  purchased_at: string | null
+  created_at: string
+}
 
 // API response envelope
 export type ApiResponse<T> =

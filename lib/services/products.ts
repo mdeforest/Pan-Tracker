@@ -27,7 +27,7 @@ export async function listProducts(
 
   let query = supabase
     .from("products")
-    .select("id,name,brand,category,photo_url,archived_at")
+    .select("id,name,brand,category,photo_url,archived_at,last_bought_at")
     .eq("user_id", userId)
     .order("created_at", { ascending: false })
 

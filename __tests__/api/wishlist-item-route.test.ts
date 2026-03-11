@@ -3,10 +3,12 @@ import type { NextRequest } from "next/server"
 
 vi.mock("@/lib/supabase/server", () => ({ createClient: vi.fn() }))
 vi.mock("@/lib/services/wishlist", () => ({
+  buyWishlistItem: vi.fn(),
   updateWishlistItem: vi.fn(),
   deleteWishlistItem: vi.fn(),
 }))
 vi.mock("@/lib/cache/tab-cache", () => ({
+  revalidateForProductMutation: vi.fn(),
   revalidateForWishlistMutation: vi.fn(),
 }))
 
@@ -35,13 +37,13 @@ describe("PATCH /api/wishlist/[id]", () => {
     } as never)
 
     const req = {
-      json: vi.fn().mockResolvedValue({ purchased: true }),
+      json: vi.fn().mockResolvedValue({ name: "Updated name" }),
     } as unknown as NextRequest
 
     const res = await PATCH(req, { params: { id: ITEM_ID } })
 
     expect(res.status).toBe(200)
-    expect(updateWishlistItem).toHaveBeenCalledWith(USER_ID, ITEM_ID, { purchased: true })
+    expect(updateWishlistItem).toHaveBeenCalledWith(USER_ID, ITEM_ID, { name: "Updated name" })
     expect(revalidateForWishlistMutation).toHaveBeenCalledWith(USER_ID)
   })
 
@@ -52,7 +54,7 @@ describe("PATCH /api/wishlist/[id]", () => {
     } as never)
 
     const req = {
-      json: vi.fn().mockResolvedValue({ purchased: true }),
+      json: vi.fn().mockResolvedValue({ name: "Updated name" }),
     } as unknown as NextRequest
 
     const res = await PATCH(req, { params: { id: ITEM_ID } })

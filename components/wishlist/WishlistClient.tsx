@@ -1,12 +1,11 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { Check, Pencil, Plus, RotateCcw, Search, Trash2, X } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { Check, Pencil, Plus, Search, Trash2, X } from "lucide-react"
 import { BottomSheet } from "@/components/shared/BottomSheet"
 import { useToast } from "@/components/shared/ToastProvider"
 import type { RawWishlistItem, WishlistProductOption } from "@/lib/loaders/tab-data"
-import type { WishlistStatus } from "@/lib/types/app"
-import { cn } from "@/lib/utils"
 
 interface WishlistClientProps {
   initialItems: RawWishlistItem[]
@@ -36,12 +35,6 @@ const MONEY = new Intl.NumberFormat("en-US", {
   style: "currency",
   currency: "USD",
 })
-
-const STATUS_OPTIONS: Array<{ value: WishlistStatus; label: string }> = [
-  { value: "to_buy", label: "To Buy" },
-  { value: "purchased", label: "Purchased" },
-  { value: "all", label: "All" },
-]
 
 function normalizePrice(value: unknown): number | null {
   if (value === null || value === undefined) return null
@@ -83,8 +76,10 @@ function formatPrice(value: number | null): string {
 
 export function WishlistClient({ initialItems, productOptions }: WishlistClientProps) {
   const { toast } = useToast()
-  const [items, setItems] = useState<WishlistItem[]>(() => initialItems.map(normalizeItem))
-  const [status, setStatus] = useState<WishlistStatus>("to_buy")
+  const router = useRouter()
+  const [items, setItems] = useState<WishlistItem[]>(() =>
+    initialItems.map(normalizeItem).filter((item) => !item.purchased_at)
+  )
   const [sheetOpen, setSheetOpen] = useState(false)
   const [editingItemId, setEditingItemId] = useState<string | null>(null)
   const [form, setForm] = useState<WishlistFormState>(emptyForm)
@@ -105,14 +100,6 @@ export function WishlistClient({ initialItems, productOptions }: WishlistClientP
     () => (form.product_id ? productOptions.find((opt) => opt.id === form.product_id) ?? null : null),
     [form.product_id, productOptions]
   )
-
-  const filteredItems = useMemo(() => {
-    return items.filter((item) => {
-      if (status === "to_buy") return !item.purchased_at
-      if (status === "purchased") return !!item.purchased_at
-      return true
-    })
-  }, [items, status])
 
   const toBuyTotal = useMemo(
     () =>
@@ -252,25 +239,24 @@ export function WishlistClient({ initialItems, productOptions }: WishlistClientP
     }
   }
 
-  async function handleTogglePurchased(item: WishlistItem) {
-    const nextPurchased = !item.purchased_at
+  async function handleBuy(item: WishlistItem) {
     setBusy(item.id, true)
 
     try {
       const res = await fetch(`/api/wishlist/${item.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ purchased: nextPurchased }),
+        body: JSON.stringify({ purchased: true }),
       })
-      const json = (await res.json()) as { data?: RawWishlistItem; error?: unknown }
-      if (!res.ok || json.error || !json.data) {
-        toast(typeof json.error === "string" ? json.error : "Failed to update item", "error")
+      const json = (await res.json()) as { data?: unknown; error?: unknown }
+      if (!res.ok || json.error) {
+        toast(typeof json.error === "string" ? json.error : "Failed to mark as bought", "error")
         return
       }
 
-      const nextItem = normalizeItem(json.data)
-      setItems((prev) => prev.map((entry) => (entry.id === item.id ? nextItem : entry)))
-      toast(nextPurchased ? "Marked as purchased" : "Moved back to to-buy", "success")
+      setItems((prev) => prev.filter((entry) => entry.id !== item.id))
+      toast("Marked as bought — product updated in library", "success")
+      router.refresh()
     } catch {
       toast("Network error. Please try again.", "error")
     } finally {
@@ -292,6 +278,7 @@ export function WishlistClient({ initialItems, productOptions }: WishlistClientP
 
       setItems((prev) => prev.filter((entry) => entry.id !== item.id))
       toast("Wishlist item deleted", "success")
+      router.refresh()
     } catch {
       toast("Network error. Please try again.", "error")
     } finally {
@@ -321,45 +308,20 @@ export function WishlistClient({ initialItems, productOptions }: WishlistClientP
           </p>
         </div>
 
-        <div
-          className="mt-3 flex gap-2 overflow-x-auto pb-1"
-          style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}
-        >
-          {STATUS_OPTIONS.map((option) => (
-            <button
-              key={option.value}
-              type="button"
-              onClick={() => setStatus(option.value)}
-              className={cn(
-                "shrink-0 rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors",
-                status === option.value
-                  ? "bg-foreground text-background"
-                  : "border border-border bg-white text-foreground"
-              )}
-            >
-              {option.label}
-            </button>
-          ))}
-        </div>
       </div>
 
       <div className="flex flex-col gap-3 px-4 pb-28 pt-2">
-        {filteredItems.length === 0 ? (
+        {items.length === 0 ? (
           <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-white px-4 py-16 text-center">
             <span className="text-4xl">🛍️</span>
-            <p className="mt-3 text-base font-semibold">
-              {status === "purchased" ? "Nothing purchased yet" : "Your wishlist is empty"}
-            </p>
+            <p className="mt-3 text-base font-semibold">Your wishlist is empty</p>
             <p className="mt-1 text-sm text-muted-foreground">
-              {status === "purchased"
-                ? "Mark items as bought when you treat yourself."
-                : "Tap + to add something you're eyeing after your next empty."}
+              Tap + to add something you&apos;re eyeing after your next empty.
             </p>
           </div>
         ) : (
-          filteredItems.map((item) => {
+          items.map((item) => {
             const isBusy = busyIds.has(item.id)
-            const isPurchased = !!item.purchased_at
 
             return (
               <article key={item.id} className="rounded-2xl border border-border bg-white p-4 shadow-sm">
@@ -373,16 +335,6 @@ export function WishlistClient({ initialItems, productOptions }: WishlistClientP
                       </span>
                     )}
                   </div>
-                  <span
-                    className={cn(
-                      "rounded-full px-2.5 py-1 text-xs font-semibold",
-                      isPurchased
-                        ? "bg-emerald-100 text-emerald-700"
-                        : "bg-amber-100 text-amber-700"
-                    )}
-                  >
-                    {isPurchased ? "Purchased" : "To Buy"}
-                  </span>
                 </div>
 
                 {item.notes && <p className="mt-3 text-sm text-foreground/90">{item.notes}</p>}
@@ -415,17 +367,12 @@ export function WishlistClient({ initialItems, productOptions }: WishlistClientP
                       <div className="flex items-center gap-2">
                         <button
                           type="button"
-                          onClick={() => handleTogglePurchased(item)}
+                          onClick={() => handleBuy(item)}
                           disabled={isBusy}
-                          className={cn(
-                            "flex h-9 items-center gap-1 rounded-xl px-3 text-xs font-semibold transition-colors disabled:opacity-50",
-                            isPurchased
-                              ? "bg-muted text-foreground"
-                              : "bg-emerald-600 text-white"
-                          )}
+                          className="flex h-9 items-center gap-1 rounded-xl bg-emerald-600 px-3 text-xs font-semibold text-white disabled:opacity-50"
                         >
-                          {isPurchased ? <RotateCcw className="h-3.5 w-3.5" /> : <Check className="h-3.5 w-3.5" />}
-                          {isPurchased ? "Undo" : "Bought"}
+                          <Check className="h-3.5 w-3.5" />
+                          Bought
                         </button>
                         <button
                           type="button"

@@ -22,6 +22,7 @@ export interface RawProduct {
   category: string
   photo_url: string | null
   archived_at: string | null
+  last_bought_at: string
 }
 
 interface PanTabData {
@@ -138,7 +139,7 @@ export async function getProductsTabData(userId: string): Promise<ProductsTabDat
           .eq("status", "active"),
         supabase
           .from("products")
-          .select("id,name,brand,category,photo_url,archived_at")
+          .select("id,name,brand,category,photo_url,archived_at,last_bought_at")
           .eq("user_id", userId)
           .is("archived_at", null)
           .order("created_at", { ascending: false }),

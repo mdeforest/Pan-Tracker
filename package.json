@@ -11,8 +11,7 @@
     "db:stop": "npx supabase stop",
     "db:reset": "npx supabase db reset",
     "db:status": "npx supabase status",
-    "db:seed": "psql \"${DATABASE_URL:-postgresql://postgres:postgres@localhost:54322/postgres}\" -f supabase/seed-missing.sql",
-    "test": "vitest run",
+"test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"
   },

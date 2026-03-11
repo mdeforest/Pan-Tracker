@@ -17,6 +17,7 @@ interface RawProduct {
   category: string
   photo_url: string | null
   archived_at: string | null
+  last_bought_at: string
 }
 
 interface ProductsClientProps {
@@ -33,6 +34,7 @@ function mapProducts(raw: RawProduct[], activeSet: Set<string>): ProductCardData
     photo_url: p.photo_url,
     is_in_pan: activeSet.has(p.id),
     is_archived: !!p.archived_at,
+    last_bought_at: p.last_bought_at,
   }))
 }
 

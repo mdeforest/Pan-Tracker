@@ -142,6 +142,75 @@ export async function updateWishlistItem(
     .single()
 }
 
+export async function buyWishlistItem(
+  userId: string,
+  id: string
+): Promise<{ data: null; error: { message: string; code?: string } } | { data: true; error: null }> {
+  const supabase = await createClient()
+
+  // Fetch the item to get product_id, brand, name
+  const { data: item, error: fetchError } = await supabase
+    .from("wishlist_items")
+    .select("id,product_id,brand,name")
+    .eq("id", id)
+    .eq("user_id", userId)
+    .single()
+
+  if (fetchError) {
+    if (fetchError.code === "PGRST116") {
+      return { data: null, error: { message: "Wishlist item not found", code: "PGRST116" } }
+    }
+    return { data: null, error: { message: fetchError.message, code: fetchError.code } }
+  }
+
+  if (!item) {
+    return { data: null, error: { message: "Wishlist item not found", code: "PGRST116" } }
+  }
+
+  const now = new Date().toISOString()
+
+  if (item.product_id) {
+    // Linked product — update last_bought_at
+    const { error: updateError } = await supabase
+      .from("products")
+      .update({ last_bought_at: now })
+      .eq("id", item.product_id)
+      .eq("user_id", userId)
+
+    if (updateError) {
+      return { data: null, error: { message: updateError.message } }
+    }
+  } else {
+    // Unlinked — create new product with last_bought_at
+    const { error: insertError } = await supabase
+      .from("products")
+      .insert({
+        user_id: userId,
+        brand: item.brand,
+        name: item.name,
+        category: "other",
+        last_bought_at: now,
+      })
+
+    if (insertError) {
+      return { data: null, error: { message: insertError.message } }
+    }
+  }
+
+  // Delete the wishlist item
+  const { error: deleteError } = await supabase
+    .from("wishlist_items")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", userId)
+
+  if (deleteError) {
+    return { data: null, error: { message: deleteError.message } }
+  }
+
+  return { data: true, error: null }
+}
+
 export async function deleteWishlistItem(userId: string, id: string) {
   const supabase = await createClient()
 

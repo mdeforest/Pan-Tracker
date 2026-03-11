@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { revalidateForWishlistMutation } from "@/lib/cache/tab-cache"
+import { revalidateForProductMutation, revalidateForWishlistMutation } from "@/lib/cache/tab-cache"
 import { createClient } from "@/lib/supabase/server"
-import { deleteWishlistItem, updateWishlistItem } from "@/lib/services/wishlist"
+import { buyWishlistItem, deleteWishlistItem, updateWishlistItem } from "@/lib/services/wishlist"
 import { UpdateWishlistItemSchema } from "@/lib/validations/wishlist"
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
@@ -27,6 +27,21 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       { data: null, error: parsed.error.flatten().fieldErrors },
       { status: 400 }
     )
+  }
+
+  // "Bought" action — delete wishlist item and update/create product
+  if (parsed.data.purchased === true) {
+    const { data, error } = await buyWishlistItem(user.id, params.id)
+    if (error) {
+      if (error.code === "PGRST116") {
+        return NextResponse.json({ data: null, error: error.message }, { status: 404 })
+      }
+      console.error("PATCH /api/wishlist/[id] buy error", { userId: user.id, id: params.id, error: error.message })
+      return NextResponse.json({ data: null, error: error.message }, { status: 500 })
+    }
+    revalidateForWishlistMutation(user.id)
+    revalidateForProductMutation(user.id)
+    return NextResponse.json({ data, error: null })
   }
 
   const { data, error } = await updateWishlistItem(user.id, params.id, parsed.data)

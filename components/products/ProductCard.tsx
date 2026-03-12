@@ -50,7 +50,7 @@ export function ProductCard({ product, onRestore, restoring = false }: ProductCa
             />
           ) : (
             <div className="flex h-full items-center justify-center bg-secondary">
-              <span className="text-5xl opacity-30">{CATEGORY_EMOJI[cat]}</span>
+              <span className="text-5xl opacity-60">{CATEGORY_EMOJI[cat]}</span>
             </div>
           )}
 

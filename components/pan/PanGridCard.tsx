@@ -42,7 +42,7 @@ export function PanGridCard({ entry, justEmptied, onTap }: PanGridCardProps) {
           />
         ) : (
           <div className="flex h-full items-center justify-center bg-secondary">
-            <span className="text-5xl opacity-30">
+            <span className="text-5xl opacity-60">
               {product.category === "makeup" ? "💄" :
                product.category === "skincare" ? "🧴" :
                product.category === "haircare" ? "💆" :

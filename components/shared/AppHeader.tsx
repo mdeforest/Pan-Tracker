@@ -33,7 +33,7 @@ export function AppHeader({ avatarUrl, name }: AppHeaderProps) {
   const backHref = getBackHref(pathname)
 
   return (
-    <header className="sticky top-0 z-40 bg-card shadow-sm">
+    <header className="sticky top-0 z-40 bg-card shadow-sm md:hidden">
       <div className="relative flex h-14 items-center justify-between px-4">
         <div className="flex w-12 justify-start">
           {backHref ? (

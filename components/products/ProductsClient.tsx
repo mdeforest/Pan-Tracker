@@ -56,9 +56,7 @@ export function ProductsClient({ activeProductIds, initialProducts }: ProductsCl
   const router = useRouter()
 
   function showToast(msg: string) {
-    if (toastTimerRef.current) {
-      clearTimeout(toastTimerRef.current)
-    }
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current)
     setToast(msg)
     toastTimerRef.current = setTimeout(() => {
       setToast(null)
@@ -88,14 +86,10 @@ export function ProductsClient({ activeProductIds, initialProducts }: ProductsCl
         const raw = json.data ?? []
         setProducts(mapProducts(raw, activeSet))
       } catch {
-        if (controller.signal.aborted) {
-          return
-        }
+        if (controller.signal.aborted) return
         setProducts([])
       } finally {
-        if (!controller.signal.aborted) {
-          setLoading(false)
-        }
+        if (!controller.signal.aborted) setLoading(false)
       }
     }, 300)
 
@@ -110,20 +104,14 @@ export function ProductsClient({ activeProductIds, initialProducts }: ProductsCl
       setProducts(mapProducts(initialProducts, activeSet))
       return
     }
-
     setProducts((prev) =>
-      prev.map((product) => ({
-        ...product,
-        is_in_pan: activeSet.has(product.id),
-      }))
+      prev.map((product) => ({ ...product, is_in_pan: activeSet.has(product.id) }))
     )
   }, [activeSet, category, deferredQuery, showArchived, initialProducts])
 
   useEffect(() => {
     return () => {
-      if (toastTimerRef.current) {
-        clearTimeout(toastTimerRef.current)
-      }
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current)
     }
   }, [])
 
@@ -146,7 +134,6 @@ export function ProductsClient({ activeProductIds, initialProducts }: ProductsCl
         showToast(typeof json.error === "string" ? json.error : "Failed to restore product")
         return
       }
-
       setProducts((prev) =>
         prev
           .map((product) =>
@@ -164,11 +151,38 @@ export function ProductsClient({ activeProductIds, initialProducts }: ProductsCl
   }
 
   return (
-    <div className="relative">
-      {/* Sticky search + filters */}
-      <div className="sticky top-14 z-30 bg-background pb-1">
-        {/* Search bar */}
-        <div className="px-4 pt-3 pb-2">
+    <div className="relative flex flex-col">
+
+      {/* ── MOBILE HEADER ─────────────────────────────────────── */}
+      <div className="md:hidden px-4 pt-5 pb-2">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">Product Library</h1>
+        <p className="mt-0.5 text-sm text-muted-foreground">Your beauty collection</p>
+      </div>
+
+      {/* ── DESKTOP HEADER ────────────────────────────────────── */}
+      <div className="hidden md:flex items-start justify-between border-b border-border px-6 py-5">
+        <div>
+          <h1 className="text-xl font-bold uppercase tracking-tight text-foreground">
+            Product Library
+          </h1>
+          <p className="mt-0.5 text-sm text-muted-foreground">
+            {products.length} product{products.length !== 1 ? "s" : ""} in your collection
+          </p>
+        </div>
+        <button
+          onClick={() => setSheetOpen(true)}
+          aria-label="Add new product"
+          className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm hover:opacity-90 active:opacity-80 transition-opacity"
+        >
+          <Plus className="h-4 w-4" strokeWidth={2.5} />
+          New Product
+        </button>
+      </div>
+
+      {/* ── FILTERS (sticky on mobile, static on desktop) ──── */}
+      <div className="sticky top-14 z-30 bg-background md:top-0 md:border-b md:border-border md:bg-white">
+        {/* Search */}
+        <div className="px-4 pt-3 pb-2 md:px-6">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <input
@@ -185,7 +199,7 @@ export function ProductsClient({ activeProductIds, initialProducts }: ProductsCl
 
         {/* Category chips */}
         <div
-          className="flex gap-2 overflow-x-auto px-4 pb-2"
+          className="flex gap-2 overflow-x-auto px-4 pb-2 md:px-6"
           style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}
         >
           <CategoryChip label="All" active={category === "all"} onClick={() => setCategory("all")} />
@@ -199,7 +213,8 @@ export function ProductsClient({ activeProductIds, initialProducts }: ProductsCl
           ))}
         </div>
 
-        <div className="px-4 pb-2">
+        {/* Show archived toggle */}
+        <div className="px-4 pb-3 md:px-6">
           <button
             type="button"
             role="switch"
@@ -208,7 +223,7 @@ export function ProductsClient({ activeProductIds, initialProducts }: ProductsCl
             className={cn(
               "flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left transition-colors active:opacity-80",
               showArchived
-                ? "border-amber-300 bg-amber-50 text-amber-950"
+                ? "border-primary/30 bg-primary/5 text-foreground"
                 : "border-border bg-white text-foreground"
             )}
           >
@@ -221,7 +236,7 @@ export function ProductsClient({ activeProductIds, initialProducts }: ProductsCl
             <span
               className={cn(
                 "relative inline-flex h-7 w-12 shrink-0 rounded-full transition-colors",
-                showArchived ? "bg-amber-500" : "bg-muted"
+                showArchived ? "bg-primary" : "bg-muted"
               )}
             >
               <span
@@ -235,19 +250,19 @@ export function ProductsClient({ activeProductIds, initialProducts }: ProductsCl
         </div>
       </div>
 
-      {/* Grid */}
-      <div className="px-4 pb-4">
+      {/* ── PRODUCT GRID ──────────────────────────────────────── */}
+      <div className="px-4 pb-4 pt-3 md:px-6 md:py-6">
         {loading ? (
           <ProductGridSkeleton />
         ) : products.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-center">
-            <span className="text-5xl mb-4">📦</span>
-            <p className="text-base font-semibold">
+            <span className="mb-4 text-5xl">📦</span>
+            <p className="text-base font-semibold text-foreground">
               {query || category !== "all" ? "No products found." : "No products yet — add your first one!"}
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {products.map((p) => (
               <ProductCard
                 key={p.id}
@@ -260,23 +275,24 @@ export function ProductsClient({ activeProductIds, initialProducts }: ProductsCl
         )}
       </div>
 
-      {/* FAB */}
+      {/* ── FAB (mobile only) ─────────────────────────────────── */}
       <button
         onClick={() => setSheetOpen(true)}
         aria-label="Add new product"
-        className="fixed bottom-[calc(4rem+env(safe-area-inset-bottom)+1rem)] right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-foreground shadow-lg active:opacity-80"
+        className="fixed right-4 z-40 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg active:opacity-80 transition-opacity md:hidden"
+        style={{ bottom: "calc(4rem + env(safe-area-inset-bottom) + 1rem)" }}
       >
-        <Plus className="h-6 w-6 text-background" />
+        <Plus className="h-6 w-6" strokeWidth={2.5} />
       </button>
 
-      {/* Toast */}
+      {/* ── Toast ─────────────────────────────────────────────── */}
       {toast && (
         <div className="fixed bottom-[calc(4rem+env(safe-area-inset-bottom)+5rem)] left-1/2 z-50 -translate-x-1/2 rounded-xl bg-foreground px-4 py-2 text-sm font-medium text-background shadow-lg">
           {toast}
         </div>
       )}
 
-      {/* New product sheet */}
+      {/* ── New product sheet ─────────────────────────────────── */}
       <NewProductSheet
         open={sheetOpen}
         onClose={() => setSheetOpen(false)}
@@ -302,8 +318,8 @@ function CategoryChip({
       className={cn(
         "shrink-0 rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors",
         active
-          ? "bg-foreground text-background"
-          : "bg-white text-foreground border border-border"
+          ? "bg-primary text-primary-foreground"
+          : "border border-border bg-white text-foreground hover:bg-muted"
       )}
       style={{ minHeight: "32px" }}
     >
@@ -314,9 +330,9 @@ function CategoryChip({
 
 function ProductGridSkeleton() {
   return (
-    <div className="grid grid-cols-2 gap-3">
-      {Array.from({ length: 6 }).map((_, i) => (
-        <div key={i} className="h-40 rounded-2xl bg-white animate-pulse" />
+    <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+      {Array.from({ length: 8 }).map((_, i) => (
+        <div key={i} className="aspect-square rounded-2xl bg-muted animate-pulse" />
       ))}
     </div>
   )

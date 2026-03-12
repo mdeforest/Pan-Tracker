@@ -89,3 +89,65 @@ export async function deletePick(userId: string, id: string) {
     .select("id,user_id,pan_entry_id,month,year,carried_over_from_month,carried_over_from_year,created_at")
     .single()
 }
+
+export async function setPickForEntry(
+  userId: string,
+  panEntryId: string,
+  month: number,
+  year: number,
+  isPick: boolean
+) {
+  const supabase = await createClient()
+
+  const { data: entry, error: entryError } = await supabase
+    .from("pan_entries")
+    .select("id")
+    .eq("id", panEntryId)
+    .eq("user_id", userId)
+    .eq("status", "active")
+    .eq("started_month", month)
+    .eq("started_year", year)
+    .maybeSingle()
+
+  if (entryError) {
+    return { data: null, error: entryError }
+  }
+
+  if (!entry) {
+    return {
+      data: null,
+      error: {
+        message: "Pan entry not found for this month",
+        code: "PGRST116",
+      } satisfies ServiceError,
+    }
+  }
+
+  if (isPick) {
+    return supabase
+      .from("monthly_picks")
+      .upsert(
+        {
+          user_id: userId,
+          pan_entry_id: panEntryId,
+          month,
+          year,
+        },
+        { onConflict: "user_id,pan_entry_id,month,year" }
+      )
+      .select("id,user_id,pan_entry_id,month,year,carried_over_from_month,carried_over_from_year,created_at")
+      .single()
+  }
+
+  const { data, error } = await supabase
+    .from("monthly_picks")
+    .delete()
+    .eq("user_id", userId)
+    .eq("pan_entry_id", panEntryId)
+    .eq("month", month)
+    .eq("year", year)
+    .select("id,user_id,pan_entry_id,month,year,carried_over_from_month,carried_over_from_year,created_at")
+    .maybeSingle()
+
+  return { data, error }
+}

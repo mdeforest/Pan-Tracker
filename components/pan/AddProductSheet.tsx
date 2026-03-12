@@ -179,7 +179,7 @@ export function AddProductSheet({
   const title = view === "search" ? "Add to Pan" : "New Product"
 
   return (
-    <BottomSheet open={open} onClose={onClose} title={title}>
+    <BottomSheet open={open} onClose={onClose} title={title} maxHeightVh={82}>
       {view === "search" ? (
         <div className="flex flex-col" style={{ minHeight: "60vh" }}>
           {/* Search input */}

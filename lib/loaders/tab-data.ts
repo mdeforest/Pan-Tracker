@@ -79,7 +79,7 @@ export async function getPanTabData(
           .eq("user_id", userId)
           .eq("started_year", year)
           .eq("started_month", month)
-          .in("status", ["active", "paused"])
+          .in("status", ["active", "empty", "paused"])
           .order("created_at", { ascending: false }),
         supabase
           .from("monthly_picks")

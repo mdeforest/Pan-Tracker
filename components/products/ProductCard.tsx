@@ -1,10 +1,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { cn } from "@/lib/utils"
-import {
-  CATEGORY_EMOJI,
-  CATEGORY_BG,
-} from "@/components/pan/utils"
+import { CATEGORY_LABELS, CATEGORY_EMOJI } from "@/components/pan/utils"
 import type { ProductCategory } from "@/lib/types/app"
 
 export interface ProductCardData {
@@ -28,76 +25,81 @@ interface ProductCardProps {
 
 export function ProductCard({ product, onRestore, restoring = false }: ProductCardProps) {
   const cat = product.category
+  const categoryLabel = CATEGORY_LABELS[cat] ?? cat
 
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-2xl bg-white shadow-sm",
-        product.is_archived && "ring-1 ring-amber-200"
+        "group relative flex flex-col overflow-hidden rounded-2xl bg-card border border-border shadow-sm transition-shadow hover:shadow-md",
+        product.is_archived && "opacity-70"
       )}
     >
       <Link
         href={`/products/${product.id}`}
-        className={cn("flex min-h-[160px] flex-col active:opacity-80", product.is_archived && "opacity-80")}
+        className="flex flex-col active:opacity-80"
       >
-        {/* Photo area */}
-        <div className={cn("flex h-24 w-full items-center justify-center", CATEGORY_BG[cat])}>
+        {/* Photo — square, full-bleed */}
+        <div className="relative aspect-square w-full overflow-hidden bg-muted">
           {product.photo_url ? (
             <Image
               src={product.photo_url}
               alt={product.name}
-              width={64}
-              height={64}
-              className="h-16 w-16 rounded-full object-cover"
+              fill
+              className="object-cover transition-transform duration-300 group-hover:scale-105"
+              sizes="(max-width: 768px) 50vw, 33vw"
             />
           ) : (
-            <span className="text-4xl">{CATEGORY_EMOJI[cat]}</span>
+            <div className="flex h-full items-center justify-center bg-secondary">
+              <span className="text-5xl opacity-60">{CATEGORY_EMOJI[cat]}</span>
+            </div>
+          )}
+
+          {/* Category badge overlay */}
+          <span className="absolute bottom-2 left-2 rounded-full bg-zinc-500 px-2 py-0.5 text-[11px] font-medium leading-none text-white shadow-sm">
+            {categoryLabel}
+          </span>
+
+          {/* In-pan badge */}
+          {product.is_in_pan && (
+            <span className="absolute right-2 top-2 rounded-md bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary-foreground">
+              In Pan
+            </span>
+          )}
+
+          {/* Archived badge */}
+          {product.is_archived && (
+            <span className="absolute right-2 top-2 rounded-md bg-muted px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+              Archived
+            </span>
           )}
         </div>
 
-        {/* Info */}
-        <div className="flex flex-1 flex-col gap-1 p-3">
+        {/* Card body */}
+        <div className="flex flex-col gap-0.5 p-3">
           <p
             className={cn(
-              "line-clamp-2 text-sm font-semibold leading-tight",
-              product.is_archived && "text-muted-foreground"
+              "line-clamp-2 text-xs font-bold uppercase tracking-wide leading-tight",
+              product.is_archived ? "text-muted-foreground" : "text-foreground"
             )}
           >
             {product.name}
           </p>
-          <p className="truncate text-xs text-muted-foreground">{product.brand}</p>
-          <div className="mt-auto flex flex-wrap gap-1 pt-1">
-            <span
-              className={cn(
-                "inline-block rounded-full px-2 py-0.5 text-xs font-medium",
-                product.is_in_pan
-                  ? "bg-green-100 text-green-700"
-                  : "bg-muted text-muted-foreground"
-              )}
-            >
-              {product.is_in_pan ? "In Pan" : "Not In Pan"}
-            </span>
-            {product.is_archived && (
-              <span className="inline-block rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
-                Archived
-              </span>
-            )}
-            <span className="inline-block rounded-full bg-violet-100 px-2 py-0.5 text-xs font-medium text-violet-700">
-              Bought {DATE_FMT.format(new Date(product.last_bought_at))}
-            </span>
-          </div>
+          <p className="truncate text-[11px] text-muted-foreground">{product.brand}</p>
+          <p className="mt-1 text-[10px] text-muted-foreground">
+            Bought {DATE_FMT.format(new Date(product.last_bought_at))}
+          </p>
         </div>
       </Link>
 
       {product.is_archived && onRestore && (
-        <div className="border-t border-border/60 p-3 pt-2">
+        <div className="border-t border-border/60 px-3 pb-3">
           <button
             type="button"
             onClick={() => onRestore(product.id)}
             disabled={restoring}
-            className="flex h-10 w-full items-center justify-center rounded-xl border border-amber-300 bg-amber-50 text-sm font-semibold text-amber-900 disabled:opacity-50 active:opacity-80"
+            className="flex h-9 w-full items-center justify-center rounded-xl bg-primary/10 text-xs font-semibold text-primary disabled:opacity-50 active:opacity-80"
           >
-            {restoring ? "Restoring…" : "Restore Product"}
+            {restoring ? "Restoring…" : "Restore"}
           </button>
         </div>
       )}

@@ -1,7 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useLayoutEffect, useState } from "react"
 import Image from "next/image"
+import { Star } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { BottomSheet } from "@/components/shared/BottomSheet"
 import {
@@ -41,9 +42,10 @@ export function ProductDetailSheet({
   const [notes, setNotes] = useState("")
   const [saving, setSaving] = useState(false)
   const [removing, setRemoving] = useState(false)
+  const [updatingPick, setUpdatingPick] = useState(false)
 
-  // Sync local state when entry changes
-  useEffect(() => {
+  // Sync before paint so the slider/progress doesn't visibly jump on open.
+  useLayoutEffect(() => {
     if (entry) {
       const idx = USAGE_LEVELS.indexOf(entry.usage_level as UsageLevel)
       setUsageLevelIdx(idx >= 0 ? idx : 0)
@@ -106,11 +108,49 @@ export function ProductDetailSheet({
     }
   }
 
+  async function handleTogglePick() {
+    if (!entry) return
+    setUpdatingPick(true)
+    try {
+      const res = await fetch(`/api/pans/${year}/${month}/entries/${entry.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ is_pick: !entry.is_pick }),
+      })
+      const json = (await res.json()) as { error?: unknown }
+      if (!res.ok || json.error) {
+        onError(typeof json.error === "string" ? json.error : "Failed to update pick")
+        return
+      }
+
+      onUpdated()
+    } catch {
+      onError("Network error. Please try again.")
+    } finally {
+      setUpdatingPick(false)
+    }
+  }
+
   return (
     <BottomSheet open={open} onClose={onClose}>
-      <div className="flex flex-col gap-4 p-4">
+      <div className="relative flex flex-col gap-4 p-4">
+        <button
+          onClick={handleTogglePick}
+          disabled={updatingPick}
+          aria-label={entry.is_pick ? "Unmark pick" : "Mark as pick"}
+          title={entry.is_pick ? "Unmark pick" : "Mark as pick"}
+          className={cn(
+            "absolute right-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full border bg-white shadow-sm transition-colors disabled:opacity-60",
+            entry.is_pick
+              ? "border-amber-300 text-amber-500"
+              : "border-border text-muted-foreground hover:text-foreground"
+          )}
+        >
+          <Star className={cn("h-4 w-4", entry.is_pick && "fill-current")} />
+        </button>
+
         {/* Product header */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 pr-12">
           <div
             className={cn(
               "relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl text-2xl",
@@ -142,13 +182,13 @@ export function ProductDetailSheet({
             <span className="text-base font-bold">{pct}%</span>
           </div>
           <div className="relative h-2.5 overflow-hidden rounded-full bg-muted">
-            <div
-              className={cn(
-                "absolute left-0 top-0 h-full rounded-full transition-all duration-200",
-                progressColor(pct)
-              )}
-              style={{ width: `${pct}%` }}
-            />
+              <div
+                className={cn(
+                  "absolute left-0 top-0 h-full rounded-full",
+                  progressColor(pct)
+                )}
+                style={{ width: `${pct}%` }}
+              />
           </div>
         </div>
 

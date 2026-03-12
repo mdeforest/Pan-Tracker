@@ -3,8 +3,6 @@
 import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react"
-import { PanCard } from "./PanCard"
-import { PanHeroCard } from "./PanHeroCard"
 import { PanGridCard } from "./PanGridCard"
 import { ProductDetailSheet } from "./ProductDetailSheet"
 import { EmptyLoggerSheet } from "./EmptyLoggerSheet"
@@ -16,7 +14,7 @@ import { MONTH_NAMES } from "./utils"
 import type { PanEntryWithProduct } from "./types"
 
 type ActiveSheet = "detail" | "empty" | "addProduct" | null
-type DesktopTab = "active" | "emptied"
+type ActiveTab = "active" | "emptied"
 
 interface PanViewProps {
   year: number
@@ -26,7 +24,7 @@ interface PanViewProps {
   wishlistedProductIds?: Set<string>
 }
 
-export function PanView({ year, month, entries, error, wishlistedProductIds }: PanViewProps) {
+export function PanView({ year, month, entries, error }: PanViewProps) {
   const router = useRouter()
   const { toast } = useToast()
 
@@ -34,7 +32,7 @@ export function PanView({ year, month, entries, error, wishlistedProductIds }: P
   const [activeSheet, setActiveSheet] = useState<ActiveSheet>(null)
   const [justEmptied, setJustEmptied] = useState<Set<string>>(new Set())
   const [showWishlistPrompt, setShowWishlistPrompt] = useState(false)
-  const [desktopTab, setDesktopTab] = useState<DesktopTab>("active")
+  const [activeTab, setActiveTab] = useState<ActiveTab>("active")
 
   const { year: nowYear, month: nowMonth } = currentYearMonth()
   const isPastMonth = year < nowYear || (year === nowYear && month < nowMonth)
@@ -65,12 +63,6 @@ export function PanView({ year, month, entries, error, wishlistedProductIds }: P
     return { activeEntries: nextActive, emptyEntries: nextEmpty }
   }, [entries])
 
-  // Mobile hero: first pick, else first active
-  const heroEntry = activeEntries.find((e) => e.is_pick) ?? activeEntries[0] ?? null
-  const secondaryEntries = heroEntry
-    ? activeEntries.filter((e) => e.id !== heroEntry.id)
-    : []
-
   function handleCardTap(entry: PanEntryWithProduct) {
     setSelectedEntry(entry)
     setActiveSheet("detail")
@@ -98,50 +90,101 @@ export function PanView({ year, month, entries, error, wishlistedProductIds }: P
         return next
       })
     }, 4000)
-    setTimeout(() => {
-      setShowWishlistPrompt(false)
-    }, 8000)
+    setTimeout(() => setShowWishlistPrompt(false), 8000)
   }
 
-  const desktopEntries = desktopTab === "active" ? activeEntries : emptyEntries
+  // Shared header: title, subtitle, month nav, tabs
+  function PageHeader({ desktop }: { desktop?: boolean }) {
+    return desktop ? (
+      <div className="flex items-start justify-between border-b border-border px-6 py-5">
+        <div>
+          <h1 className="text-xl font-bold uppercase tracking-tight text-foreground">
+            Current Project Pan
+          </h1>
+          <p className="mt-0.5 text-sm text-muted-foreground">
+            Focusing on {activeEntries.length} essential product{activeEntries.length !== 1 ? "s" : ""} this month
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <MonthNav />
+          <button
+            onClick={() => setActiveSheet("addProduct")}
+            className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm hover:opacity-90 active:opacity-80 transition-opacity"
+          >
+            <Plus className="h-4 w-4" strokeWidth={2.5} />
+            Add Product
+          </button>
+        </div>
+      </div>
+    ) : (
+      <div className="px-4 pt-5 pb-2">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">Current Project Pan</h1>
+        <p className="mt-0.5 text-sm text-muted-foreground">Track your progress and hit the pan.</p>
+        <div className="mt-3 flex items-center gap-2">
+          <MonthNav />
+        </div>
+      </div>
+    )
+  }
+
+  function MonthNav() {
+    return (
+      <>
+        <button
+          onClick={goToPrevMonth}
+          className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted active:bg-muted"
+          aria-label="Previous month"
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </button>
+        <span className="text-sm font-semibold text-foreground">
+          {MONTH_NAMES[month - 1]} {year}
+        </span>
+        <button
+          onClick={goToNextMonth}
+          className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted active:bg-muted"
+          aria-label="Next month"
+        >
+          <ChevronRight className="h-4 w-4" />
+        </button>
+      </>
+    )
+  }
+
+  function Tabs({ className }: { className?: string }) {
+    return (
+      <div className={`flex items-center gap-6 border-b border-border px-4 pt-4 md:px-6 ${className ?? ""}`}>
+        {(["active", "emptied"] as const).map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={
+              activeTab === tab
+                ? "relative pb-3 text-sm font-semibold text-foreground after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:rounded-full after:bg-primary"
+                : "pb-3 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            }
+          >
+            {tab === "active" ? "Active" : "Emptied"}
+            <span className="ml-1.5 rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
+              {tab === "active" ? activeEntries.length : emptyEntries.length}
+            </span>
+          </button>
+        ))}
+      </div>
+    )
+  }
+
+  const tabEntries = activeTab === "active" ? activeEntries : emptyEntries
 
   return (
     <div className="flex flex-col">
 
-      {/* ── MOBILE LAYOUT ─────────────────────────────────────── */}
+      {/* ── MOBILE ────────────────────────────────────────────── */}
       <div className="md:hidden">
-        {/* Page heading + month nav */}
-        <div className="px-4 pt-5 pb-2">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            Current Project Pan
-          </h1>
-          <p className="mt-0.5 text-sm text-muted-foreground">
-            Track your progress and hit the pan.
-          </p>
-          <div className="mt-3 flex items-center gap-2">
-            <button
-              onClick={goToPrevMonth}
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground active:bg-muted"
-              aria-label="Previous month"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-            <span className="text-sm font-semibold text-foreground">
-              {MONTH_NAMES[month - 1]} {year}
-            </span>
-            <button
-              onClick={goToNextMonth}
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground active:bg-muted"
-              aria-label="Next month"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
+        <PageHeader />
 
-        {/* Carry-over banner */}
         {isPastMonth && activeEntries.length > 0 && (
-          <div className="px-4 mb-3">
+          <div className="px-4 mb-2">
             <CarryOverBanner
               year={year}
               month={month}
@@ -153,144 +196,63 @@ export function PanView({ year, month, entries, error, wishlistedProductIds }: P
         )}
 
         {error && (
-          <div className="mx-4 mb-3 rounded-xl bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          <div className="mx-4 mb-2 rounded-xl bg-destructive/10 px-4 py-3 text-sm text-destructive">
             {error}
           </div>
         )}
 
-        <div className="px-4 pb-4 space-y-5">
-          {/* Hero card */}
-          {heroEntry ? (
-            <PanHeroCard
-              entry={heroEntry}
-              justEmptied={justEmptied.has(heroEntry.id)}
-              onTap={() => handleCardTap(heroEntry)}
-            />
-          ) : entries.length === 0 && !error ? (
+        <Tabs />
+
+        <div className="px-4 py-4">
+          {tabEntries.length === 0 ? (
             <div className="flex flex-col items-center gap-3 py-16 text-center">
               <span className="text-5xl">✨</span>
               <p className="text-sm text-muted-foreground">
-                No products in your pan yet.
-                <br />
-                Tap + to add your first one.
+                {activeTab === "active"
+                  ? "No products in your pan yet.\nTap + to add your first one."
+                  : "No emptied products this month."}
               </p>
             </div>
-          ) : null}
-
-          {/* Secondary Focus */}
-          {secondaryEntries.length > 0 && (
-            <div>
-              <h2 className="mb-2 text-base font-bold tracking-tight text-foreground">
-                Secondary Focus
-              </h2>
-              <div className="flex flex-col gap-2">
-                {secondaryEntries.map((entry) => (
-                  <PanCard
-                    key={entry.id}
-                    entry={entry}
-                    currentMonth={month}
-                    currentYear={year}
-                    justEmptied={justEmptied.has(entry.id)}
-                    isWishlisted={!!entry.products && (wishlistedProductIds?.has(entry.products.id) ?? false)}
-                    onTap={() => handleCardTap(entry)}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Emptied */}
-          {emptyEntries.length > 0 && (
-            <div>
-              <h2 className="mb-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                Emptied
-              </h2>
-              <div className="flex flex-col gap-2">
-                {emptyEntries.map((entry) => (
-                  <PanCard
-                    key={entry.id}
-                    entry={entry}
-                    currentMonth={month}
-                    currentYear={year}
-                    justEmptied={justEmptied.has(entry.id)}
-                    isWishlisted={!!entry.products && (wishlistedProductIds?.has(entry.products.id) ?? false)}
-                    onTap={() => {}}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Stats strip */}
-          {entries.length > 0 && (
+          ) : (
             <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-2xl border border-border bg-card px-4 py-4 shadow-sm">
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                  Total Pans
-                </p>
-                <p className="mt-1 text-2xl font-bold text-foreground">{activeEntries.length}</p>
-              </div>
-              <div className="rounded-2xl border border-border bg-card px-4 py-4 shadow-sm">
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                  Emptied
-                </p>
-                <p className="mt-1 text-2xl font-bold text-foreground">
-                  {emptyEntries.length}
-                  {emptyEntries.length > 0 && <span className="ml-1 text-base">🔥</span>}
-                </p>
-              </div>
+              {tabEntries.map((entry) => (
+                <PanGridCard
+                  key={entry.id}
+                  entry={entry}
+                  justEmptied={justEmptied.has(entry.id)}
+                  onTap={() => handleCardTap(entry)}
+                />
+              ))}
             </div>
           )}
         </div>
+
+        {/* Stats strip — only shown on active tab */}
+        {activeTab === "active" && entries.length > 0 && (
+          <div className="grid grid-cols-2 gap-3 px-4 pb-4">
+            <div className="rounded-2xl border border-border bg-card px-4 py-4 shadow-sm">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                In Pan
+              </p>
+              <p className="mt-1 text-2xl font-bold text-foreground">{activeEntries.length}</p>
+            </div>
+            <div className="rounded-2xl border border-border bg-card px-4 py-4 shadow-sm">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                Emptied
+              </p>
+              <p className="mt-1 text-2xl font-bold text-foreground">
+                {emptyEntries.length}
+                {emptyEntries.length > 0 && <span className="ml-1 text-base">🔥</span>}
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* ── DESKTOP LAYOUT ────────────────────────────────────── */}
+      {/* ── DESKTOP ───────────────────────────────────────────── */}
       <div className="hidden md:block">
-        {/* Page header */}
-        <div className="flex items-start justify-between border-b border-border px-6 py-5">
-          <div>
-            <h1 className="text-xl font-bold uppercase tracking-tight text-foreground">
-              Current Project Pan
-            </h1>
-            <p className="mt-0.5 text-sm text-muted-foreground">
-              Focusing on {activeEntries.length} essential product{activeEntries.length !== 1 ? "s" : ""} this month
-            </p>
-          </div>
+        <PageHeader desktop />
 
-          <div className="flex items-center gap-3">
-            {/* Month nav */}
-            <div className="flex items-center gap-1 rounded-xl border border-border px-3 py-2">
-              <button
-                onClick={goToPrevMonth}
-                className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted"
-                aria-label="Previous month"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </button>
-              <span className="min-w-[100px] text-center text-sm font-semibold text-foreground">
-                {MONTH_NAMES[month - 1]} {year}
-              </span>
-              <button
-                onClick={goToNextMonth}
-                className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted"
-                aria-label="Next month"
-              >
-                <ChevronRight className="h-4 w-4" />
-              </button>
-            </div>
-
-            {/* Add product */}
-            <button
-              onClick={() => setActiveSheet("addProduct")}
-              className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm hover:opacity-90 active:opacity-80 transition-opacity"
-            >
-              <Plus className="h-4 w-4" strokeWidth={2.5} />
-              Add Product
-            </button>
-          </div>
-        </div>
-
-        {/* Carry-over banner */}
         {isPastMonth && activeEntries.length > 0 && (
           <div className="px-6 pt-4">
             <CarryOverBanner
@@ -309,40 +271,21 @@ export function PanView({ year, month, entries, error, wishlistedProductIds }: P
           </div>
         )}
 
-        {/* Tabs */}
-        <div className="flex items-center gap-6 border-b border-border px-6 pt-4">
-          {(["active", "emptied"] as const).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setDesktopTab(tab)}
-              className={
-                desktopTab === tab
-                  ? "relative pb-3 text-sm font-semibold text-foreground after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:rounded-full after:bg-primary"
-                  : "pb-3 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              }
-            >
-              {tab === "active" ? "Active" : "Emptied"}
-              <span className="ml-1.5 rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
-                {tab === "active" ? activeEntries.length : emptyEntries.length}
-              </span>
-            </button>
-          ))}
-        </div>
+        <Tabs />
 
-        {/* Product grid */}
         <div className="p-6">
-          {desktopEntries.length === 0 ? (
+          {tabEntries.length === 0 ? (
             <div className="flex flex-col items-center gap-3 py-20 text-center">
               <span className="text-5xl">✨</span>
               <p className="text-sm text-muted-foreground">
-                {desktopTab === "active"
+                {activeTab === "active"
                   ? `No active products this month. Click "Add Product" to get started.`
                   : "No emptied products this month."}
               </p>
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-4">
-              {desktopEntries.map((entry) => (
+              {tabEntries.map((entry) => (
                 <PanGridCard
                   key={entry.id}
                   entry={entry}

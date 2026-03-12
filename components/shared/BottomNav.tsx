@@ -49,7 +49,7 @@ export function BottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 bg-[oklch(0.13_0_0)]"
+      className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-white md:hidden"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       aria-label="Main navigation"
     >
@@ -68,14 +68,17 @@ export function BottomNav() {
                 }}
                 aria-current={isActive ? "page" : undefined}
                 className={cn(
-                  "flex flex-1 flex-col items-center justify-center gap-1 text-xs font-medium transition-colors",
+                  "relative flex flex-1 flex-col items-center justify-center gap-1 text-xs font-medium transition-colors",
                   isActive
-                    ? "text-white"
-                    : "text-white/40 hover:text-white/70"
+                    ? "text-primary"
+                    : "text-muted-foreground hover:text-foreground"
                 )}
               >
+                {isActive && (
+                  <span className="absolute top-0 left-1/2 -translate-x-1/2 h-0.5 w-8 rounded-b-full bg-primary" />
+                )}
                 <Icon
-                  className="h-6 w-6"
+                  className="h-5 w-5"
                   aria-hidden="true"
                   strokeWidth={isActive ? 2.5 : 1.75}
                 />

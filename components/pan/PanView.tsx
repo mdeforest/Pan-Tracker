@@ -227,16 +227,16 @@ export function PanView({ year, month, entries, error, wishlistedProductIds }: P
         )}
       </div>
 
-      {/* FAB — fixed above bottom nav */}
+      {/* FAB — fixed above bottom nav on mobile, bottom-right on desktop */}
       <button
         onClick={() => setActiveSheet("addProduct")}
-        className="fixed right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-foreground text-background shadow-lg active:opacity-80"
+        className="fixed right-4 z-40 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg active:opacity-80 transition-opacity"
         style={{
           bottom: "calc(4rem + env(safe-area-inset-bottom) + 1rem)",
         }}
         aria-label="Add product to pan"
       >
-        <Plus className="h-6 w-6" />
+        <Plus className="h-6 w-6" strokeWidth={2.5} />
       </button>
 
       {/* Product Detail Sheet */}

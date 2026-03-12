@@ -54,7 +54,7 @@ export function PanGridCard({ entry, justEmptied, onTap }: PanGridCardProps) {
         )}
 
         {/* Category label — overlaid bottom-left */}
-        <span className="absolute bottom-2 left-2 rounded-md bg-primary/90 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary-foreground backdrop-blur-sm">
+        <span className="absolute bottom-2 left-2 rounded-full bg-zinc-500 px-3 py-2 text-[11px] font-medium leading-none text-white shadow-sm md:px-2.5 md:py-1.5">
           {categoryLabel}
         </span>
 

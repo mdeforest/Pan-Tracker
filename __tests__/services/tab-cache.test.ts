@@ -19,6 +19,7 @@ import {
 
 const USER_ID = "user-111"
 const REVALIDATE_PROFILE = "max"
+const IMMEDIATE_EXPIRE = { expire: 0 }
 
 describe("tab cache tag helpers", () => {
   it("builds stable tab tags", () => {
@@ -36,18 +37,18 @@ describe("tab cache invalidation", () => {
   it("revalidates pan + products and an optional month tag", () => {
     revalidateForPanMutation(USER_ID, { year: 2026, month: 3 })
 
-    expect(revalidateTag).toHaveBeenCalledWith("tab:pan:user-111", REVALIDATE_PROFILE)
-    expect(revalidateTag).toHaveBeenCalledWith("tab:products:user-111", REVALIDATE_PROFILE)
-    expect(revalidateTag).toHaveBeenCalledWith("tab:pan:user-111:2026:3", REVALIDATE_PROFILE)
+    expect(revalidateTag).toHaveBeenCalledWith("tab:pan:user-111", IMMEDIATE_EXPIRE)
+    expect(revalidateTag).toHaveBeenCalledWith("tab:products:user-111", IMMEDIATE_EXPIRE)
+    expect(revalidateTag).toHaveBeenCalledWith("tab:pan:user-111:2026:3", IMMEDIATE_EXPIRE)
   })
 
   it("revalidates empties, pan, and products for empties mutations", () => {
     revalidateForEmptiesMutation(USER_ID, { year: 2026, month: 3 })
 
     expect(revalidateTag).toHaveBeenCalledWith("tab:empties:user-111", REVALIDATE_PROFILE)
-    expect(revalidateTag).toHaveBeenCalledWith("tab:pan:user-111", REVALIDATE_PROFILE)
-    expect(revalidateTag).toHaveBeenCalledWith("tab:products:user-111", REVALIDATE_PROFILE)
-    expect(revalidateTag).toHaveBeenCalledWith("tab:pan:user-111:2026:3", REVALIDATE_PROFILE)
+    expect(revalidateTag).toHaveBeenCalledWith("tab:pan:user-111", IMMEDIATE_EXPIRE)
+    expect(revalidateTag).toHaveBeenCalledWith("tab:products:user-111", IMMEDIATE_EXPIRE)
+    expect(revalidateTag).toHaveBeenCalledWith("tab:pan:user-111:2026:3", IMMEDIATE_EXPIRE)
   })
 
   it("revalidates all tab roots for product mutations", () => {

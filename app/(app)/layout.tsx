@@ -23,7 +23,7 @@ export default async function AppLayout({
     null
 
   return (
-    <div className="flex min-h-screen flex-col md:flex-row">
+    <div className="flex min-h-screen flex-col md:h-screen md:flex-row md:overflow-hidden">
       {/* Mobile: sticky top header */}
       <AppHeader avatarUrl={avatarUrl} name={name} />
 

@@ -1,6 +1,7 @@
 import { revalidateTag } from "next/cache"
 
 const REVALIDATE_PROFILE = "max"
+const IMMEDIATE_EXPIRE = { expire: 0 } as const
 
 export function panTabTag(userId: string) {
   return `tab:pan:${userId}`
@@ -30,11 +31,11 @@ export function revalidateForPanMutation(
   userId: string,
   params?: { year?: number; month?: number }
 ) {
-  revalidateTag(panTabTag(userId), REVALIDATE_PROFILE)
-  revalidateTag(productsTabTag(userId), REVALIDATE_PROFILE)
+  revalidateTag(panTabTag(userId), IMMEDIATE_EXPIRE)
+  revalidateTag(productsTabTag(userId), IMMEDIATE_EXPIRE)
 
   if (params?.year !== undefined && params?.month !== undefined) {
-    revalidateTag(panMonthTabTag(userId, params.year, params.month), REVALIDATE_PROFILE)
+    revalidateTag(panMonthTabTag(userId, params.year, params.month), IMMEDIATE_EXPIRE)
   }
 }
 

@@ -55,7 +55,7 @@ export function ProductCard({ product, onRestore, restoring = false }: ProductCa
           )}
 
           {/* Category badge overlay */}
-          <span className="absolute bottom-2 left-2 rounded-md bg-primary/90 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary-foreground backdrop-blur-sm">
+          <span className="absolute bottom-2 left-2 rounded-full bg-zinc-500 px-2 py-0.5 text-[11px] font-medium leading-none text-white shadow-sm">
             {categoryLabel}
           </span>
 

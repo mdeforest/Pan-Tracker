@@ -180,7 +180,7 @@ export function ProductsClient({ activeProductIds, initialProducts }: ProductsCl
       </div>
 
       {/* ── FILTERS (sticky on mobile, static on desktop) ──── */}
-      <div className="sticky top-0 z-30 bg-background md:top-0 md:border-b md:border-border md:bg-white">
+      <div className="sticky top-14 z-30 bg-background md:top-0 md:border-b md:border-border md:bg-white">
         {/* Search */}
         <div className="px-4 pt-3 pb-2 md:px-6">
           <div className="relative">

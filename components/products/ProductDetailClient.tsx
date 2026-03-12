@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
-import { AlertTriangle, Star } from "lucide-react"
+import { AlertTriangle, ArrowLeft, Star } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ProductEditSheet } from "./ProductEditSheet"
 import { BottomSheet } from "@/components/shared/BottomSheet"
@@ -142,8 +142,9 @@ export function ProductDetailClient({
         showToast(getErrorMessage(json.error, "Failed to add to pan"))
         return
       }
-      showToast("Added to current pan!")
-      router.push(`/pan/${currentYear}/${currentMonth}`)
+      const destination = `/pan/${currentYear}/${currentMonth}`
+      // Force a fresh document navigation so the destination isn't served from stale prefetched RSC cache.
+      window.location.assign(destination)
     } catch {
       showToast("Network error. Please try again.")
     } finally {
@@ -199,6 +200,14 @@ export function ProductDetailClient({
     router.refresh()
   }
 
+  function handleBack() {
+    if (window.history.length > 1) {
+      router.back()
+      return
+    }
+    router.push("/products")
+  }
+
   return (
     <div className="pb-6">
       {/* Photo header */}
@@ -248,6 +257,18 @@ export function ProductDetailClient({
             )}
           </>
         )}
+
+        <button
+          onClick={handleBack}
+          className={cn(
+            "absolute top-4 left-4 z-10 flex h-11 min-w-[44px] items-center gap-1.5 rounded-xl px-3 text-sm font-medium backdrop-blur-sm active:opacity-80",
+            product.photo_url ? "bg-black/40 text-white" : "bg-black/10 text-foreground"
+          )}
+          aria-label="Go back"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back
+        </button>
       </div>
 
       {/* Info below photo (when no photo overlay) */}

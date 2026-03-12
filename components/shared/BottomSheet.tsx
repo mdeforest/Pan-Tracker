@@ -11,9 +11,18 @@ interface BottomSheetProps {
   children: React.ReactNode
   footer?: React.ReactNode
   className?: string
+  maxHeightVh?: number
 }
 
-export function BottomSheet({ open, onClose, title, children, footer, className }: BottomSheetProps) {
+export function BottomSheet({
+  open,
+  onClose,
+  title,
+  children,
+  footer,
+  className,
+  maxHeightVh = 90,
+}: BottomSheetProps) {
   const sheetRef = useRef<HTMLDivElement>(null)
 
   // Lock body scroll when open
@@ -43,8 +52,9 @@ export function BottomSheet({ open, onClose, title, children, footer, className 
       // Distance from bottom of visual viewport to bottom of layout viewport (keyboard height)
       const keyboardHeight = Math.max(0, window.innerHeight - vv.offsetTop - vv.height)
       sheetRef.current.style.bottom = `${keyboardHeight}px`
-      // Cap the sheet height to the visible viewport so the top never overflows off-screen
-      sheetRef.current.style.maxHeight = `${vv.height}px`
+      // Cap the sheet to both the visible viewport and its configured vh ceiling.
+      const maxHeightPx = (window.innerHeight * maxHeightVh) / 100
+      sheetRef.current.style.maxHeight = `${Math.min(vv.height, maxHeightPx)}px`
     }
 
     vv.addEventListener("resize", update)
@@ -60,7 +70,7 @@ export function BottomSheet({ open, onClose, title, children, footer, className 
         sheet.style.maxHeight = ""
       }
     }
-  }, [open])
+  }, [maxHeightVh, open])
 
   return (
     <>
@@ -84,7 +94,7 @@ export function BottomSheet({ open, onClose, title, children, footer, className 
           open ? "translate-y-0" : "translate-y-full",
           className
         )}
-        style={{ maxHeight: "90dvh" }}
+        style={{ maxHeight: `${maxHeightVh}dvh` }}
       >
         {/* Drag handle */}
         <div className="flex shrink-0 justify-center pt-3 pb-1">

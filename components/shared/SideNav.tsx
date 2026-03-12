@@ -68,9 +68,10 @@ export function SideNav({ avatarUrl, name }: SideNavProps) {
       <div className="flex h-16 items-center justify-center border-b border-border">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-            <rect x="2" y="8" width="3" height="6" rx="1" fill="white"/>
-            <rect x="6.5" y="5" width="3" height="9" rx="1" fill="white"/>
-            <rect x="11" y="2" width="3" height="12" rx="1" fill="white"/>
+            <rect x="6.1" y="1.8" width="3.8" height="2.1" rx="0.7" fill="white" />
+            <rect x="4.3" y="3.9" width="7.4" height="10.1" rx="2" stroke="white" strokeWidth="1.2" />
+            <path d="M6.3 8h3.4" stroke="white" strokeWidth="1.2" strokeLinecap="round" />
+            <circle cx="8" cy="10.6" r="1.05" fill="white" />
           </svg>
         </div>
       </div>

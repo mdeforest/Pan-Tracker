@@ -19,6 +19,7 @@ export const UpdatePanEntrySchema = z
     usage_level: z.enum(USAGE_LEVELS).optional(),
     notes: z.string().trim().max(2000, "Notes must be 2000 characters or fewer").nullable().optional(),
     status: z.enum(PAN_ENTRY_STATUSES).optional(),
+    is_pick: z.boolean().optional(),
   })
   .refine((data) => Object.keys(data).some((k) => data[k as keyof typeof data] !== undefined), {
     message: "At least one field must be provided",

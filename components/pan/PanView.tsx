@@ -227,26 +227,6 @@ export function PanView({ year, month, entries, error }: PanViewProps) {
           )}
         </div>
 
-        {/* Stats strip — only shown on active tab */}
-        {activeTab === "active" && entries.length > 0 && (
-          <div className="grid grid-cols-2 gap-3 px-4 pb-4">
-            <div className="rounded-2xl border border-border bg-card px-4 py-4 shadow-sm">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                In Pan
-              </p>
-              <p className="mt-1 text-2xl font-bold text-foreground">{activeEntries.length}</p>
-            </div>
-            <div className="rounded-2xl border border-border bg-card px-4 py-4 shadow-sm">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                Emptied
-              </p>
-              <p className="mt-1 text-2xl font-bold text-foreground">
-                {emptyEntries.length}
-                {emptyEntries.length > 0 && <span className="ml-1 text-base">🔥</span>}
-              </p>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* ── DESKTOP ───────────────────────────────────────────── */}

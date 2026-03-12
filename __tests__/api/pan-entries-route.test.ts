@@ -39,7 +39,7 @@ describe("POST /api/pans/[year]/[month]/entries", () => {
       json: vi.fn().mockResolvedValue({ product_id: PRODUCT_ID }),
     } as unknown as NextRequest
 
-    const res = await POST(req, { params: { year: "2026", month: "3" } })
+    const res = await POST(req, { params: Promise.resolve({ year: "2026", month: "3" }) })
 
     expect(res.status).toBe(201)
     expect(revalidateForPanMutation).toHaveBeenCalledWith(USER_ID, {
@@ -58,7 +58,7 @@ describe("POST /api/pans/[year]/[month]/entries", () => {
       json: vi.fn().mockResolvedValue({ product_id: PRODUCT_ID }),
     } as unknown as NextRequest
 
-    const res = await POST(req, { params: { year: "2026", month: "3" } })
+    const res = await POST(req, { params: Promise.resolve({ year: "2026", month: "3" }) })
 
     expect(res.status).toBe(500)
     expect(revalidateForPanMutation).not.toHaveBeenCalled()

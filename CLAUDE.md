@@ -8,10 +8,10 @@ Project Pan Tracker is a Next.js 14 web app for beauty enthusiasts tracking "pro
 
 ## Architecture
 
-- **Frontend:** Next.js 14 App Router, TypeScript strict, Tailwind CSS, shadcn/ui
+- **Frontend:** Next.js 16 App Router, TypeScript strict, Tailwind CSS, shadcn/ui
 - **Backend:** Next.js Route Handlers (no separate API server)
 - **Database:** Supabase (PostgreSQL); native SQL migrations via Supabase CLI; typed via `lib/types/database.ts`
-- **Auth:** Supabase Auth with Google OAuth provider (via @supabase/ssr); session in cookies managed by middleware
+- **Auth:** Supabase Auth with Google OAuth provider (via @supabase/ssr); session in cookies managed by `proxy.ts` (Next.js 16 renamed `middleware.ts` → `proxy.ts`; export function must be named `proxy`)
 - **File Storage:** Supabase Storage (product photos)
 - **Hosting:** Vercel (Hobby or Pro)
 
@@ -247,7 +247,15 @@ Note: NEXTAUTH_URL and NEXTAUTH_SECRET are in .env.local.example for reference b
 - ✅ **Phase 6 — Empties Log + Product Library** (2026-03-07): Empties log at `app/(app)/empties/page.tsx` — sticky dual filter bar (month/year + category chips), accordion EmptyCard (expand-in-place for notes). Product library at `app/(app)/products/page.tsx` — sticky search + category chips, 2-col grid, FAB opens NewProductSheet. Product detail at `app/(app)/products/[id]/page.tsx` — photo header with gradient overlay, edit sheet, "Add to Current Pan" button, full pan history timeline with embedded empty records.
 - ✅ **Phase 7 — Hardening + PWA + CI** (2026-03-10): Security headers (X-Frame-Options, X-Content-Type-Options, Referrer-Policy, CSP) in `next.config.mjs`. `app/error.tsx` and `app/not-found.tsx`. Zod schema audit (`.trim()` + max lengths). All `<img>` → `Next/Image`. PWA: `app/manifest.ts`, SVG icons in `public/icons/`, layout meta tags. GitHub Actions CI at `.github/workflows/ci.yml`. Storage migration `supabase/migrations/20260310000000_storage_product_photos.sql`. README updated.
 - ✅ **Post-Phase 7 API Completion** (2026-03-10): Fixed month-scoped pan queries so entries only appear in their `started_month`/`started_year`. Implemented `/api/picks` GET/POST and `/api/picks/[id]` DELETE backed by `monthly_picks`. Implemented legacy compatibility routes `/api/pan`, `/api/pan/[id]`, and `/api/products/[id]/photo` so no API route remains stubbed with 501.
+- 🔄 **CSV Import + Month Picker** (PR #18, 2026-03-17): Bulk import of pan history via CSV (`POST /api/import/csv?mode=preview|import`). Supports `empty`, `current_pan`, and `backlog` statuses. ImportHistorySheet with preview step. "Import History" in UserMenu + SideNav. Month label in PanView is now a tappable button opening MonthPickerSheet (year ±1, 3×4 month grid, data-dot indicators, 36-month rolling window enforced).
 - ✅ **Wishlist Feature** (2026-03-10): DB migration `supabase/migrations/20260310000003_wishlist_items.sql` (table + RLS + ownership trigger + indexes). API routes `GET/POST /api/wishlist` and `PATCH/DELETE /api/wishlist/[id]`. Service layer `lib/services/wishlist.ts`, Zod schemas `lib/validations/wishlist.ts`. SSR loader `getWishlistTabData` with `unstable_cache`. `/wishlist` page + `WishlistClient` (summary card, status filter chips, add/edit bottom sheet, inline delete confirmation, toggle purchased, linked product autofill). Wishlist link in `UserMenu`. Post-empty CTA prompt in `PanView`. `wishlist_items` seed data. Full test coverage (validations, services, API routes, cache tags). Lint, typecheck, and 134 tests all pass.
+
+## CSV Import + Month Picker Deviations & Notes
+
+- **`proxy.ts` not `middleware.ts`:** Next.js 16 renamed the middleware convention. File must be `proxy.ts` with `export async function proxy(...)`. Do not create or restore `middleware.ts`.
+- **`unstable_cache` can't serialize `Set`:** Loaders that need to return a set of strings (e.g. `getMonthsWithPanData`) return `string[]` and convert to `Set` at the call site.
+- **Month picker reuses `getRollingImportWindow`** from `lib/import/history-csv.ts` to enforce the same 36-month boundary as CSV import validation.
+- **`backlog` rows in CSV import:** Products with `status=backlog` are created in the product library (or matched) but no pan entry or empty is created — they're silently imported as products only.
 
 ## Wishlist Deviations & Notes
 

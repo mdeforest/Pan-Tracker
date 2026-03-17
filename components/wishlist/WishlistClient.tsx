@@ -300,7 +300,7 @@ export function WishlistClient({ initialItems, productOptions }: WishlistClientP
   return (
     <div className="relative">
       <div className="sticky top-14 z-30 bg-background px-4 pt-3 pb-2">
-        <div className="rounded-2xl border border-border bg-white p-4 shadow-sm">
+        <div className="rounded-3xl ring-1 ring-gray-100 bg-white p-4 shadow-[0_2px_10px_rgba(0,0,0,0.04)]">
           <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">To-Buy Estimated Total</p>
           <p className="mt-1 text-3xl font-bold tracking-tight">{MONEY.format(toBuyTotal)}</p>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -312,7 +312,7 @@ export function WishlistClient({ initialItems, productOptions }: WishlistClientP
 
       <div className="flex flex-col gap-3 px-4 pb-28 pt-2">
         {items.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-white px-4 py-16 text-center">
+          <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-border bg-white px-4 py-16 text-center">
             <span className="text-4xl">🛍️</span>
             <p className="mt-3 text-base font-semibold">Your wishlist is empty</p>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -324,7 +324,7 @@ export function WishlistClient({ initialItems, productOptions }: WishlistClientP
             const isBusy = busyIds.has(item.id)
 
             return (
-              <article key={item.id} className="rounded-2xl border border-border bg-white p-4 shadow-sm">
+              <article key={item.id} className="rounded-3xl ring-1 ring-gray-100 bg-white p-4 shadow-[0_2px_10px_rgba(0,0,0,0.04)]">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-sm text-muted-foreground">{item.brand}</p>
@@ -442,7 +442,7 @@ export function WishlistClient({ initialItems, productOptions }: WishlistClientP
                 </button>
               </div>
             ) : (
-              <div className="relative">
+              <div className="relative mt-2">
                 <div>
                   <Search className="pointer-events-none absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
                   <input
@@ -450,7 +450,7 @@ export function WishlistClient({ initialItems, productOptions }: WishlistClientP
                     value={productSearch}
                     onChange={(e) => setProductSearch(e.target.value)}
                     placeholder="Search your product library…"
-                    className="h-11 w-full rounded-xl border border-input bg-white pl-9 pr-3 placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    className="h-12 w-full rounded-2xl border border-input bg-white pl-10 pr-4 placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring shadow-sm"
                     style={{ fontSize: "16px" }}
                   />
                 </div>

@@ -25,7 +25,7 @@ export function PanGridCard({ entry, justEmptied, onTap }: PanGridCardProps) {
       onClick={isEmpty ? undefined : onTap}
       disabled={isEmpty}
       className={cn(
-        "group relative flex w-full flex-col rounded-2xl bg-card border border-border shadow-sm text-left overflow-hidden transition-transform active:scale-[0.98] hover:shadow-md",
+        "group relative flex w-full flex-col rounded-3xl bg-card ring-1 ring-gray-100 shadow-[0_2px_10px_rgba(0,0,0,0.04)] text-left overflow-hidden transition-transform active:scale-[0.98] hover:shadow-md",
         isEmpty && "opacity-60"
       )}
       aria-label={`View details for ${product.name}`}

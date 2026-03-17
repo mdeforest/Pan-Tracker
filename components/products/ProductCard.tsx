@@ -30,7 +30,7 @@ export function ProductCard({ product, onRestore, restoring = false }: ProductCa
   return (
     <div
       className={cn(
-        "group relative flex flex-col overflow-hidden rounded-2xl bg-card border border-border shadow-sm transition-shadow hover:shadow-md",
+        "group relative flex flex-col overflow-hidden rounded-3xl bg-card ring-1 ring-gray-100 shadow-[0_2px_10px_rgba(0,0,0,0.04)] transition-shadow hover:shadow-md",
         product.is_archived && "opacity-70"
       )}
     >

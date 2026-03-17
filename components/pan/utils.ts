@@ -9,7 +9,7 @@ export const USAGE_LEVELS: UsageLevel[] = [
 ]
 
 export const USAGE_PERCENT: Record<UsageLevel, number> = {
-  just_started: 95,
+  just_started: 100,
   quarter: 75,
   half: 50,
   three_quarters: 25,

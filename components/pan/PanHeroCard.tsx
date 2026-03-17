@@ -24,7 +24,7 @@ export function PanHeroCard({ entry, justEmptied, onTap }: PanHeroCardProps) {
     <button
       onClick={onTap}
       className={cn(
-        "relative w-full rounded-2xl bg-card border border-border shadow-sm text-left overflow-hidden transition-transform active:scale-[0.99]",
+        "relative w-full rounded-3xl bg-card ring-1 ring-gray-100 shadow-[0_2px_10px_rgba(0,0,0,0.04)] text-left overflow-hidden transition-transform active:scale-[0.99]",
         justEmptied && "opacity-60"
       )}
       aria-label={`View details for ${product.name}`}

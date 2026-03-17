@@ -366,7 +366,7 @@ export function ProductDetailClient({
                       )}
                     />
 
-                    <div className="bg-white rounded-2xl shadow-sm p-3">
+                    <div className="bg-white rounded-3xl shadow-[0_2px_10px_rgba(0,0,0,0.04)] ring-1 ring-gray-100 p-3">
                       {/* Month + status */}
                       <div className="flex items-center justify-between mb-2">
                         <p className="text-sm font-semibold">

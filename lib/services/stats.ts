@@ -39,6 +39,8 @@ export interface StatsData {
   monthlyTrend: MonthlyTrendPoint[]
   topBrands: BrandCount[]
   avgTimeByCategory: CategoryAvgMonths[]
+  repurchaseRate: number | null
+  topRatedProducts: { name: string; brand: string; rating: number; count: number }[]
   hasData: boolean
 }
 
@@ -189,6 +191,9 @@ interface NormalizedRow {
   id: string
   finished_month: number
   finished_year: number
+  rating: number | null
+  would_repurchase: "yes" | "no" | "maybe" | null
+  name: string | null
   brand: string | null
   category: ProductCategory | null
   started_month: number | null
@@ -201,7 +206,7 @@ export async function getStatsData(userId: string): Promise<StatsData> {
   const { data, error } = await supabase
     .from("empties")
     .select(
-      "id, finished_month, finished_year, products:products!empties_product_id_fkey(brand, category), pan_entry:pan_entries!empties_pan_entry_id_fkey(started_month, started_year)"
+      "id, finished_month, finished_year, rating, would_repurchase, products:products!empties_product_id_fkey(name, brand, category), pan_entry:pan_entries!empties_pan_entry_id_fkey(started_month, started_year)"
     )
     .eq("user_id", userId)
 
@@ -230,6 +235,9 @@ export async function getStatsData(userId: string): Promise<StatsData> {
       id: r.id as string,
       finished_month: r.finished_month as number,
       finished_year: r.finished_year as number,
+      rating: r.rating as number | null,
+      would_repurchase: r.would_repurchase as "yes" | "no" | "maybe" | null,
+      name: p ? (p.name as string) : null,
       brand: p ? (p.brand as string) : null,
       category: p ? (p.category as ProductCategory) : null,
       started_month: e ? (e.started_month as number) : null,
@@ -312,6 +320,44 @@ export async function getStatsData(userId: string): Promise<StatsData> {
     }))
     .sort((a, b) => b.count - a.count)
 
+  // --- Repurchase Rate ---
+  let repurchaseYes = 0
+  let repurchaseTotal = 0
+  for (const row of rows) {
+    if (row.would_repurchase) {
+      repurchaseTotal++
+      if (row.would_repurchase === "yes") {
+        repurchaseYes++
+      }
+    }
+  }
+  const repurchaseRate = repurchaseTotal > 0 ? Math.round((repurchaseYes / repurchaseTotal) * 100) : null
+
+  // --- Top Rated Products ---
+  const productRatings = new Map<string, { name: string; brand: string; totalRating: number; count: number }>()
+  for (const row of rows) {
+    if (row.name && row.brand && row.rating !== null) {
+      const key = `${row.brand}::${row.name}`
+      const existing = productRatings.get(key)
+      if (existing) {
+        existing.totalRating += row.rating
+        existing.count++
+      } else {
+        productRatings.set(key, { name: row.name, brand: row.brand, totalRating: row.rating, count: 1 })
+      }
+    }
+  }
+
+  const topRatedProducts = Array.from(productRatings.values())
+    .map(p => ({
+      name: p.name,
+      brand: p.brand,
+      rating: Math.round((p.totalRating / p.count) * 10) / 10,
+      count: p.count
+    }))
+    .sort((a, b) => b.rating - a.rating || b.count - a.count)
+    .slice(0, 5)
+
   return {
     totalEmpties: rows.length,
     currentStreak,
@@ -320,6 +366,8 @@ export async function getStatsData(userId: string): Promise<StatsData> {
     monthlyTrend,
     topBrands,
     avgTimeByCategory,
+    repurchaseRate,
+    topRatedProducts,
     hasData: true,
   }
 }
@@ -334,6 +382,8 @@ function emptyStats(): StatsData {
     monthlyTrend: buildLast12Months(currentYear, currentMonth),
     topBrands: [],
     avgTimeByCategory: [],
+    repurchaseRate: null,
+    topRatedProducts: [],
     hasData: false,
   }
 }

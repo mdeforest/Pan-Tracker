@@ -133,24 +133,9 @@ export function ProductDetailSheet({
 
   return (
     <BottomSheet open={open} onClose={onClose}>
-      <div className="relative flex flex-col gap-4 p-4">
-        <button
-          onClick={handleTogglePick}
-          disabled={updatingPick}
-          aria-label={entry.is_pick ? "Unmark pick" : "Mark as pick"}
-          title={entry.is_pick ? "Unmark pick" : "Mark as pick"}
-          className={cn(
-            "absolute right-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full border bg-white shadow-sm transition-colors disabled:opacity-60",
-            entry.is_pick
-              ? "border-amber-300 text-amber-500"
-              : "border-border text-muted-foreground hover:text-foreground"
-          )}
-        >
-          <Star className={cn("h-4 w-4", entry.is_pick && "fill-current")} />
-        </button>
-
-        {/* Product header */}
-        <div className="flex items-center gap-3 pr-12">
+      <div className="flex flex-col gap-4 p-4">
+        {/* Product header Card */}
+        <div className="flex items-center gap-3 rounded-3xl bg-white p-4 shadow-[0_2px_10px_rgba(0,0,0,0.04)] ring-1 ring-gray-100 relative">
           <div
             className={cn(
               "relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl text-2xl",
@@ -169,64 +154,67 @@ export function ProductDetailSheet({
               <span className={CATEGORY_TEXT[category]}>{CATEGORY_EMOJI[category]}</span>
             )}
           </div>
-          <div>
-            <p className="text-lg font-bold leading-tight">{product.name}</p>
-            <p className="text-sm text-muted-foreground">{product.brand}</p>
+          <div className="flex-1 min-w-0 pr-8">
+            <p className="text-lg font-bold leading-tight truncate">{product.name}</p>
+            <p className="text-sm text-muted-foreground truncate">{product.brand}</p>
           </div>
+          <button
+            onClick={handleTogglePick}
+            disabled={updatingPick}
+            aria-label={entry.is_pick ? "Unmark pick" : "Mark as pick"}
+            title={entry.is_pick ? "Unmark pick" : "Mark as pick"}
+            className={cn(
+              "absolute right-4 top-1/2 -translate-y-1/2 flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors disabled:opacity-60",
+              entry.is_pick
+                ? "bg-amber-100 text-amber-500"
+                : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
+            )}
+          >
+            <Star className={cn("h-5 w-5", entry.is_pick && "fill-current")} />
+          </button>
         </div>
 
-        {/* Progress display */}
-        <div>
-          <div className="mb-1 flex items-center justify-between">
-            <span className="text-sm font-medium">Remaining</span>
-            <span className="text-base font-bold">{pct}%</span>
+        {/* Progress Display Card */}
+        <div className="rounded-3xl bg-white p-5 shadow-[0_2px_10px_rgba(0,0,0,0.04)] ring-1 ring-gray-100">
+          <div className="mb-2 flex items-center justify-between">
+            <span className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Remaining</span>
+            <span className="text-xl font-bold">{pct}%</span>
           </div>
-          <div className="relative h-2.5 overflow-hidden rounded-full bg-muted">
+          <div className="relative h-3 overflow-hidden rounded-full bg-muted mb-6">
               <div
                 className={cn(
-                  "absolute left-0 top-0 h-full rounded-full",
+                  "absolute left-0 top-0 h-full rounded-full transition-all",
                   progressColor(pct)
                 )}
                 style={{ width: `${pct}%` }}
               />
           </div>
-        </div>
 
-        {/* Usage level slider — 0 = almost_done (left), 4 = just_started (right) */}
-        <div>
-          <input
-            type="range"
-            min={0}
-            max={4}
-            step={1}
-            value={4 - usageLevelIdx}
-            onChange={(e) => setUsageLevelIdx(4 - parseInt(e.target.value, 10))}
-            className="usage-slider w-full"
-            aria-label="Usage level"
-          />
-          {/* Absolute positioning: thumb center at calc(i*25% + (14 - i*7)px) for 28px thumb */}
-          <div className="relative mt-1 h-4">
-            {[...USAGE_LEVELS].reverse().map((level, i) => (
-              <span
-                key={level}
-                style={{ left: `calc(${i * 25}% + ${14 - i * 7}px)` }}
-                className={cn(
-                  "absolute whitespace-nowrap text-xs",
-                  i === 0 && "translate-x-0",
-                  i > 0 && i < 4 && "-translate-x-1/2",
-                  i === 4 && "-translate-x-full",
-                  level === USAGE_LEVELS[usageLevelIdx] ? "text-foreground" : "text-muted-foreground"
-                )}
-              >
-                {USAGE_SHORT_LABELS[level]}
-              </span>
-            ))}
+          <div className="flex items-center gap-3">
+            <input
+              type="range"
+              min={0}
+              max={4}
+              step={1}
+              value={4 - usageLevelIdx}
+              onChange={(e) => setUsageLevelIdx(4 - parseInt(e.target.value, 10))}
+              className="usage-slider w-full"
+              aria-label="Usage level"
+            />
+          </div>
+          
+          <div className="mt-2 flex items-center justify-between px-1 text-[11px] font-medium text-muted-foreground">
+            <span>Empty</span>
+            <span>Low</span>
+            <span>Half</span>
+            <span>Most</span>
+            <span>Full</span>
           </div>
         </div>
 
-        {/* Notes textarea */}
-        <div>
-          <label className="mb-1.5 block text-sm font-medium" htmlFor="entry-notes">
+        {/* Notes Card */}
+        <div className="rounded-3xl bg-white p-4 shadow-[0_2px_10px_rgba(0,0,0,0.04)] ring-1 ring-gray-100">
+          <label className="mb-2 block text-sm font-semibold uppercase tracking-wider text-muted-foreground" htmlFor="entry-notes">
             Notes
           </label>
           <textarea
@@ -234,35 +222,36 @@ export function ProductDetailSheet({
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Add a note…"
-            className="min-h-[80px] w-full resize-none rounded-xl border border-input bg-white px-3 py-2 placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            className="min-h-[80px] w-full resize-none rounded-xl border border-input bg-muted/30 px-3 py-2 placeholder:text-muted-foreground focus:bg-white focus:outline-none focus:ring-2 focus:ring-ring transition-colors"
             style={{ fontSize: "16px" }}
           />
         </div>
 
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="flex h-12 w-full items-center justify-center rounded-xl bg-foreground text-base font-semibold text-background disabled:opacity-60 active:opacity-80"
-        >
-          {saving ? "Saving…" : "Save Changes"}
-        </button>
+        {/* Actions Dropdown / Group */}
+        <div className="mt-2 flex flex-col gap-2">
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="flex h-12 w-full items-center justify-center rounded-xl bg-foreground text-base font-semibold text-background disabled:opacity-60 active:opacity-80"
+          >
+            {saving ? "Saving…" : "Save Changes"}
+          </button>
 
-        {/* Mark Empty */}
-        <button
-          onClick={onMarkEmpty}
-          className="flex h-12 w-full items-center justify-center rounded-xl bg-green-600 text-base font-semibold text-white active:bg-green-700"
-        >
-          Mark Empty ✓
-        </button>
+          <button
+            onClick={onMarkEmpty}
+            className="flex h-12 w-full items-center justify-center rounded-xl bg-green-600 text-base font-semibold text-white active:bg-green-700"
+          >
+            Mark Empty ✓
+          </button>
 
-        {/* Remove from pan */}
-        <button
-          onClick={handleRemove}
-          disabled={removing}
-          className="py-3 text-center text-sm text-destructive disabled:opacity-60"
-        >
-          {removing ? "Removing…" : "Remove from pan"}
-        </button>
+          <button
+            onClick={handleRemove}
+            disabled={removing}
+            className="flex h-12 w-full items-center justify-center rounded-xl bg-red-50 text-base font-semibold text-red-600 active:bg-red-100 disabled:opacity-60"
+          >
+            {removing ? "Removing…" : "Remove from pan"}
+          </button>
+        </div>
       </div>
     </BottomSheet>
   )

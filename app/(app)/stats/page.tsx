@@ -11,9 +11,14 @@ export default async function StatsPage() {
   const stats = await getStatsTabData(user.id)
 
   return (
-    <div>
-      <div className="px-4 pt-4 pb-2">
-        <h1 className="text-xl font-bold tracking-tight">Stats</h1>
+    <div className="min-h-full bg-gray-50/30">
+      <div className="px-5 pt-8 pb-4">
+        <h1 className="text-3xl font-black tracking-tighter bg-gradient-to-br from-gray-900 to-gray-600 bg-clip-text text-transparent">
+          Your Stats
+        </h1>
+        <p className="text-sm text-muted-foreground mt-1 font-medium">
+          A breakdown of your panning progress and habits.
+        </p>
       </div>
       <StatsClient stats={stats} />
     </div>

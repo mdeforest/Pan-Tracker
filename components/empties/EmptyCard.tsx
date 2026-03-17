@@ -69,7 +69,7 @@ export function EmptyCard({ empty }: EmptyCardProps) {
   const monthName = MONTH_NAMES[(empty.finished_month ?? 1) - 1]
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+    <div className="bg-white rounded-3xl shadow-[0_2px_10px_rgba(0,0,0,0.04)] ring-1 ring-gray-100 overflow-hidden">
       {/* Main row */}
       <button
         onClick={() => setExpanded((v) => !v)}

@@ -7,6 +7,7 @@ import { usePathname, useRouter } from "next/navigation"
 import { BarChart2, FlaskConical, Package, Sparkles } from "lucide-react"
 import { cn, currentYearMonth } from "@/lib/utils"
 import { signOut } from "@/lib/actions/auth"
+import { useTutorial } from "@/components/onboarding/TutorialContext"
 
 const { year, month } = currentYearMonth()
 
@@ -46,6 +47,7 @@ export function SideNav({ avatarUrl, name }: SideNavProps) {
   const pathname = usePathname()
   const router = useRouter()
   const [menuOpen, setMenuOpen] = useState(false)
+  const { startTutorial } = useTutorial()
 
   const initials = name
     ? name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
@@ -155,6 +157,12 @@ export function SideNav({ avatarUrl, name }: SideNavProps) {
                 >
                   Import History
                 </Link>
+                <button
+                  onClick={() => { startTutorial(); setMenuOpen(false) }}
+                  className="flex w-full items-center px-4 py-3 text-sm text-foreground hover:bg-muted"
+                >
+                  Take the Tour
+                </button>
                 <form action={signOut}>
                   <button
                     type="submit"

@@ -4,6 +4,7 @@ export interface TutorialStep {
   title: string
   body: string
   targetId?: string
+  renderExample?: boolean
 }
 
 export const TUTORIAL_STEPS: TutorialStep[] = [
@@ -18,28 +19,29 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     emoji: "🗂️",
     title: "Your Active Pan",
     body: "The Pan tab is your home screen. Every product you're currently using lives here as a card. The progress bar on each card shows how much is left. Tap any card to open it and see more options.",
-    targetId: "demo-pan-card",
+    targetId: "nav-pan",
+    renderExample: true,
   },
   {
     id: "logging-progress",
     emoji: "📈",
     title: "Logging Your Progress",
     body: "Inside a product, use the usage slider to update how much you've used — from Just Started all the way to Almost Done. You can also leave a note about how it's going. Hit Save when you're done.",
-    targetId: "demo-pan-card",
+    renderExample: true,
   },
   {
     id: "monthly-picks",
     emoji: "⭐",
     title: "Monthly Picks",
     body: "At the start of each month, choose up to 3 products as your focus picks — the ones you want to prioritize finishing. Open a product and tap the star icon to mark it as a pick. Picks show a star badge on their card so they stand out.",
-    targetId: "demo-pan-card",
+    renderExample: true,
   },
   {
     id: "logging-empty",
     emoji: "🎉",
     title: "Logging an Empty",
     body: "When you finish a product, open its card and tap \"Log Empty.\" You'll be asked to rate it out of 5, say whether you'd repurchase it, and leave an optional review. This moves it out of your pan and into your Empties log.",
-    targetId: "demo-pan-card",
+    renderExample: true,
   },
   {
     id: "carry-over",
@@ -52,7 +54,6 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     emoji: "➕",
     title: "Adding a Product to Your Pan",
     body: "Tap the + button on the Pan screen. Search for an existing product in your library, or tap \"Create New\" to add something fresh. You can set the category, brand, name, and upload a photo. It lands straight in your active pan.",
-    targetId: "fab-add-product",
   },
   {
     id: "library",

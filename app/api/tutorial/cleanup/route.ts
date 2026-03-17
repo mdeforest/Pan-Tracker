@@ -1,8 +1,7 @@
-import { type NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
-import { deleteTutorialData } from "@/lib/services/tutorial"
 
-export async function DELETE(req: NextRequest) {
+export async function POST() {
   const supabase = await createClient()
   const {
     data: { user },
@@ -12,18 +11,34 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ data: null, error: "Unauthorized" }, { status: 401 })
   }
 
-  const body = await req.json() as { panEntryId: string; productId: string }
-  const { panEntryId, productId } = body
+  // Find the tutorial sample
+  const { data: existing } = await supabase
+    .from("products")
+    .select("id")
+    .eq("user_id", user.id)
+    .eq("name", "Tutorial Sample Product")
+    .maybeSingle()
 
-  if (!panEntryId || !productId) {
-    return NextResponse.json({ data: null, error: "panEntryId and productId are required" }, { status: 400 })
+  if (!existing) {
+    return NextResponse.json({ data: null, error: null }) // Nothing to clean up
   }
 
-  const { data, error } = await deleteTutorialData(user.id, panEntryId, productId)
+  // Delete pan entries first (foreign key constraint)
+  await supabase
+    .from("pan_entries")
+    .delete()
+    .eq("product_id", existing.id)
+
+  // Hard delete the tutorial product
+  const { error } = await supabase
+    .from("products")
+    .delete()
+    .eq("id", existing.id)
 
   if (error) {
-    return NextResponse.json({ data: null, error: error.message }, { status: 500 })
+    console.error("Failed to cleanup tutorial sample product:", error)
+    return NextResponse.json({ data: null, error: "Failed to cleanup sample" }, { status: 500 })
   }
 
-  return NextResponse.json({ data, error: null })
+  return NextResponse.json({ data: "success", error: null })
 }

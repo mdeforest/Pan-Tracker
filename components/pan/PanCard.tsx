@@ -47,7 +47,7 @@ export function PanCard({
       onClick={isEmpty ? undefined : onTap}
       disabled={isEmpty}
       className={cn(
-        "relative flex w-full items-center gap-3 rounded-2xl bg-card p-3 text-left shadow-sm border border-border",
+        "relative flex w-full items-center gap-3 rounded-3xl bg-card p-3 text-left shadow-[0_2px_10px_rgba(0,0,0,0.04)] ring-1 ring-gray-100",
         "active:scale-[0.98] transition-transform",
         isEmpty && "opacity-60"
       )}
@@ -136,7 +136,7 @@ export function PanCard({
 
       {/* Confetti overlay for just-emptied */}
       {justEmptied && (
-        <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-green-50/90">
+        <div className="absolute inset-0 flex items-center justify-center rounded-3xl bg-green-50/90">
           <span className="text-sm font-bold text-green-700">EMPTY ✓</span>
         </div>
       )}

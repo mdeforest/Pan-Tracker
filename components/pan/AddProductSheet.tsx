@@ -181,9 +181,9 @@ export function AddProductSheet({
   return (
     <BottomSheet open={open} onClose={onClose} title={title} maxHeightVh={82}>
       {view === "search" ? (
-        <div className="flex flex-col" style={{ minHeight: "60vh" }}>
+        <div className="flex flex-col h-[75vh]">
           {/* Search input */}
-          <div className="px-4 pb-3">
+          <div className="px-4 pb-3 pt-2">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <input
@@ -192,23 +192,29 @@ export function AddProductSheet({
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search your product library…"
-                className="h-11 w-full rounded-xl border border-input bg-white pl-9 pr-3 placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                className="h-12 w-full rounded-2xl border border-input bg-white pl-10 pr-4 placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring shadow-sm"
                 style={{ fontSize: "16px" }}
               />
             </div>
           </div>
 
+          {/* Create new — top positioned */}
+          <div className="shrink-0 border-b border-border px-4 pb-3">
+            <button
+              onClick={() => setView("create")}
+              className="flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-dashed border-muted-foreground/40 text-sm text-foreground hover:bg-muted active:bg-muted font-medium transition-colors"
+            >
+              + Create new product
+            </button>
+          </div>
+
           {/* Results */}
           <div className="flex-1 overflow-y-auto">
-            {searching ? (
-              <div className="flex justify-center py-10">
-                <span className="text-sm text-muted-foreground">Searching…</span>
-              </div>
-            ) : results.length === 0 ? (
+            {results.length === 0 ? (
               <div className="flex flex-col items-center gap-2 py-10">
                 <span className="text-3xl">🔍</span>
                 <p className="text-sm text-muted-foreground">
-                  {query ? "No products found." : "Your library is empty."}
+                  {searching ? "Searching…" : query ? "No products found." : "Your library is empty."}
                 </p>
               </div>
             ) : (
@@ -220,7 +226,7 @@ export function AddProductSheet({
                       <button
                         onClick={() => addToPan(product.id)}
                         disabled={adding === product.id}
-                        className="flex min-h-[52px] w-full items-center gap-3 px-4 py-2 active:bg-muted"
+                        className="flex min-h-[52px] w-full items-center gap-3 px-4 py-2 active:bg-muted transition-colors"
                       >
                         <div
                           className={cn(
@@ -245,16 +251,6 @@ export function AddProductSheet({
                 })}
               </ul>
             )}
-          </div>
-
-          {/* Create new — sticky bottom */}
-          <div className="shrink-0 border-t border-border px-4 py-3">
-            <button
-              onClick={() => setView("create")}
-              className="flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-dashed border-muted-foreground/40 text-sm text-muted-foreground active:bg-muted"
-            >
-              + Create new product
-            </button>
           </div>
         </div>
       ) : (

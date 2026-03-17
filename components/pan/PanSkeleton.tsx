@@ -8,7 +8,7 @@ export function PanSkeleton() {
             {[0, 1, 2].map((i) => (
               <div
                 key={i}
-                className="flex items-center gap-3 rounded-2xl bg-card p-3 shadow-sm"
+                className="flex items-center gap-3 rounded-3xl bg-card ring-1 ring-gray-100 p-3 shadow-[0_2px_10px_rgba(0,0,0,0.04)]"
               >
                 <div className="h-12 w-12 animate-pulse rounded-full bg-muted" />
                 <div className="flex-1">

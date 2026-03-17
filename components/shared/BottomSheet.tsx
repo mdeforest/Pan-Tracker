@@ -90,7 +90,7 @@ export function BottomSheet({
         role="dialog"
         aria-modal="true"
         className={cn(
-          "fixed bottom-0 left-0 right-0 z-[60] flex flex-col rounded-t-2xl bg-card shadow-2xl transition-transform duration-300 ease-out",
+          "fixed bottom-0 left-0 right-0 z-[60] flex flex-col rounded-t-[2rem] bg-card shadow-[0_-8px_30px_rgba(0,0,0,0.12)] transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
           open ? "translate-y-0" : "translate-y-full",
           className
         )}

@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation"
 import { getCurrentUser } from "@/lib/auth/get-current-user"
 import { PanView } from "@/components/pan/PanView"
-import { getPanTabData, getWishlistProductIds } from "@/lib/loaders/tab-data"
+import { getPanTabData, getWishlistProductIds, getMonthsWithPanData } from "@/lib/loaders/tab-data"
 
 interface PanPageProps {
   params: Promise<{ year: string; month: string }>
@@ -21,9 +21,10 @@ export default async function PanPage({ params }: PanPageProps) {
     redirect(`/pan/${now.getFullYear()}/${now.getMonth() + 1}`)
   }
 
-  const [{ entries, error }, wishlistedIds] = await Promise.all([
+  const [{ entries, error }, wishlistedIds, monthsWithData] = await Promise.all([
     getPanTabData(user.id, year, month),
     getWishlistProductIds(user.id),
+    getMonthsWithPanData(user.id),
   ])
 
   return (
@@ -33,6 +34,7 @@ export default async function PanPage({ params }: PanPageProps) {
       entries={entries}
       error={error ?? undefined}
       wishlistedProductIds={new Set(wishlistedIds)}
+      monthsWithData={new Set(monthsWithData)}
     />
   )
 }

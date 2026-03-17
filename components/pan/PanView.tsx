@@ -8,6 +8,7 @@ import { ProductDetailSheet } from "./ProductDetailSheet"
 import { EmptyLoggerSheet } from "./EmptyLoggerSheet"
 import { AddProductSheet } from "./AddProductSheet"
 import { CarryOverBanner } from "./CarryOverBanner"
+import { MonthPickerSheet } from "./MonthPickerSheet"
 import { useToast } from "@/components/shared/ToastProvider"
 import { currentYearMonth } from "@/lib/utils"
 import { MONTH_NAMES } from "./utils"
@@ -22,9 +23,10 @@ interface PanViewProps {
   entries: PanEntryWithProduct[]
   error?: string
   wishlistedProductIds?: Set<string>
+  monthsWithData?: Set<string>
 }
 
-export function PanView({ year, month, entries, error }: PanViewProps) {
+export function PanView({ year, month, entries, error, monthsWithData = new Set() }: PanViewProps) {
   const router = useRouter()
   const { toast } = useToast()
 
@@ -33,6 +35,7 @@ export function PanView({ year, month, entries, error }: PanViewProps) {
   const [justEmptied, setJustEmptied] = useState<Set<string>>(new Set())
   const [showWishlistPrompt, setShowWishlistPrompt] = useState(false)
   const [activeTab, setActiveTab] = useState<ActiveTab>("active")
+  const [monthPickerOpen, setMonthPickerOpen] = useState(false)
 
   const { year: nowYear, month: nowMonth } = currentYearMonth()
   const isPastMonth = year < nowYear || (year === nowYear && month < nowMonth)
@@ -137,9 +140,13 @@ export function PanView({ year, month, entries, error }: PanViewProps) {
         >
           <ChevronLeft className="h-4 w-4" />
         </button>
-        <span className="text-sm font-semibold text-foreground">
+        <button
+          onClick={() => setMonthPickerOpen(true)}
+          className="rounded-lg px-2 py-1 text-sm font-semibold text-foreground hover:bg-muted active:bg-muted"
+          aria-label="Pick a month"
+        >
           {MONTH_NAMES[month - 1]} {year}
-        </span>
+        </button>
         <button
           onClick={goToNextMonth}
           className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted active:bg-muted"
@@ -322,6 +329,14 @@ export function PanView({ year, month, entries, error }: PanViewProps) {
           toast("Added to pan!", "success")
         }}
         onError={(msg) => toast(msg, "error")}
+      />
+
+      <MonthPickerSheet
+        open={monthPickerOpen}
+        onClose={() => setMonthPickerOpen(false)}
+        currentYear={year}
+        currentMonth={month}
+        monthsWithData={monthsWithData}
       />
 
       {/* ── Wishlist prompt ────────────────────────────────────── */}

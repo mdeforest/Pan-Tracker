@@ -226,6 +226,29 @@ export async function getStatsTabData(userId: string): Promise<StatsData> {
   )()
 }
 
+export async function getMonthsWithPanData(userId: string): Promise<string[]> {
+  return unstable_cache(
+    async () => {
+      const supabase = createAdminClient()
+      const { data } = await supabase
+        .from("pan_entries")
+        .select("started_year,started_month")
+        .eq("user_id", userId)
+
+      const seen = new Set<string>()
+      for (const row of data ?? []) {
+        seen.add(`${row.started_year}-${String(row.started_month).padStart(2, "0")}`)
+      }
+      return Array.from(seen)
+    },
+    ["tab-months-with-pan-data", userId],
+    {
+      revalidate: TAB_REVALIDATE_SECONDS,
+      tags: [panTabTag(userId)],
+    }
+  )()
+}
+
 export async function getWishlistProductIds(userId: string): Promise<string[]> {
   return unstable_cache(
     async () => {

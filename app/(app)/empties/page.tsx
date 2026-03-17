@@ -3,10 +3,17 @@ import { EmptiesClient } from "@/components/empties/EmptiesClient"
 import { getCurrentUser } from "@/lib/auth/get-current-user"
 import { getEmptiesTabData } from "@/lib/loaders/tab-data"
 
-export default async function EmptiesPage() {
+interface EmptiesPageProps {
+  searchParams: Promise<{ import_month?: string }>
+}
+
+export default async function EmptiesPage({ searchParams }: EmptiesPageProps) {
   const user = await getCurrentUser()
 
   if (!user) redirect("/login")
+
+  const params = await searchParams
+  // We can eventually use import_month to auto-filter, but for now we just remove the sheet trigger
 
   const { empties } = await getEmptiesTabData(user.id)
 

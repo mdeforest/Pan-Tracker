@@ -1,8 +1,10 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useMemo, useState } from "react"
+import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { EmptyCard } from "./EmptyCard"
+import { useToast } from "@/components/shared/ToastProvider"
 import { CATEGORY_LABELS, ALL_CATEGORIES, MONTH_NAMES } from "@/components/pan/utils"
 import type { EmptyCardData } from "./EmptyCard"
 import type { ProductCategory } from "@/lib/types/app"
@@ -20,6 +22,8 @@ interface EmptiesClientProps {
 const PAGE_SIZE = 5
 
 export function EmptiesClient({ empties }: EmptiesClientProps) {
+  const router = useRouter()
+  const { toast } = useToast()
   const [selectedMonth, setSelectedMonth] = useState<string>("all") // "all" or "YYYY-MM"
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
   const [visibleByFilter, setVisibleByFilter] = useState({

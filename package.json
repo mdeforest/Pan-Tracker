@@ -13,7 +13,8 @@
     "db:status": "npx supabase status",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "test:delete-csv": "node --env-file=.env.local scripts/delete-csv-products.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.2.0",

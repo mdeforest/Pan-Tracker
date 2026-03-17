@@ -148,6 +148,13 @@ export function SideNav({ avatarUrl, name }: SideNavProps) {
                 >
                   Wishlist
                 </Link>
+                <Link
+                  href="/empties?import=1"
+                  onClick={() => setMenuOpen(false)}
+                  className="flex w-full items-center px-4 py-3 text-sm text-foreground hover:bg-muted"
+                >
+                  Import History
+                </Link>
                 <form action={signOut}>
                   <button
                     type="submit"

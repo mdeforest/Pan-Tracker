@@ -60,6 +60,13 @@ export function UserMenu({ avatarUrl, name }: UserMenuProps) {
             >
               Wishlist
             </Link>
+            <Link
+              href="/empties?import=1"
+              onClick={() => setOpen(false)}
+              className="flex w-full items-center px-4 py-3 text-sm text-foreground hover:bg-muted"
+            >
+              Import History
+            </Link>
             <form action={signOut}>
               <button
                 type="submit"

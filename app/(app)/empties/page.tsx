@@ -4,7 +4,7 @@ import { getCurrentUser } from "@/lib/auth/get-current-user"
 import { getEmptiesTabData } from "@/lib/loaders/tab-data"
 
 interface EmptiesPageProps {
-  searchParams: Promise<{ import?: string }>
+  searchParams: Promise<{ import_month?: string }>
 }
 
 export default async function EmptiesPage({ searchParams }: EmptiesPageProps) {
@@ -13,7 +13,7 @@ export default async function EmptiesPage({ searchParams }: EmptiesPageProps) {
   if (!user) redirect("/login")
 
   const params = await searchParams
-  const initialImportOpen = params.import === "1" || params.import === "true"
+  // We can eventually use import_month to auto-filter, but for now we just remove the sheet trigger
 
   const { empties } = await getEmptiesTabData(user.id)
 
@@ -22,11 +22,7 @@ export default async function EmptiesPage({ searchParams }: EmptiesPageProps) {
       <div className="px-4 pt-4 pb-2">
         <h1 className="text-xl font-bold tracking-tight">Empties</h1>
       </div>
-      <EmptiesClient
-        key={initialImportOpen ? "import-open" : "import-closed"}
-        empties={empties}
-        initialImportOpen={initialImportOpen}
-      />
+      <EmptiesClient empties={empties} />
     </div>
   )
 }

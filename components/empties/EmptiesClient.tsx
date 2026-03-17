@@ -4,7 +4,6 @@ import { useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { EmptyCard } from "./EmptyCard"
-import { ImportHistorySheet, type ImportHistorySummary } from "./ImportHistorySheet"
 import { useToast } from "@/components/shared/ToastProvider"
 import { CATEGORY_LABELS, ALL_CATEGORIES, MONTH_NAMES } from "@/components/pan/utils"
 import type { EmptyCardData } from "./EmptyCard"
@@ -18,17 +17,15 @@ interface MonthYear {
 
 interface EmptiesClientProps {
   empties: EmptyCardData[]
-  initialImportOpen?: boolean
 }
 
 const PAGE_SIZE = 5
 
-export function EmptiesClient({ empties, initialImportOpen = false }: EmptiesClientProps) {
+export function EmptiesClient({ empties }: EmptiesClientProps) {
   const router = useRouter()
   const { toast } = useToast()
   const [selectedMonth, setSelectedMonth] = useState<string>("all") // "all" or "YYYY-MM"
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
-  const [importOpen, setImportOpen] = useState(initialImportOpen)
   const [visibleByFilter, setVisibleByFilter] = useState({
     key: "all|all",
     count: PAGE_SIZE,
@@ -71,28 +68,6 @@ export function EmptiesClient({ empties, initialImportOpen = false }: EmptiesCli
   const visible = filtered.slice(0, visibleCount)
   const remaining = filtered.length - visibleCount
 
-  function handleImportCompleted(summary: ImportHistorySummary) {
-    setImportOpen(false)
-    router.replace("/empties")
-
-    if (summary.imported === 0) {
-      toast("No new rows were imported.", "default")
-      return
-    }
-
-    if (summary.oldestImportedMonth) {
-      setSelectedMonth(summary.oldestImportedMonth)
-    }
-
-    router.refresh()
-    toast(`Imported ${summary.imported} row${summary.imported === 1 ? "" : "s"}.`, "success")
-  }
-
-  function handleImportSheetClose() {
-    setImportOpen(false)
-    router.replace("/empties")
-  }
-
   if (empties.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-24 px-4 text-center">
@@ -101,12 +76,6 @@ export function EmptiesClient({ empties, initialImportOpen = false }: EmptiesCli
         <p className="mt-1 text-sm text-muted-foreground">
           Your empties will appear here once you mark products as finished.
         </p>
-        <ImportHistorySheet
-          open={importOpen}
-          onClose={handleImportSheetClose}
-          onImported={handleImportCompleted}
-          onError={(msg) => toast(msg, "error")}
-        />
       </div>
     )
   }
@@ -185,13 +154,6 @@ export function EmptiesClient({ empties, initialImportOpen = false }: EmptiesCli
           </>
         )}
       </div>
-
-      <ImportHistorySheet
-        open={importOpen}
-        onClose={handleImportSheetClose}
-        onImported={handleImportCompleted}
-        onError={(msg) => toast(msg, "error")}
-      />
     </div>
   )
 }

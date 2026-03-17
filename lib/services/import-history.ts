@@ -13,6 +13,7 @@ interface ImportSummary {
   skipped: number
   errors: ImportCsvError[]
   oldestImportedMonth: string | null
+  previewRows?: ParsedHistoryCsvRow[]
 }
 
 interface ProductMatch {
@@ -137,6 +138,7 @@ export async function previewHistoryCsvImport(
 ): Promise<ImportSummary> {
   const parsed = parseHistoryCsvText(csvText, now)
   const summary = initializeSummary(parsed)
+  summary.previewRows = []
 
   if (parsed.rows.length === 0) {
     return summary
@@ -157,6 +159,7 @@ export async function previewHistoryCsvImport(
     }
 
     summary.imported += 1
+    summary.previewRows.push(row)
     summary.oldestImportedMonth = applyOldestImportedMonth(summary.oldestImportedMonth, row)
   }
 

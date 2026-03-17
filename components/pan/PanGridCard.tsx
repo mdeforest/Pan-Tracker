@@ -10,9 +10,11 @@ interface PanGridCardProps {
   entry: PanEntryWithProduct
   justEmptied: boolean
   onTap: () => void
+  /** When true, adds data-tutorial="demo-pan-card" so the tutorial can spotlight this card */
+  isTutorialDemo?: boolean
 }
 
-export function PanGridCard({ entry, justEmptied, onTap }: PanGridCardProps) {
+export function PanGridCard({ entry, justEmptied, onTap, isTutorialDemo }: PanGridCardProps) {
   const product = entry.products
   if (!product) return null
 
@@ -24,6 +26,7 @@ export function PanGridCard({ entry, justEmptied, onTap }: PanGridCardProps) {
     <button
       onClick={isEmpty ? undefined : onTap}
       disabled={isEmpty}
+      data-tutorial={isTutorialDemo ? "demo-pan-card" : undefined}
       className={cn(
         "group relative flex w-full flex-col rounded-3xl bg-card ring-1 ring-gray-100 shadow-[0_2px_10px_rgba(0,0,0,0.04)] text-left overflow-hidden transition-transform active:scale-[0.98] hover:shadow-md",
         isEmpty && "opacity-60"

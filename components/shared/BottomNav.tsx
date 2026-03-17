@@ -14,18 +14,21 @@ const NAV_ITEMS = [
     href: `/pan/${year}/${month}`,
     icon: Sparkles,
     match: /^\/pan/,
+    targetId: "nav-pan",
   },
   {
     label: "Empties",
     href: "/empties",
     icon: FlaskConical,
     match: /^\/empties/,
+    targetId: "nav-empties",
   },
   {
     label: "Products",
     href: "/products",
     icon: Package,
     match: /^\/products/,
+    targetId: "nav-products",
   },
   {
     label: "Stats",
@@ -67,6 +70,7 @@ export function BottomNav() {
                   if (!isActive) router.prefetch(href)
                 }}
                 aria-current={isActive ? "page" : undefined}
+                data-tutorial={NAV_ITEMS.find((n) => n.href === href)?.targetId}
                 className={cn(
                   "relative flex flex-1 flex-col items-center justify-center gap-1 text-xs font-medium transition-colors",
                   isActive

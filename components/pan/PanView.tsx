@@ -10,6 +10,7 @@ import { AddProductSheet } from "./AddProductSheet"
 import { CarryOverBanner } from "./CarryOverBanner"
 import { MonthPickerSheet } from "./MonthPickerSheet"
 import { useToast } from "@/components/shared/ToastProvider"
+import { useTutorial } from "@/components/onboarding/TutorialContext"
 import { currentYearMonth } from "@/lib/utils"
 import { MONTH_NAMES } from "./utils"
 import type { PanEntryWithProduct } from "./types"
@@ -29,6 +30,7 @@ interface PanViewProps {
 export function PanView({ year, month, entries, error, monthsWithData = new Set() }: PanViewProps) {
   const router = useRouter()
   const { toast } = useToast()
+  const { demoProductId } = useTutorial()
 
   const [selectedEntry, setSelectedEntry] = useState<PanEntryWithProduct | null>(null)
   const [activeSheet, setActiveSheet] = useState<ActiveSheet>(null)
@@ -228,6 +230,7 @@ export function PanView({ year, month, entries, error, monthsWithData = new Set(
                   entry={entry}
                   justEmptied={justEmptied.has(entry.id)}
                   onTap={() => handleCardTap(entry)}
+                  isTutorialDemo={entry.product_id === demoProductId}
                 />
               ))}
             </div>
@@ -278,6 +281,7 @@ export function PanView({ year, month, entries, error, monthsWithData = new Set(
                   entry={entry}
                   justEmptied={justEmptied.has(entry.id)}
                   onTap={() => handleCardTap(entry)}
+                  isTutorialDemo={entry.product_id === demoProductId}
                 />
               ))}
             </div>
@@ -288,6 +292,7 @@ export function PanView({ year, month, entries, error, monthsWithData = new Set(
       {/* ── FAB (mobile only) ─────────────────────────────────── */}
       <button
         onClick={() => setActiveSheet("addProduct")}
+        data-tutorial="fab-add-product"
         className="fixed right-4 z-40 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg active:opacity-80 transition-opacity md:hidden"
         style={{ bottom: "calc(4rem + env(safe-area-inset-bottom) + 1rem)" }}
         aria-label="Add product to pan"

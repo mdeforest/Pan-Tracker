@@ -17,18 +17,21 @@ const NAV_ITEMS = [
     href: `/pan/${year}/${month}`,
     icon: Sparkles,
     match: /^\/pan/,
+    targetId: "nav-pan",
   },
   {
     label: "Empties",
     href: "/empties",
     icon: FlaskConical,
     match: /^\/empties/,
+    targetId: "nav-empties",
   },
   {
     label: "Products",
     href: "/products",
     icon: Package,
     match: /^\/products/,
+    targetId: "nav-products",
   },
   {
     label: "Stats",
@@ -92,6 +95,7 @@ export function SideNav({ avatarUrl, name }: SideNavProps) {
                 aria-current={isActive ? "page" : undefined}
                 aria-label={label}
                 title={label}
+                data-tutorial={NAV_ITEMS.find((n) => n.href === href)?.targetId}
                 className={cn(
                   "relative flex h-11 w-full items-center justify-center rounded-xl transition-colors",
                   isActive

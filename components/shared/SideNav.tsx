@@ -142,6 +142,13 @@ export function SideNav({ avatarUrl, name }: SideNavProps) {
               />
               <div className="absolute bottom-12 left-0 z-50 min-w-[140px] rounded-lg border bg-background shadow-lg">
                 <Link
+                  href="/help"
+                  onClick={() => setMenuOpen(false)}
+                  className="flex w-full items-center px-4 py-3 text-sm text-foreground hover:bg-muted"
+                >
+                  Help
+                </Link>
+                <Link
                   href="/wishlist"
                   onClick={() => setMenuOpen(false)}
                   className="flex w-full items-center px-4 py-3 text-sm text-foreground hover:bg-muted"

@@ -54,6 +54,13 @@ export function UserMenu({ avatarUrl, name }: UserMenuProps) {
           {/* Dropdown */}
           <div className="absolute right-0 top-11 z-50 min-w-[140px] rounded-lg border bg-background shadow-lg">
             <Link
+              href="/help"
+              onClick={() => setOpen(false)}
+              className="flex w-full items-center px-4 py-3 text-sm text-foreground hover:bg-muted"
+            >
+              Help
+            </Link>
+            <Link
               href="/wishlist"
               onClick={() => setOpen(false)}
               className="flex w-full items-center px-4 py-3 text-sm text-foreground hover:bg-muted"

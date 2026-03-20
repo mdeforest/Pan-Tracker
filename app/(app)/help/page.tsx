@@ -1,7 +1,9 @@
 import type React from "react"
+import type { Metadata } from "next"
 import {
   Sparkles,
   Star,
+  CheckCircle,
   FlaskConical,
   Package,
   BarChart2,
@@ -9,7 +11,7 @@ import {
   Upload,
 } from "lucide-react"
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Help — PanTracker",
 }
 
@@ -38,7 +40,7 @@ function Section({
 export default function HelpPage() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 space-y-4">
-      <div className="space-y-1 pt-2 pb-2">
+      <div className="space-y-1 py-2">
         <h1 className="text-2xl font-bold tracking-tight">
           How to use PanTracker
         </h1>
@@ -83,7 +85,7 @@ export default function HelpPage() {
         </p>
       </Section>
 
-      <Section icon={FlaskConical} title="Logging an Empty">
+      <Section icon={CheckCircle} title="Logging an Empty">
         <p>When you finish a product, open its detail sheet and tap <strong>Mark Empty</strong>.</p>
         <p>
           You&apos;ll be prompted to leave a quick review: a star rating,
@@ -152,15 +154,19 @@ export default function HelpPage() {
         </p>
       </Section>
 
-      <Section icon={Upload} title="Importing history">
+      <Section icon={Upload} title="Importing History">
         <p>
           Import History is also in the user menu. Use it to bulk-import past
           pan history from a CSV file.
         </p>
         <p>
-          The CSV supports three statuses: <code>current_pan</code> (adds to
-          active pan), <code>empty</code> (logs an empty), and{" "}
-          <code>backlog</code> (adds to product library only).
+          The CSV supports three statuses:{" "}
+          <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">current_pan</code>{" "}
+          (adds to active pan),{" "}
+          <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">empty</code>{" "}
+          (logs an empty), and{" "}
+          <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">backlog</code>{" "}
+          (adds to product library only).
         </p>
         <p>
           After uploading, you&apos;ll see a preview of what will be imported

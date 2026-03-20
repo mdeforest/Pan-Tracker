@@ -149,8 +149,8 @@ export default function HelpPage() {
           — they&apos;ll stay in your history for reference.
         </p>
         <p>
-          The wishlist total gives you a running estimate of what you&apos;d
-          spend if you bought everything on it.
+          Add an estimated price to each item and the wishlist will show a
+          running total of what you&apos;d spend if you bought everything on it.
         </p>
       </Section>
 

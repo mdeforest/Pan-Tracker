@@ -4,6 +4,7 @@ import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { signOut } from "@/lib/actions/auth"
+import { useTutorial } from "@/components/onboarding/TutorialContext"
 
 interface UserMenuProps {
   avatarUrl: string | null
@@ -12,6 +13,7 @@ interface UserMenuProps {
 
 export function UserMenu({ avatarUrl, name }: UserMenuProps) {
   const [open, setOpen] = useState(false)
+  const { startTutorial } = useTutorial()
 
   const initials = name
     ? name
@@ -74,6 +76,12 @@ export function UserMenu({ avatarUrl, name }: UserMenuProps) {
             >
               Import History
             </Link>
+            <button
+              onClick={() => { startTutorial(); setOpen(false) }}
+              className="flex w-full items-center px-4 py-3 text-sm text-foreground hover:bg-muted"
+            >
+              Take the Tour
+            </button>
             <form action={signOut}>
               <button
                 type="submit"

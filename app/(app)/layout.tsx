@@ -3,6 +3,8 @@ import { BottomNav } from "@/components/shared/BottomNav"
 import { AppHeader } from "@/components/shared/AppHeader"
 import { SideNav } from "@/components/shared/SideNav"
 import { getCurrentUser } from "@/lib/auth/get-current-user"
+import { getOnboardingStatus } from "@/lib/services/onboarding"
+import { TutorialProvider } from "@/components/onboarding/TutorialContext"
 
 export default async function AppLayout({
   children,
@@ -22,21 +24,27 @@ export default async function AppLayout({
     user.email ??
     null
 
+  // Safe default: if the query fails, don't auto-launch the tutorial.
+  const { data: onboardingData } = await getOnboardingStatus(user.id)
+  const hasSeen = onboardingData?.hasSeen ?? true
+
   return (
-    <div className="flex min-h-screen flex-col md:h-screen md:flex-row md:overflow-hidden">
-      {/* Mobile: sticky top header */}
-      <AppHeader avatarUrl={avatarUrl} name={name} />
+    <TutorialProvider hasSeen={hasSeen}>
+      <div className="flex min-h-screen flex-col md:h-screen md:flex-row md:overflow-hidden">
+        {/* Mobile: sticky top header */}
+        <AppHeader avatarUrl={avatarUrl} name={name} />
 
-      {/* Desktop: left sidebar */}
-      <SideNav avatarUrl={avatarUrl} name={name} />
+        {/* Desktop: left sidebar */}
+        <SideNav avatarUrl={avatarUrl} name={name} />
 
-      {/* Main content */}
-      <main className="flex-1 pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0 md:overflow-y-auto">
-        {children}
-      </main>
+        {/* Main content */}
+        <main className="flex-1 pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0 md:overflow-y-auto">
+          {children}
+        </main>
 
-      {/* Mobile: fixed bottom nav */}
-      <BottomNav />
-    </div>
+        {/* Mobile: fixed bottom nav */}
+        <BottomNav />
+      </div>
+    </TutorialProvider>
   )
 }

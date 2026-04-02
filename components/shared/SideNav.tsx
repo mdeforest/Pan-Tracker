@@ -7,6 +7,7 @@ import { usePathname, useRouter } from "next/navigation"
 import { BarChart2, FlaskConical, Package, Sparkles } from "lucide-react"
 import { cn, currentYearMonth } from "@/lib/utils"
 import { signOut } from "@/lib/actions/auth"
+import { useTutorial } from "@/components/onboarding/TutorialContext"
 
 const { year, month } = currentYearMonth()
 
@@ -16,18 +17,21 @@ const NAV_ITEMS = [
     href: `/pan/${year}/${month}`,
     icon: Sparkles,
     match: /^\/pan/,
+    targetId: "nav-pan",
   },
   {
     label: "Empties",
     href: "/empties",
     icon: FlaskConical,
     match: /^\/empties/,
+    targetId: "nav-empties",
   },
   {
     label: "Products",
     href: "/products",
     icon: Package,
     match: /^\/products/,
+    targetId: "nav-products",
   },
   {
     label: "Stats",
@@ -46,6 +50,7 @@ export function SideNav({ avatarUrl, name }: SideNavProps) {
   const pathname = usePathname()
   const router = useRouter()
   const [menuOpen, setMenuOpen] = useState(false)
+  const { startTutorial } = useTutorial()
 
   const initials = name
     ? name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
@@ -90,6 +95,7 @@ export function SideNav({ avatarUrl, name }: SideNavProps) {
                 aria-current={isActive ? "page" : undefined}
                 aria-label={label}
                 title={label}
+                data-tutorial={NAV_ITEMS.find((n) => n.href === href)?.targetId}
                 className={cn(
                   "relative flex h-11 w-full items-center justify-center rounded-xl transition-colors",
                   isActive
@@ -162,6 +168,12 @@ export function SideNav({ avatarUrl, name }: SideNavProps) {
                 >
                   Import History
                 </Link>
+                <button
+                  onClick={() => { startTutorial(); setMenuOpen(false) }}
+                  className="flex w-full items-center px-4 py-3 text-sm text-foreground hover:bg-muted"
+                >
+                  Take the Tour
+                </button>
                 <form action={signOut}>
                   <button
                     type="submit"

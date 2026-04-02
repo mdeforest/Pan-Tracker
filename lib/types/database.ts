@@ -322,6 +322,7 @@ export type Database = {
           google_id: string
           id: string
           name: string | null
+          onboarding_completed_at: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -330,6 +331,7 @@ export type Database = {
           google_id: string
           id: string
           name?: string | null
+          onboarding_completed_at?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -338,6 +340,7 @@ export type Database = {
           google_id?: string
           id?: string
           name?: string | null
+          onboarding_completed_at?: string | null
         }
         Relationships: []
       }

@@ -26,7 +26,7 @@ Since this is a solo project, keep ceremony minimal:
 
 1. **Before starting work:** open a GitHub Issue describing what you're building and why
 2. **While building:** work in a feature branch; commit small and often with descriptive messages
-3. **Before merging:** PR to main triggers CI (lint + typecheck + prisma validate); review your own diff before merging
+3. **Before merging:** PR to main triggers CI (lint + typecheck + next build); review your own diff before merging
 4. **After merging:** Vercel auto-deploys; spot-check the deployed feature
 
 Commit message format: `type(scope): description`

@@ -3,8 +3,10 @@
 import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { signOut } from "@/lib/actions/auth"
 import { useTutorial } from "@/components/onboarding/TutorialContext"
+import { ImportCollectionSheet } from "@/components/import/ImportCollectionSheet"
 
 interface UserMenuProps {
   avatarUrl: string | null
@@ -13,7 +15,9 @@ interface UserMenuProps {
 
 export function UserMenu({ avatarUrl, name }: UserMenuProps) {
   const [open, setOpen] = useState(false)
+  const [collectionSheetOpen, setCollectionSheetOpen] = useState(false)
   const { startTutorial } = useTutorial()
+  const router = useRouter()
 
   const initials = name
     ? name
@@ -77,6 +81,12 @@ export function UserMenu({ avatarUrl, name }: UserMenuProps) {
               Import History
             </Link>
             <button
+              onClick={() => { setCollectionSheetOpen(true); setOpen(false) }}
+              className="flex w-full items-center px-4 py-3 text-sm text-foreground hover:bg-muted"
+            >
+              Import Collection
+            </button>
+            <button
               onClick={() => { startTutorial(); setOpen(false) }}
               className="flex w-full items-center px-4 py-3 text-sm text-foreground hover:bg-muted"
             >
@@ -93,6 +103,12 @@ export function UserMenu({ avatarUrl, name }: UserMenuProps) {
           </div>
         </>
       )}
+
+      <ImportCollectionSheet
+        open={collectionSheetOpen}
+        onClose={() => setCollectionSheetOpen(false)}
+        onImported={() => router.refresh()}
+      />
     </div>
   )
 }

@@ -39,6 +39,17 @@ export function detectCategoryFromFilename(filename: string): ProductCategory | 
 }
 
 /**
+ * Convert a Date object to a local ISO date string (YYYY-MM-DD).
+ * Extracts local date components to avoid UTC timezone shift.
+ */
+function toLocalISODate(d: Date): string {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, "0")
+  const day = String(d.getDate()).padStart(2, "0")
+  return `${y}-${m}-${day}`
+}
+
+/**
  * Parse a date string in any of Sophia's formats:
  * - "September 1, 2023"
  * - "March, 2024" or "March 2024"
@@ -55,7 +66,7 @@ export function parseSophiaDate(raw: string): string | null {
   // Try direct parse (handles "September 1, 2023", "January 01, 2027")
   const direct = new Date(trimmed)
   if (!isNaN(direct.getTime())) {
-    return direct.toISOString().slice(0, 10)
+    return toLocalISODate(direct)
   }
 
   // Try "Month, YYYY" or "Month YYYY" without a day
@@ -63,7 +74,7 @@ export function parseSophiaDate(raw: string): string | null {
   if (monthYear) {
     const parsed = new Date(`${monthYear[1]} 1, ${monthYear[2]}`)
     if (!isNaN(parsed.getTime())) {
-      return parsed.toISOString().slice(0, 10)
+      return toLocalISODate(parsed)
     }
   }
 

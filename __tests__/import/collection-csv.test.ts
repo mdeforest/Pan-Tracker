@@ -113,6 +113,18 @@ describe("detectSophiaFormat", () => {
       detectSophiaFormat(["brand", "name", "category"])
     ).toBe(false)
   })
+
+  it("returns false when product header is absent", () => {
+    expect(
+      detectSophiaFormat(["Brand", "Name", "Manufacture Date"])
+    ).toBe(false)
+  })
+
+  it("handles headers with extra whitespace", () => {
+    expect(
+      detectSophiaFormat(["  Product  ", "Product Size/Weight"])
+    ).toBe(true)
+  })
 })
 
 describe("parseCollectionCsv", () => {
@@ -180,5 +192,11 @@ describe("parseCollectionCsv", () => {
     const result = parseCollectionCsv(csv, "serum", NOW)
     expect(result.rows).toHaveLength(2)
     expect(result.rows.some((r) => r.productString === "Wish List")).toBe(false)
+  })
+
+  it("returns error for empty CSV input", () => {
+    const result = parseCollectionCsv("", "serum", NOW)
+    expect(result.errors).toHaveLength(1)
+    expect(result.errors[0]).toContain("empty")
   })
 })

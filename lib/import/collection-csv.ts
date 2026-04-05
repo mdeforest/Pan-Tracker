@@ -99,14 +99,14 @@ export function computeExpirationDate(
 
   const parsedMfg = manufactureRaw ? parseSophiaDate(manufactureRaw) : null
   if (parsedMfg) {
-    const d = new Date(parsedMfg)
-    d.setFullYear(d.getFullYear() + 1)
-    return d.toISOString().slice(0, 10)
+    const [year, month, day] = parsedMfg.split("-")
+    const nextYear = String(Number(year) + 1)
+    return `${nextYear}-${month}-${day}`
   }
 
   const fallback = new Date(today)
   fallback.setFullYear(fallback.getFullYear() + 1)
-  return fallback.toISOString().slice(0, 10)
+  return toLocalISODate(fallback)
 }
 
 /**

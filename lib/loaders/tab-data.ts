@@ -1,4 +1,5 @@
 import { unstable_cache } from "next/cache"
+import { EXPIRY_SHELF_DAYS } from "@/lib/constants"
 import type { EmptyCardData } from "@/components/empties/EmptyCard"
 import type { PanEntryWithProduct } from "@/components/pan/types"
 import {
@@ -23,6 +24,16 @@ export interface RawProduct {
   photo_url: string | null
   archived_at: string | null
   last_bought_at: string
+  expiration_date: string | null
+}
+
+export interface ExpiringSoonProduct {
+  id: string
+  name: string
+  brand: string
+  category: string
+  photo_url: string | null
+  expiration_date: string
 }
 
 interface PanTabData {
@@ -139,7 +150,7 @@ export async function getProductsTabData(userId: string): Promise<ProductsTabDat
           .eq("status", "active"),
         supabase
           .from("products")
-          .select("id,name,brand,category,photo_url,archived_at,last_bought_at")
+          .select("id,name,brand,category,photo_url,archived_at,last_bought_at,expiration_date")
           .eq("user_id", userId)
           .is("archived_at", null)
           .order("created_at", { ascending: false }),
@@ -298,6 +309,47 @@ export async function getWishlistTabData(userId: string): Promise<WishlistTabDat
     {
       revalidate: TAB_REVALIDATE_SECONDS,
       tags: [wishlistTabTag(userId), productsTabTag(userId)],
+    }
+  )()
+}
+
+export async function getExpiringSoonProducts(
+  userId: string
+): Promise<ExpiringSoonProduct[]> {
+  return unstable_cache(
+    async () => {
+      const supabase = createAdminClient()
+
+      const cutoff = new Date()
+      cutoff.setDate(cutoff.getDate() + EXPIRY_SHELF_DAYS)
+      const cutoffStr = cutoff.toISOString().slice(0, 10)
+
+      const [{ data: activeEntries }, { data: expiring }] = await Promise.all([
+        supabase
+          .from("pan_entries")
+          .select("product_id")
+          .eq("user_id", userId)
+          .eq("status", "active"),
+        supabase
+          .from("products")
+          .select("id,name,brand,category,photo_url,expiration_date")
+          .eq("user_id", userId)
+          .is("archived_at", null)
+          .not("expiration_date", "is", null)
+          .lte("expiration_date", cutoffStr)
+          .order("expiration_date", { ascending: true }),
+      ])
+
+      const activeIds = new Set((activeEntries ?? []).map((e) => e.product_id))
+
+      return ((expiring ?? []) as ExpiringSoonProduct[]).filter(
+        (p) => !activeIds.has(p.id)
+      )
+    },
+    ["tab-expiring-soon", userId],
+    {
+      revalidate: TAB_REVALIDATE_SECONDS,
+      tags: [productsTabTag(userId), panTabTag(userId)],
     }
   )()
 }

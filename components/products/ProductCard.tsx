@@ -3,6 +3,7 @@ import Image from "next/image"
 import { cn } from "@/lib/utils"
 import { CATEGORY_LABELS, CATEGORY_EMOJI } from "@/components/pan/utils"
 import type { ProductCategory } from "@/lib/types/app"
+import { ExpiryBadge } from "./ExpiryBadge"
 
 export interface ProductCardData {
   id: string
@@ -13,6 +14,7 @@ export interface ProductCardData {
   is_in_pan: boolean
   is_archived: boolean
   last_bought_at: string
+  expiration_date: string | null
 }
 
 const DATE_FMT = new Intl.DateTimeFormat("en-US", { month: "short", year: "numeric" })
@@ -88,6 +90,9 @@ export function ProductCard({ product, onRestore, restoring = false }: ProductCa
           <p className="mt-1 text-[10px] text-muted-foreground">
             Bought {DATE_FMT.format(new Date(product.last_bought_at))}
           </p>
+          <div className="mt-1">
+            <ExpiryBadge expirationDate={product.expiration_date} />
+          </div>
         </div>
       </Link>
 

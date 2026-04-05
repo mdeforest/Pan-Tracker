@@ -58,7 +58,7 @@ export function UserMenu({ avatarUrl, name }: UserMenuProps) {
             aria-hidden="true"
           />
           {/* Dropdown */}
-          <div className="absolute right-0 top-11 z-50 min-w-[140px] rounded-lg border bg-background shadow-lg">
+          <div className="absolute right-0 top-11 z-50 w-52 rounded-lg border bg-background shadow-lg">
             <Link
               href="/help"
               onClick={() => setOpen(false)}
@@ -92,7 +92,7 @@ export function UserMenu({ avatarUrl, name }: UserMenuProps) {
             >
               Take the Tour
             </button>
-            <form action={signOut}>
+            <form action={signOut} className="contents">
               <button
                 type="submit"
                 className="flex w-full items-center px-4 py-3 text-sm text-foreground hover:bg-muted"

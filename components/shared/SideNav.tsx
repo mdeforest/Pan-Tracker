@@ -8,6 +8,7 @@ import { BarChart2, FlaskConical, Package, Sparkles } from "lucide-react"
 import { cn, currentYearMonth } from "@/lib/utils"
 import { signOut } from "@/lib/actions/auth"
 import { useTutorial } from "@/components/onboarding/TutorialContext"
+import { ImportCollectionSheet } from "@/components/import/ImportCollectionSheet"
 
 const { year, month } = currentYearMonth()
 
@@ -50,6 +51,7 @@ export function SideNav({ avatarUrl, name }: SideNavProps) {
   const pathname = usePathname()
   const router = useRouter()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [collectionSheetOpen, setCollectionSheetOpen] = useState(false)
   const { startTutorial } = useTutorial()
 
   const initials = name
@@ -146,7 +148,7 @@ export function SideNav({ avatarUrl, name }: SideNavProps) {
                 onClick={() => setMenuOpen(false)}
                 aria-hidden="true"
               />
-              <div className="absolute bottom-12 left-0 z-50 min-w-[140px] rounded-lg border bg-background shadow-lg">
+              <div className="absolute bottom-12 left-0 z-50 w-48 rounded-lg border bg-background shadow-lg">
                 <Link
                   href="/help"
                   onClick={() => setMenuOpen(false)}
@@ -169,12 +171,18 @@ export function SideNav({ avatarUrl, name }: SideNavProps) {
                   Import History
                 </Link>
                 <button
+                  onClick={() => { setCollectionSheetOpen(true); setMenuOpen(false) }}
+                  className="flex w-full items-center px-4 py-3 text-sm text-foreground hover:bg-muted"
+                >
+                  Import Collection
+                </button>
+                <button
                   onClick={() => { startTutorial(); setMenuOpen(false) }}
                   className="flex w-full items-center px-4 py-3 text-sm text-foreground hover:bg-muted"
                 >
                   Take the Tour
                 </button>
-                <form action={signOut}>
+                <form action={signOut} className="contents">
                   <button
                     type="submit"
                     className="flex w-full items-center px-4 py-3 text-sm text-foreground hover:bg-muted"
@@ -187,6 +195,12 @@ export function SideNav({ avatarUrl, name }: SideNavProps) {
           )}
         </div>
       </div>
+
+      <ImportCollectionSheet
+        open={collectionSheetOpen}
+        onClose={() => setCollectionSheetOpen(false)}
+        onImported={() => router.refresh()}
+      />
     </nav>
   )
 }

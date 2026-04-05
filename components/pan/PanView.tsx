@@ -108,9 +108,12 @@ export function PanView({ year, month, entries, error, monthsWithData = new Set(
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ product_id: productId, usage_level: "just_started" }),
       })
-      if (res.ok) {
-        router.refresh()
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        toast((body as { error?: string }).error ?? "Failed to add product to pan.", "error")
+        return
       }
+      router.refresh()
     } finally {
       setAddingToPanId(null)
     }

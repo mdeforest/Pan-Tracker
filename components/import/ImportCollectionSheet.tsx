@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useState } from "react"
+import { useRef, useState, useMemo } from "react"
 import { BottomSheet } from "@/components/shared/BottomSheet"
 import {
   detectCategoryFromFilename,
@@ -50,6 +50,7 @@ export function ImportCollectionSheet({
   function handleClose() {
     setStep("file")
     setFile(null)
+    setCategory("miscellaneous")
     setParseResult(null)
     setReviewRows([])
     setError(null)
@@ -73,7 +74,15 @@ export function ImportCollectionSheet({
     setLoading(true)
     setError(null)
 
-    const text = await file.text()
+    let text: string
+    try {
+      text = await file.text()
+    } catch {
+      setError("Could not read the file. Please try again.")
+      setLoading(false)
+      return
+    }
+
     const result = parseCollectionCsv(text, category)
 
     if (result.errors.length > 0) {
@@ -140,8 +149,12 @@ export function ImportCollectionSheet({
         if (row.autoMatched) return row
 
         const reviewed = reviewByIndex.get(index)
-        if (!reviewed || reviewed.skipped) {
+        if (!reviewed) {
+          // Unreviewed unmatched row — import as-is with blank brand
           return { ...row, brand: "", name: row.productString }
+        }
+        if (reviewed.skipped) {
+          return null
         }
         return {
           ...row,
@@ -149,19 +162,25 @@ export function ImportCollectionSheet({
           name: reviewed.name.trim() || row.productString,
         }
       })
-      .filter((row) => row.name.trim().length > 0)
+      .filter((row): row is ParsedCollectionRow => row !== null && row.name.trim().length > 0)
   }
+
+  const finalRows = useMemo(
+    () => (step === "preview" || step === "done" ? buildFinalRows() : []),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [parseResult, reviewRows, step]
+  )
 
   async function handleImport() {
     setLoading(true)
     setError(null)
 
-    const finalRows = buildFinalRows()
+    const rows = finalRows
 
     const res = await fetch("/api/import/collection", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ rows: finalRows }),
+      body: JSON.stringify({ rows }),
     })
 
     const data = await res.json()
@@ -287,7 +306,7 @@ export function ImportCollectionSheet({
                   onClick={() =>
                     updateReviewRow(r.index, "skipped", !r.skipped)
                   }
-                  className="self-start text-xs text-muted-foreground underline"
+                  className="self-start text-xs text-muted-foreground underline py-2 px-1"
                 >
                   {r.skipped ? "Undo skip" : "Skip (import as-is)"}
                 </button>
@@ -329,7 +348,7 @@ export function ImportCollectionSheet({
           </div>
 
           <div className="overflow-y-auto max-h-[40vh] flex flex-col gap-2">
-            {buildFinalRows().map((row, i) => (
+            {finalRows.map((row, i) => (
               <div key={i} className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
                   <p className="text-sm font-medium truncate">{row.name}</p>
@@ -362,7 +381,7 @@ export function ImportCollectionSheet({
             disabled={loading}
             className="flex h-12 w-full items-center justify-center rounded-xl bg-primary text-sm font-semibold text-primary-foreground disabled:opacity-50"
           >
-            {loading ? "Importing…" : `Import ${totalRows} products`}
+            {loading ? "Importing…" : `Import ${finalRows.length} products`}
           </button>
         </div>
       )}

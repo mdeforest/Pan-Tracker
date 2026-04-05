@@ -12,6 +12,7 @@ vi.mock("@/lib/cache/tab-cache", () => ({
 
 import { createClient } from "@/lib/supabase/server"
 import { importCollectionRows } from "@/lib/services/import-collection"
+import { revalidateForProductMutation, revalidateForEmptiesMutation } from "@/lib/cache/tab-cache"
 import { POST } from "@/app/api/import/collection/route"
 
 const USER_ID = "11111111-1111-1111-1111-111111111111"
@@ -92,5 +93,25 @@ describe("POST /api/import/collection", () => {
   it("calls importCollectionRows with userId and parsed rows", async () => {
     await POST(makeRequest({ rows: [VALID_ROW] }))
     expect(importCollectionRows).toHaveBeenCalledWith(USER_ID, [VALID_ROW])
+  })
+
+  it("calls revalidation when products are imported", async () => {
+    await POST(makeRequest({ rows: [VALID_ROW] }))
+
+    expect(revalidateForProductMutation).toHaveBeenCalledWith(USER_ID)
+    expect(revalidateForEmptiesMutation).toHaveBeenCalledWith(USER_ID)
+  })
+
+  it("skips revalidation when nothing was imported", async () => {
+    vi.mocked(importCollectionRows).mockResolvedValue({
+      imported: 0,
+      skipped: 1,
+      errors: [],
+    })
+
+    await POST(makeRequest({ rows: [VALID_ROW] }))
+
+    expect(revalidateForProductMutation).not.toHaveBeenCalled()
+    expect(revalidateForEmptiesMutation).not.toHaveBeenCalled()
   })
 })

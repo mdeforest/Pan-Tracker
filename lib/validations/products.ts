@@ -1,13 +1,14 @@
 import { z } from "zod"
 
 const PRODUCT_CATEGORIES = [
-  "makeup",
-  "skincare",
-  "haircare",
-  "bodycare",
-  "fragrance",
-  "tools",
-  "other",
+  "mascara",
+  "cleanser",
+  "serum",
+  "moisturizer",
+  "mist",
+  "eye_cream",
+  "toner",
+  "miscellaneous",
 ] as const
 
 export const CreateProductSchema = z.object({

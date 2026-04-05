@@ -22,7 +22,7 @@ function makeCsvRequest(url: string) {
   formData.append(
     "file",
     new File(
-      ["brand,name,category,finished_month,finished_year\nRare Beauty,Blush,makeup,2,2026"],
+      ["brand,name,category,finished_month,finished_year\nRare Beauty,Blush,mascara,2,2026"],
       "history.csv",
       { type: "text/csv" }
     )

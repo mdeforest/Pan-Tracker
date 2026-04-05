@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest"
 import { CreateProductSchema, UpdateProductSchema } from "@/lib/validations/products"
 
 describe("CreateProductSchema", () => {
-  const valid = { brand: "NARS", name: "Blush", category: "makeup" }
+  const valid = { brand: "NARS", name: "Blush", category: "mascara" }
 
   it("passes with required fields", () => {
     const result = CreateProductSchema.safeParse(valid)
@@ -24,7 +24,7 @@ describe("CreateProductSchema", () => {
   })
 
   it("fails when brand is missing", () => {
-    const result = CreateProductSchema.safeParse({ name: "Blush", category: "makeup" })
+    const result = CreateProductSchema.safeParse({ name: "Blush", category: "mascara" })
     expect(result.success).toBe(false)
     if (!result.success) {
       expect(result.error.flatten().fieldErrors.brand).toBeDefined()
@@ -32,7 +32,7 @@ describe("CreateProductSchema", () => {
   })
 
   it("fails when name is missing", () => {
-    const result = CreateProductSchema.safeParse({ brand: "NARS", category: "makeup" })
+    const result = CreateProductSchema.safeParse({ brand: "NARS", category: "mascara" })
     expect(result.success).toBe(false)
     if (!result.success) {
       expect(result.error.flatten().fieldErrors.name).toBeDefined()
@@ -53,7 +53,7 @@ describe("CreateProductSchema", () => {
   })
 
   it("accepts all valid categories", () => {
-    const categories = ["makeup", "skincare", "haircare", "bodycare", "fragrance", "tools", "other"]
+    const categories = ["mascara", "cleanser", "serum", "moisturizer", "mist", "eye_cream", "toner", "miscellaneous"]
     for (const category of categories) {
       const result = CreateProductSchema.safeParse({ ...valid, category })
       expect(result.success).toBe(true)

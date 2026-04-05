@@ -43,7 +43,7 @@ export function AddProductSheet({
   // New product form state
   const [newName, setNewName] = useState("")
   const [newBrand, setNewBrand] = useState("")
-  const [newCategory, setNewCategory] = useState<ProductCategory>("skincare")
+  const [newCategory, setNewCategory] = useState<ProductCategory>("moisturizer")
   const [photoFile, setPhotoFile] = useState<File | null>(null)
   const [creating, setCreating] = useState(false)
   const cameraInputRef = useRef<HTMLInputElement>(null)
@@ -65,7 +65,7 @@ export function AddProductSheet({
       setResults([])
       setNewName("")
       setNewBrand("")
-      setNewCategory("skincare")
+      setNewCategory("moisturizer")
       setPhotoFile(null)
     }
   }, [open])

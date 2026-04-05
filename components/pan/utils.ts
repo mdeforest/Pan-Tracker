@@ -39,53 +39,58 @@ export function progressColor(pct: number): string {
 }
 
 export const CATEGORY_EMOJI: Record<ProductCategory, string> = {
-  makeup: "💄",
-  skincare: "🧴",
-  haircare: "💆",
-  bodycare: "🧖",
-  fragrance: "🌸",
-  tools: "🪮",
-  other: "✨",
+  mascara: "🖤",
+  cleanser: "🫧",
+  serum: "💧",
+  moisturizer: "🧴",
+  mist: "🌫️",
+  eye_cream: "👁️",
+  toner: "🌿",
+  miscellaneous: "✨",
 }
 
 export const CATEGORY_BG: Record<ProductCategory, string> = {
-  makeup: "bg-pink-100",
-  skincare: "bg-blue-100",
-  haircare: "bg-purple-100",
-  bodycare: "bg-orange-100",
-  fragrance: "bg-yellow-100",
-  tools: "bg-gray-100",
-  other: "bg-teal-100",
+  mascara: "bg-gray-100",
+  cleanser: "bg-blue-100",
+  serum: "bg-purple-100",
+  moisturizer: "bg-pink-100",
+  mist: "bg-sky-100",
+  eye_cream: "bg-indigo-100",
+  toner: "bg-green-100",
+  miscellaneous: "bg-teal-100",
 }
 
 export const CATEGORY_TEXT: Record<ProductCategory, string> = {
-  makeup: "text-pink-600",
-  skincare: "text-blue-600",
-  haircare: "text-purple-600",
-  bodycare: "text-orange-600",
-  fragrance: "text-yellow-600",
-  tools: "text-gray-600",
-  other: "text-teal-600",
+  mascara: "text-gray-600",
+  cleanser: "text-blue-600",
+  serum: "text-purple-600",
+  moisturizer: "text-pink-600",
+  mist: "text-sky-600",
+  eye_cream: "text-indigo-600",
+  toner: "text-green-600",
+  miscellaneous: "text-teal-600",
 }
 
 export const CATEGORY_LABELS: Record<ProductCategory, string> = {
-  makeup: "Makeup",
-  skincare: "Skincare",
-  haircare: "Haircare",
-  bodycare: "Bodycare",
-  fragrance: "Fragrance",
-  tools: "Tools",
-  other: "Other",
+  mascara: "Mascara",
+  cleanser: "Cleanser",
+  serum: "Serum",
+  moisturizer: "Moisturizer",
+  mist: "Mist",
+  eye_cream: "Eye Cream",
+  toner: "Toner",
+  miscellaneous: "Miscellaneous",
 }
 
 export const ALL_CATEGORIES: ProductCategory[] = [
-  "makeup",
-  "skincare",
-  "haircare",
-  "bodycare",
-  "fragrance",
-  "tools",
-  "other",
+  "mascara",
+  "cleanser",
+  "serum",
+  "moisturizer",
+  "mist",
+  "eye_cream",
+  "toner",
+  "miscellaneous",
 ]
 
 export const MONTH_NAMES = [

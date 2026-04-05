@@ -29,7 +29,7 @@ export async function POST() {
   const { data: product, error: productError } = await createProduct(user.id, {
     brand: "PanTracker",
     name: "Tutorial Sample Product",
-    category: "skincare",
+    category: "moisturizer",
     notes: "This is a temporary product created for the tutorial tour.",
   })
 

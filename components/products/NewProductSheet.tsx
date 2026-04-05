@@ -20,7 +20,7 @@ interface NewProductSheetProps {
 export function NewProductSheet({ open, onClose, onCreated, onError }: NewProductSheetProps) {
   const [name, setName] = useState("")
   const [brand, setBrand] = useState("")
-  const [category, setCategory] = useState<ProductCategory>("skincare")
+  const [category, setCategory] = useState<ProductCategory>("moisturizer")
   const [photoFile, setPhotoFile] = useState<File | null>(null)
   const [creating, setCreating] = useState(false)
   const cameraInputRef = useRef<HTMLInputElement>(null)
@@ -29,7 +29,7 @@ export function NewProductSheet({ open, onClose, onCreated, onError }: NewProduc
   function reset() {
     setName("")
     setBrand("")
-    setCategory("skincare")
+    setCategory("moisturizer")
     setPhotoFile(null)
   }
 

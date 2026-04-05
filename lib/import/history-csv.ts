@@ -20,13 +20,14 @@ export const IMPORT_CSV_MAX_BYTES = 1024 * 1024
 export const IMPORT_CSV_MAX_ROWS = 500
 
 const PRODUCT_CATEGORIES: ProductCategory[] = [
-  "makeup",
-  "skincare",
-  "haircare",
-  "bodycare",
-  "fragrance",
-  "tools",
-  "other",
+  "mascara",
+  "cleanser",
+  "serum",
+  "moisturizer",
+  "mist",
+  "eye_cream",
+  "toner",
+  "miscellaneous",
 ]
 
 const WOULD_REPURCHASE_VALUES: WouldRepurchase[] = ["yes", "no", "maybe"]

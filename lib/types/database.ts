@@ -366,13 +366,14 @@ export type Database = {
     Enums: {
       pan_entry_status: "active" | "empty" | "paused"
       product_category:
-        | "makeup"
-        | "skincare"
-        | "haircare"
-        | "bodycare"
-        | "fragrance"
-        | "tools"
-        | "other"
+        | "mascara"
+        | "cleanser"
+        | "serum"
+        | "moisturizer"
+        | "mist"
+        | "eye_cream"
+        | "toner"
+        | "miscellaneous"
       usage_level:
         | "just_started"
         | "quarter"
@@ -512,13 +513,14 @@ export const Constants = {
     Enums: {
       pan_entry_status: ["active", "empty", "paused"],
       product_category: [
-        "makeup",
-        "skincare",
-        "haircare",
-        "bodycare",
-        "fragrance",
-        "tools",
-        "other",
+        "mascara",
+        "cleanser",
+        "serum",
+        "moisturizer",
+        "mist",
+        "eye_cream",
+        "toner",
+        "miscellaneous",
       ],
       usage_level: [
         "just_started",

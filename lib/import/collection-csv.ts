@@ -99,9 +99,12 @@ export function computeExpirationDate(
 
   const parsedMfg = manufactureRaw ? parseSophiaDate(manufactureRaw) : null
   if (parsedMfg) {
-    const [year, month, day] = parsedMfg.split("-")
-    const nextYear = String(Number(year) + 1)
-    return `${nextYear}-${month}-${day}`
+    const [yearStr, month, day] = parsedMfg.split("-")
+    const nextYear = Number(yearStr) + 1
+    // Clamp Feb 29 to Feb 28 in non-leap years
+    const isLeap = nextYear % 4 === 0 && (nextYear % 100 !== 0 || nextYear % 400 === 0)
+    const clampedDay = month === "02" && day === "29" && !isLeap ? "28" : day
+    return `${nextYear}-${month}-${clampedDay}`
   }
 
   const fallback = new Date(today)

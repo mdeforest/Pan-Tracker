@@ -182,6 +182,12 @@ describe("parseCollectionCsv", () => {
     expect(tatcha?.expirationDate).toBe("2027-07-01")
   })
 
+  it("populates manufactureDate on parsed rows", () => {
+    const result = parseCollectionCsv(SAMPLE_CSV, "serum", NOW)
+    const tatcha = result.rows.find((r) => r.productString.startsWith("Tatcha"))
+    expect(tatcha?.manufactureDate).toBe("2024-07-01")
+  })
+
   it("skips Wish List section header rows", () => {
     const csv = [
       "Product,finished",

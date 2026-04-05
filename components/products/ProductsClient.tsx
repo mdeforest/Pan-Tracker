@@ -124,6 +124,7 @@ export function ProductsClient({ activeProductIds, initialProducts }: ProductsCl
       if (!a.expiration_date && !b.expiration_date) return 0
       if (!a.expiration_date) return 1
       if (!b.expiration_date) return -1
+      // ISO YYYY-MM-DD format sorts lexicographically = chronologically
       return a.expiration_date.localeCompare(b.expiration_date)
     })
   }, [products, sort])

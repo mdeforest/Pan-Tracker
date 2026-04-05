@@ -9,7 +9,7 @@ export function ExpiryBadge({ expirationDate }: ExpiryBadgeProps) {
 
   const today = new Date()
   today.setHours(0, 0, 0, 0)
-  const expiry = new Date(expirationDate)
+  const expiry = new Date(expirationDate + "T00:00:00")
   const daysLeft = Math.round(
     (expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
   )

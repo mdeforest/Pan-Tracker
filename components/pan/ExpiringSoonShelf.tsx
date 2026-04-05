@@ -25,7 +25,7 @@ export function ExpiringSoonShelf({
       <h2 className="mb-2 text-sm font-semibold text-foreground">Expiring Soon</h2>
       <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
         {products.map((product) => {
-          const expiry = new Date(product.expiration_date)
+          const expiry = new Date(product.expiration_date + "T00:00:00")
           const today = new Date()
           today.setHours(0, 0, 0, 0)
           const daysLeft = Math.round(

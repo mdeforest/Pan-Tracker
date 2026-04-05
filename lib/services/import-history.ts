@@ -178,13 +178,34 @@ export async function importHistoryCsv(
     return summary
   }
 
+  return processRows(userId, parsed.rows, summary)
+}
+
+/**
+ * Import pre-parsed and pre-validated rows directly, bypassing CSV parsing.
+ * Used when the client has already validated rows and applied inline corrections.
+ */
+export async function importParsedRows(
+  userId: string,
+  rows: ParsedHistoryCsvRow[]
+): Promise<ImportSummary> {
+  const summary: ImportSummary = { imported: 0, skipped: 0, errors: [], oldestImportedMonth: null }
+  if (rows.length === 0) return summary
+  return processRows(userId, rows, summary)
+}
+
+async function processRows(
+  userId: string,
+  rows: ParsedHistoryCsvRow[],
+  summary: ImportSummary
+): Promise<ImportSummary> {
   const context = await loadImportContext(userId)
   if (context.error) {
     summary.errors.push({ row: 0, message: context.error })
     return summary
   }
 
-  for (const row of parsed.rows) {
+  for (const row of rows) {
     let product = context.productByKey.get(normalizeProductKey(row.brand, row.name))
 
     if (!product) {

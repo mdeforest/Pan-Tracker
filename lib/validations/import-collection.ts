@@ -15,10 +15,10 @@ export const collectionRowSchema = z.object({
   brand: z.string().max(100).default(""),
   name: z.string().min(1).max(200),
   category: z.enum(CATEGORIES),
-  sizeWeight: z.string().max(100).nullable(),
-  manufactureDate: z.string().nullable(),
-  dateInCollection: z.string().nullable(),
-  expirationDate: z.string(),
+  sizeWeight: z.string().max(100).trim().nullable(),
+  manufactureDate: z.string().trim().nullable(),
+  dateInCollection: z.string().trim().nullable(),
+  expirationDate: z.string().trim().nullable(),
   isFinished: z.boolean(),
 })
 

@@ -69,7 +69,7 @@ export async function importCollectionRows(
       productByKey.set(key, productId)
     } else {
       // Update metadata on existing product (overwrites with freshest data from import)
-      await supabase
+      const { error: updateError } = await supabase
         .from("products")
         .update({
           size_weight: row.sizeWeight,
@@ -79,6 +79,13 @@ export async function importCollectionRows(
         })
         .eq("id", productId)
         .eq("user_id", userId)
+
+      if (updateError) {
+        summary.errors.push(
+          `Failed to update product "${row.name}": ${updateError.message}`
+        )
+        continue
+      }
     }
 
     if (row.isFinished) {

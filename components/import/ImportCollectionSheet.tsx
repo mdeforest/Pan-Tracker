@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useState, useMemo } from "react"
+import { useRef, useState, useMemo, useEffect } from "react"
 import { BottomSheet } from "@/components/shared/BottomSheet"
 import {
   detectCategoryFromFilename,
@@ -23,6 +23,8 @@ interface ImportCollectionSheetProps {
   open: boolean
   onClose: () => void
   onImported: () => void
+  /** When provided, skip the file picker and parse this file immediately on open */
+  initialFile?: File | null
 }
 
 type Step = "file" | "review" | "preview" | "done"
@@ -31,11 +33,28 @@ export function ImportCollectionSheet({
   open,
   onClose,
   onImported,
+  initialFile,
 }: ImportCollectionSheetProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [step, setStep] = useState<Step>("file")
   const [file, setFile] = useState<File | null>(null)
   const [category, setCategory] = useState<ProductCategory>("miscellaneous")
+
+  // When an initialFile is injected (e.g. from the unified import page), load and
+  // auto-parse it so the user skips the file-picker step entirely.
+  useEffect(() => {
+    if (open && initialFile && step === "file") {
+      const detected = detectCategoryFromFilename(initialFile.name)
+      setFile(initialFile)
+      if (detected) setCategory(detected)
+      // Defer so state settles before handleParse reads `file`
+      setTimeout(() => {
+        handleParseFile(initialFile, detected ?? "miscellaneous")
+      }, 0)
+    }
+    // Only re-run when the sheet opens with a new initialFile
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, initialFile])
   const [parseResult, setParseResult] = useState<ReturnType<
     typeof parseCollectionCsv
   > | null>(null)
@@ -72,21 +91,20 @@ export function ImportCollectionSheet({
     }
   }
 
-  async function handleParse() {
-    if (!file) return
+  async function handleParseFile(target: File, cat: ProductCategory) {
     setLoading(true)
     setError(null)
 
     let text: string
     try {
-      text = await file.text()
+      text = await target.text()
     } catch {
       setError("Could not read the file. Please try again.")
       setLoading(false)
       return
     }
 
-    const result = parseCollectionCsv(text, category)
+    const result = parseCollectionCsv(text, cat)
 
     if (result.errors.length > 0) {
       setError(result.errors[0])
@@ -94,8 +112,8 @@ export function ImportCollectionSheet({
       return
     }
 
-    if (result.rows.length === 0) {
-      setError("No product rows found in this file.")
+    if (result.rows.length === 0 && result.wishlistRows.length === 0) {
+      setError("No product or wishlist rows found in this file.")
       setLoading(false)
       return
     }
@@ -121,6 +139,11 @@ export function ImportCollectionSheet({
     }
 
     setLoading(false)
+  }
+
+  async function handleParse() {
+    if (!file) return
+    await handleParseFile(file, category)
   }
 
   function updateReviewRow(

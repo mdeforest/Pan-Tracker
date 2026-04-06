@@ -13,6 +13,8 @@ import {
   type ImportCsvError,
   type ParsedHistoryCsvRow,
 } from "@/lib/import/history-csv"
+import { detectSophiaFormat } from "@/lib/import/collection-csv"
+import { ImportCollectionSheet } from "@/components/import/ImportCollectionSheet"
 import { useToast } from "@/components/shared/ToastProvider"
 import { cn } from "@/lib/utils"
 
@@ -87,6 +89,8 @@ export function CsvImportClient() {
   const [loadingPreview, setLoadingPreview] = useState(false)
   const [importing, setImporting] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
+  // Sophia-format detection: when set, hand off to ImportCollectionSheet
+  const [collectionFile, setCollectionFile] = useState<File | null>(null)
 
   // Inline editing state
   const [editingRow, setEditingRow] = useState<EditState | null>(null)
@@ -140,10 +144,21 @@ export function CsvImportClient() {
       return
     }
 
+    let text: string
     try {
-      await nextFile.text()
+      text = await nextFile.text()
     } catch {
       setFileError("Failed to read file. It might be corrupted or not a valid text file.")
+      return
+    }
+
+    // Detect format from headers before hitting the server
+    const firstLine = text.split(/\r?\n/).find((l) => l.trim())
+    const headers = firstLine ? firstLine.split(",").map((h) => h.trim().toLowerCase()) : []
+    if (detectSophiaFormat(headers)) {
+      // Hand off to the collection import sheet — no server preview needed
+      setCollectionFile(nextFile)
+      setFile(null)
       return
     }
 
@@ -335,6 +350,12 @@ export function CsvImportClient() {
 
   return (
     <div className="flex flex-col gap-6 px-4 pb-12">
+      <ImportCollectionSheet
+        open={!!collectionFile}
+        initialFile={collectionFile}
+        onClose={() => { setCollectionFile(null); reset() }}
+        onImported={() => { router.push("/products"); router.refresh() }}
+      />
 
       {/* Template Download */}
       <div className="flex items-center justify-between rounded-xl border border-border bg-muted/30 px-4 py-3">

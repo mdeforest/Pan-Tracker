@@ -40,17 +40,14 @@ export function ImportCollectionSheet({
   const [file, setFile] = useState<File | null>(null)
   const [category, setCategory] = useState<ProductCategory>("miscellaneous")
 
-  // When an initialFile is injected (e.g. from the unified import page), load and
-  // auto-parse it so the user skips the file-picker step entirely.
+  // When an initialFile is injected (e.g. from the unified import page), pre-load
+  // the file and auto-detect the category — but leave the user on the file step
+  // so they can confirm/change the category before parsing.
   useEffect(() => {
     if (open && initialFile && step === "file") {
       const detected = detectCategoryFromFilename(initialFile.name)
       setFile(initialFile)
       if (detected) setCategory(detected)
-      // Defer so state settles before handleParse reads `file`
-      setTimeout(() => {
-        handleParseFile(initialFile, detected ?? "miscellaneous")
-      }, 0)
     }
     // Only re-run when the sheet opens with a new initialFile
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -249,14 +246,21 @@ export function ImportCollectionSheet({
 
           <div className="flex flex-col gap-1">
             <label className="text-sm font-medium">CSV File</label>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".csv"
-              onChange={handleFileChange}
-              className="block w-full cursor-pointer rounded-xl border border-border bg-background px-3 py-2 text-sm"
-            />
-            {file && (
+            {file && initialFile ? (
+              /* File was injected from the unified import page — show name, no picker */
+              <p className="rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground truncate">
+                {file.name}
+              </p>
+            ) : (
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".csv"
+                onChange={handleFileChange}
+                className="block w-full cursor-pointer rounded-xl border border-border bg-background px-3 py-2 text-sm"
+              />
+            )}
+            {file && !initialFile && (
               <p className="text-[12px] text-muted-foreground">{file.name}</p>
             )}
           </div>

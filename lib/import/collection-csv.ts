@@ -230,8 +230,15 @@ export function parseCollectionCsv(
     const productString = getCell(row, headerMap, "product")
     if (!productString) continue
 
-    // Detect "Wish List" section header — rows after this go to the wishlist
-    if (productString.toLowerCase().startsWith("wish list")) {
+    // Detect wishlist/wants section header — rows after this go to the wishlist.
+    // Handles: "Wish List", "Wishlist", "Wants", "Want" (case-insensitive, trimmed)
+    const lowerProduct = productString.toLowerCase().trim()
+    if (
+      lowerProduct.startsWith("wish list") ||
+      lowerProduct === "wishlist" ||
+      lowerProduct === "wants" ||
+      lowerProduct === "want"
+    ) {
       inWishlistSection = true
       continue
     }
@@ -242,8 +249,43 @@ export function parseCollectionCsv(
     const autoMatched = !!splitResult
 
     if (inWishlistSection) {
-      if (autoMatched) wishlistAutoMatchedCount++
-      wishlistRows.push({ productString, brand, name, autoMatched })
+      const finishedRaw =
+        getCell(row, headerMap, "finished?") ||
+        getCell(row, headerMap, "finished")
+      const isFinished = TRUTHY_FINISHED.has(finishedRaw.toLowerCase())
+
+      if (isFinished) {
+        // Finished wants items → add to product library with empty record
+        if (autoMatched) autoMatchedCount++
+        const expirationRaw =
+          getCell(row, headerMap, "expiration date") ||
+          getCell(row, headerMap, "expiration_date")
+        const manufactureRaw =
+          getCell(row, headerMap, "manufacture date") ||
+          getCell(row, headerMap, "manufacture_date")
+        const dateInCollectionRaw =
+          getCell(row, headerMap, "date in collection") ||
+          getCell(row, headerMap, "date_in_collection")
+        const sizeWeightRaw =
+          getCell(row, headerMap, "product size/weight") ||
+          getCell(row, headerMap, "size_weight")
+        rows.push({
+          productString,
+          brand,
+          name,
+          autoMatched,
+          category,
+          sizeWeight: sizeWeightRaw || null,
+          manufactureDate: parseSophiaDate(manufactureRaw),
+          dateInCollection: parseSophiaDate(dateInCollectionRaw),
+          expirationDate: computeExpirationDate(expirationRaw, manufactureRaw, now),
+          isFinished: true,
+        })
+      } else {
+        // Not finished → add to wishlist
+        if (autoMatched) wishlistAutoMatchedCount++
+        wishlistRows.push({ productString, brand, name, autoMatched })
+      }
       continue
     }
 

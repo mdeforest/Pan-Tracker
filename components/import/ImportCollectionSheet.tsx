@@ -376,44 +376,69 @@ export function ImportCollectionSheet({
       {/* Step 3: Preview + Confirm */}
       {step === "preview" && parseResult && (
         <div className="flex flex-col gap-4 p-4 pb-8">
+          {/* Summary counts */}
           <div className="rounded-xl bg-muted px-4 py-3 flex flex-col gap-1">
             <p className="text-sm">
-              <span className="font-semibold">{notYetPannedCount}</span> products
-              to add to library
+              <span className="font-semibold">{notYetPannedCount}</span> products to add to library
             </p>
-            <p className="text-sm">
-              <span className="font-semibold">{finishedCount}</span> marked as
-              finished (will create empty records)
-            </p>
+            {finishedCount > 0 && (
+              <p className="text-sm">
+                <span className="font-semibold">{finishedCount}</span> marked as finished — will create empty records
+              </p>
+            )}
             {wishlistCount > 0 && (
               <p className="text-sm">
-                <span className="font-semibold">{wishlistCount}</span> items to
-                add to wishlist
+                <span className="font-semibold">{wishlistCount}</span> wants to add to wishlist
               </p>
             )}
           </div>
 
-          <div className="overflow-y-auto max-h-[40vh] flex flex-col gap-2">
-            {finalRows.map((row, i) => (
-              <div key={i} className="flex items-start justify-between gap-2">
-                <div className="min-w-0">
-                  <p className="text-sm font-medium truncate">{row.name}</p>
-                  <p className="text-[12px] text-muted-foreground truncate">
-                    {row.brand || "No brand"} · Exp.{" "}
-                    {new Date(row.expirationDate).toLocaleDateString("en-US", {
-                      month: "short",
-                      year: "numeric",
-                    })}
-                  </p>
-                </div>
-                {row.isFinished && (
-                  <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-                    Finished
-                  </span>
-                )}
+          {/* Product rows */}
+          {finalRows.length > 0 && (
+            <div className="flex flex-col gap-1">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground px-1">Products</p>
+              <div className="overflow-y-auto max-h-[28vh] flex flex-col gap-2">
+                {finalRows.map((row, i) => (
+                  <div key={i} className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium truncate">{row.name}</p>
+                      <p className="text-[12px] text-muted-foreground truncate">
+                        {row.brand || "No brand"} · Exp.{" "}
+                        {new Date(row.expirationDate + "T00:00:00").toLocaleDateString("en-US", {
+                          month: "short",
+                          year: "numeric",
+                        })}
+                      </p>
+                    </div>
+                    {row.isFinished && (
+                      <span className="shrink-0 rounded-full bg-amber-100 text-amber-700 px-2 py-0.5 text-[10px] font-semibold">
+                        Finished
+                      </span>
+                    )}
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
+          )}
+
+          {/* Wishlist rows */}
+          {wishlistCount > 0 && (
+            <div className="flex flex-col gap-1">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground px-1">Wants → Wishlist</p>
+              <div className="overflow-y-auto max-h-[20vh] flex flex-col gap-2">
+                {buildFinalWishlistRows().map((row, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm truncate">{row.name}</p>
+                      {row.brand && (
+                        <p className="text-[12px] text-muted-foreground truncate">{row.brand}</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {error && (
             <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
@@ -427,7 +452,7 @@ export function ImportCollectionSheet({
             disabled={loading}
             className="flex h-12 w-full items-center justify-center rounded-xl bg-primary text-sm font-semibold text-primary-foreground disabled:opacity-50"
           >
-            {loading ? "Importing…" : `Import ${finalRows.length} products`}
+            {loading ? "Importing…" : `Import ${finalRows.length + wishlistCount} items`}
           </button>
         </div>
       )}

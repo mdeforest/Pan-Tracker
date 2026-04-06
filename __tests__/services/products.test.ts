@@ -154,7 +154,7 @@ describe("getProduct", () => {
     await getProduct(USER_ID, PRODUCT_ID)
 
     const b = mock._builders.products
-    expect(b.select).toHaveBeenCalledWith("id,name,brand,category,photo_url,notes,archived_at")
+    expect(b.select).toHaveBeenCalledWith("id,name,brand,category,photo_url,notes,archived_at,expiration_date,size_weight,manufacture_date,date_in_collection")
     expect(b.eq).toHaveBeenCalledWith("id", PRODUCT_ID)
     expect(b.eq).toHaveBeenCalledWith("user_id", USER_ID)
     expect(b.is).not.toHaveBeenCalledWith("archived_at", null)

@@ -8,6 +8,7 @@ import {
   type ParsedCollectionRow,
   type ParsedWishlistRow,
 } from "@/lib/import/collection-csv"
+import { ExpiryBadge } from "@/components/products/ExpiryBadge"
 import { CATEGORY_LABELS, ALL_CATEGORIES } from "@/components/pan/utils"
 import type { ProductCategory } from "@/lib/types/app"
 
@@ -403,18 +404,17 @@ export function ImportCollectionSheet({
                     <div className="min-w-0">
                       <p className="text-sm font-medium truncate">{row.name}</p>
                       <p className="text-[12px] text-muted-foreground truncate">
-                        {row.brand || "No brand"} · Exp.{" "}
-                        {new Date(row.expirationDate + "T00:00:00").toLocaleDateString("en-US", {
-                          month: "short",
-                          year: "numeric",
-                        })}
+                        {row.brand || "No brand"}
                       </p>
                     </div>
-                    {row.isFinished && (
-                      <span className="shrink-0 rounded-full bg-amber-100 text-amber-700 px-2 py-0.5 text-[10px] font-semibold">
-                        Finished
-                      </span>
-                    )}
+                    <div className="shrink-0 flex items-center gap-1">
+                      <ExpiryBadge expirationDate={row.expirationDate ?? null} alwaysShow />
+                      {row.isFinished && (
+                        <span className="rounded-full bg-amber-100 text-amber-700 px-2 py-0.5 text-[10px] font-semibold">
+                          Finished
+                        </span>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>

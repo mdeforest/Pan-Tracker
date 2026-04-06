@@ -50,7 +50,7 @@ export async function getProduct(userId: string, id: string) {
 
   return supabase
     .from("products")
-    .select("id,name,brand,category,photo_url,notes,archived_at")
+    .select("id,name,brand,category,photo_url,notes,archived_at,expiration_date,size_weight,manufacture_date,date_in_collection")
     .eq("id", id)
     .eq("user_id", userId)
     .single()

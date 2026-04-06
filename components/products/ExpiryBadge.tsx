@@ -1,10 +1,15 @@
 interface ExpiryBadgeProps {
   expirationDate: string | null
+  /**
+   * When true, always renders a badge even if expiry is far in the future.
+   * Defaults to false (only shows within 180 days) — keeps product cards uncluttered.
+   */
+  alwaysShow?: boolean
 }
 
 const MONTH_FMT = new Intl.DateTimeFormat("en-US", { month: "short", year: "numeric" })
 
-export function ExpiryBadge({ expirationDate }: ExpiryBadgeProps) {
+export function ExpiryBadge({ expirationDate, alwaysShow = false }: ExpiryBadgeProps) {
   if (!expirationDate) return null
 
   const today = new Date()
@@ -14,7 +19,7 @@ export function ExpiryBadge({ expirationDate }: ExpiryBadgeProps) {
     (expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
   )
 
-  if (daysLeft > 180) return null
+  if (!alwaysShow && daysLeft > 180) return null
 
   if (daysLeft <= 0) {
     return (
@@ -40,9 +45,17 @@ export function ExpiryBadge({ expirationDate }: ExpiryBadgeProps) {
     )
   }
 
-  // 91–180 days
+  if (daysLeft <= 180) {
+    return (
+      <span className="rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-medium text-green-700">
+        Exp. {MONTH_FMT.format(expiry)}
+      </span>
+    )
+  }
+
+  // > 180 days — only shown when alwaysShow=true
   return (
-    <span className="rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-medium text-green-700">
+    <span className="rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-medium text-green-600">
       Exp. {MONTH_FMT.format(expiry)}
     </span>
   )

@@ -159,9 +159,22 @@ export interface ParsedCollectionRow {
   isFinished: boolean
 }
 
+export interface ParsedWishlistRow {
+  /** Original value from the Product column */
+  productString: string
+  /** Auto-detected brand, or "" if unmatched */
+  brand: string
+  /** Product name (remainder after brand, or full string if unmatched) */
+  name: string
+  /** True if brand was auto-detected from the known list */
+  autoMatched: boolean
+}
+
 export interface ParseCollectionResult {
   rows: ParsedCollectionRow[]
   autoMatchedCount: number
+  wishlistRows: ParsedWishlistRow[]
+  wishlistAutoMatchedCount: number
   /** Fatal parse errors (e.g. missing required column) */
   errors: string[]
 }
@@ -173,13 +186,21 @@ export function parseCollectionCsv(
 ): ParseCollectionResult {
   const rawRows = parseCsvText(csvText)
 
+  const EMPTY: ParseCollectionResult = {
+    rows: [],
+    autoMatchedCount: 0,
+    wishlistRows: [],
+    wishlistAutoMatchedCount: 0,
+    errors: [],
+  }
+
   if (rawRows.length === 0) {
-    return { rows: [], autoMatchedCount: 0, errors: ["CSV file is empty"] }
+    return { ...EMPTY, errors: ["CSV file is empty"] }
   }
 
   const headerIndex = rawRows.findIndex((row) => row.some((cell) => cell.trim() !== ""))
   if (headerIndex < 0) {
-    return { rows: [], autoMatchedCount: 0, errors: ["CSV file is empty"] }
+    return { ...EMPTY, errors: ["CSV file is empty"] }
   }
 
   const headerRow = rawRows[headerIndex].map((cell) => cell.trim().toLowerCase())
@@ -190,8 +211,7 @@ export function parseCollectionCsv(
 
   if (!headerMap.has("product")) {
     return {
-      rows: [],
-      autoMatchedCount: 0,
+      ...EMPTY,
       errors: ['Missing required "Product" column — is this a Sophia-format CSV?'],
     }
   }
@@ -202,28 +222,32 @@ export function parseCollectionCsv(
 
   const rows: ParsedCollectionRow[] = []
   let autoMatchedCount = 0
+  const wishlistRows: ParsedWishlistRow[] = []
+  let wishlistAutoMatchedCount = 0
+  let inWishlistSection = false
 
   for (const row of dataRows) {
     const productString = getCell(row, headerMap, "product")
     if (!productString) continue
-    // Skip section-header rows like "Wish List"
-    if (productString.toLowerCase().startsWith("wish list")) continue
+
+    // Detect "Wish List" section header — rows after this go to the wishlist
+    if (productString.toLowerCase().startsWith("wish list")) {
+      inWishlistSection = true
+      continue
+    }
 
     const splitResult = autoSplitBrand(productString)
-    let brand: string
-    let name: string
-    let autoMatched: boolean
+    const brand = splitResult ? splitResult.brand : ""
+    const name = splitResult ? splitResult.name : productString
+    const autoMatched = !!splitResult
 
-    if (splitResult) {
-      brand = splitResult.brand
-      name = splitResult.name
-      autoMatched = true
-      autoMatchedCount++
-    } else {
-      brand = ""
-      name = productString
-      autoMatched = false
+    if (inWishlistSection) {
+      if (autoMatched) wishlistAutoMatchedCount++
+      wishlistRows.push({ productString, brand, name, autoMatched })
+      continue
     }
+
+    if (autoMatched) autoMatchedCount++
 
     const expirationRaw =
       getCell(row, headerMap, "expiration date") ||
@@ -237,7 +261,9 @@ export function parseCollectionCsv(
     const sizeWeightRaw =
       getCell(row, headerMap, "product size/weight") ||
       getCell(row, headerMap, "size_weight")
-    const finishedRaw = getCell(row, headerMap, "finished")
+    const finishedRaw =
+      getCell(row, headerMap, "finished?") ||
+      getCell(row, headerMap, "finished")
 
     rows.push({
       productString,
@@ -253,7 +279,7 @@ export function parseCollectionCsv(
     })
   }
 
-  return { rows, autoMatchedCount, errors: [] }
+  return { rows, autoMatchedCount, wishlistRows, wishlistAutoMatchedCount, errors: [] }
 }
 
 // ---------------------------------------------------------------------------

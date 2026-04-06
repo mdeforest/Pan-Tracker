@@ -22,9 +22,20 @@ export const collectionRowSchema = z.object({
   isFinished: z.boolean(),
 })
 
-export const importCollectionBodySchema = z.object({
-  rows: z.array(collectionRowSchema).min(1).max(500),
+export const wishlistRowSchema = z.object({
+  brand: z.string().max(100).default(""),
+  name: z.string().min(1).max(200),
 })
 
+export const importCollectionBodySchema = z
+  .object({
+    rows: z.array(collectionRowSchema).min(0).max(500),
+    wishlistRows: z.array(wishlistRowSchema).max(200).optional().default([]),
+  })
+  .refine((data) => data.rows.length > 0 || data.wishlistRows.length > 0, {
+    message: "Must include at least one product row or wishlist item",
+  })
+
 export type CollectionRow = z.infer<typeof collectionRowSchema>
+export type WishlistImportRow = z.infer<typeof wishlistRowSchema>
 export type ImportCollectionBody = z.infer<typeof importCollectionBodySchema>

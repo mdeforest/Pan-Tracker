@@ -6,6 +6,7 @@ import {
   detectCategoryFromFilename,
   parseCollectionCsv,
   type ParsedCollectionRow,
+  type ParsedWishlistRow,
 } from "@/lib/import/collection-csv"
 import { CATEGORY_LABELS, ALL_CATEGORIES } from "@/components/pan/utils"
 import type { ProductCategory } from "@/lib/types/app"
@@ -44,6 +45,8 @@ export function ImportCollectionSheet({
   const [summary, setSummary] = useState<{
     imported: number
     skipped: number
+    wishlistImported: number
+    wishlistSkipped: number
     errors: string[]
   } | null>(null)
 
@@ -171,16 +174,25 @@ export function ImportCollectionSheet({
     [parseResult, reviewRows, step]
   )
 
+  function buildFinalWishlistRows(): ParsedWishlistRow[] {
+    if (!parseResult) return []
+    return parseResult.wishlistRows
+  }
+
   async function handleImport() {
     setLoading(true)
     setError(null)
 
     const rows = finalRows
+    const wishlistRows = buildFinalWishlistRows().map((r) => ({
+      brand: r.brand,
+      name: r.name,
+    }))
 
     const res = await fetch("/api/import/collection", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ rows }),
+      body: JSON.stringify({ rows, wishlistRows }),
     })
 
     const data = await res.json()
@@ -200,6 +212,7 @@ export function ImportCollectionSheet({
   const finishedCount = parseResult?.rows.filter((r) => r.isFinished).length ?? 0
   const totalRows = parseResult?.rows.length ?? 0
   const notYetPannedCount = totalRows - finishedCount
+  const wishlistCount = parseResult?.wishlistRows.length ?? 0
 
   return (
     <BottomSheet open={open} onClose={handleClose} title="Import Collection">
@@ -345,6 +358,12 @@ export function ImportCollectionSheet({
               <span className="font-semibold">{finishedCount}</span> marked as
               finished (will create empty records)
             </p>
+            {wishlistCount > 0 && (
+              <p className="text-sm">
+                <span className="font-semibold">{wishlistCount}</span> items to
+                add to wishlist
+              </p>
+            )}
           </div>
 
           <div className="overflow-y-auto max-h-[40vh] flex flex-col gap-2">
@@ -394,8 +413,14 @@ export function ImportCollectionSheet({
               Import complete
             </p>
             <p className="text-sm text-muted-foreground">
-              {summary.imported} imported · {summary.skipped} skipped
+              {summary.imported} product{summary.imported !== 1 ? "s" : ""} imported · {summary.skipped} skipped
             </p>
+            {summary.wishlistImported > 0 && (
+              <p className="text-sm text-muted-foreground">
+                {summary.wishlistImported} wishlist item{summary.wishlistImported !== 1 ? "s" : ""} added
+                {summary.wishlistSkipped > 0 ? ` · ${summary.wishlistSkipped} already on wishlist` : ""}
+              </p>
+            )}
           </div>
 
           {summary.errors.length > 0 && (

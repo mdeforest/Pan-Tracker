@@ -188,7 +188,7 @@ describe("parseCollectionCsv", () => {
     expect(tatcha?.manufactureDate).toBe("2024-07-01")
   })
 
-  it("skips Wish List section header rows", () => {
+  it("routes items after Wish List header into wishlistRows, not rows", () => {
     const csv = [
       "Product,finished",
       "Tatcha Cleanser,",
@@ -196,8 +196,26 @@ describe("parseCollectionCsv", () => {
       "Some Brand Product,",
     ].join("\n")
     const result = parseCollectionCsv(csv, "serum", NOW)
+    // "Tatcha Cleanser" → regular product; "Some Brand Product" → wishlist
+    expect(result.rows).toHaveLength(1)
+    expect(result.rows[0].productString).toBe("Tatcha Cleanser")
+    expect(result.wishlistRows).toHaveLength(1)
+    expect(result.wishlistRows[0].productString).toBe("Some Brand Product")
+    // The "Wish List" header itself should appear in neither list
+    expect(result.rows.some((r) => r.productString.toLowerCase().startsWith("wish list"))).toBe(false)
+    expect(result.wishlistRows.some((r) => r.productString.toLowerCase().startsWith("wish list"))).toBe(false)
+  })
+
+  it('marks finished rows correctly when header is "Finished?" (with question mark)', () => {
+    const csv = [
+      "Product,Finished?",
+      "Tatcha Cleanser,yes",
+      "Some Other Product,",
+    ].join("\n")
+    const result = parseCollectionCsv(csv, "cleanser", NOW)
     expect(result.rows).toHaveLength(2)
-    expect(result.rows.some((r) => r.productString === "Wish List")).toBe(false)
+    expect(result.rows[0].isFinished).toBe(true)
+    expect(result.rows[1].isFinished).toBe(false)
   })
 
   it("returns error for empty CSV input", () => {

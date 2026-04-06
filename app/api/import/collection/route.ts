@@ -1,5 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { revalidateForEmptiesMutation, revalidateForProductMutation } from "@/lib/cache/tab-cache"
+import {
+  revalidateForEmptiesMutation,
+  revalidateForProductMutation,
+  revalidateForWishlistMutation,
+} from "@/lib/cache/tab-cache"
 import { importCollectionRows } from "@/lib/services/import-collection"
 import { importCollectionBodySchema } from "@/lib/validations/import-collection"
 import { createClient } from "@/lib/supabase/server"
@@ -27,11 +31,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: `Invalid request body: ${message}` }, { status: 400 })
   }
 
-  const summary = await importCollectionRows(user.id, parsed.data.rows)
+  const summary = await importCollectionRows(user.id, parsed.data.rows, parsed.data.wishlistRows)
 
   if (summary.imported > 0) {
     revalidateForProductMutation(user.id)
     revalidateForEmptiesMutation(user.id)
+  }
+  if (summary.wishlistImported > 0) {
+    revalidateForWishlistMutation(user.id)
   }
 
   return NextResponse.json(summary)

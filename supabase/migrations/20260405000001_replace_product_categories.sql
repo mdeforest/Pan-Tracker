@@ -1,27 +1,22 @@
 -- Replace the product_category enum with Sophia-specific categories
 -- Migrate all existing data to 'miscellaneous' as a safe fallback
+--
+-- NOTE: `ALTER TYPE ... ADD VALUE` cannot be used in the same transaction as DML
+-- that references the new value. To avoid that restriction we skip ADD VALUE
+-- entirely: cast to text first, do the migration as text, then recreate the enum.
 
--- Step 1: Add new enum values
-ALTER TYPE public.product_category ADD VALUE IF NOT EXISTS 'mascara';
-ALTER TYPE public.product_category ADD VALUE IF NOT EXISTS 'cleanser';
-ALTER TYPE public.product_category ADD VALUE IF NOT EXISTS 'serum';
-ALTER TYPE public.product_category ADD VALUE IF NOT EXISTS 'moisturizer';
-ALTER TYPE public.product_category ADD VALUE IF NOT EXISTS 'mist';
-ALTER TYPE public.product_category ADD VALUE IF NOT EXISTS 'eye_cream';
-ALTER TYPE public.product_category ADD VALUE IF NOT EXISTS 'toner';
-ALTER TYPE public.product_category ADD VALUE IF NOT EXISTS 'miscellaneous';
-
--- Step 2: Migrate existing rows to new categories
-UPDATE public.products SET category = 'miscellaneous'
-  WHERE category IN ('makeup', 'skincare', 'haircare', 'bodycare', 'fragrance', 'tools', 'other');
-
--- Step 3: Remove old values by recreating the type
--- (PostgreSQL doesn't support DROP VALUE, so we recreate)
+-- Step 1: Cast the column to text so we can freely manipulate values
 ALTER TABLE public.products
   ALTER COLUMN category TYPE text;
 
-DROP TYPE public.product_category;
+-- Step 2: Drop the old enum (no longer referenced by the column)
+DROP TYPE IF EXISTS public.product_category;
 
+-- Step 3: Migrate old category values to the closest new equivalent
+UPDATE public.products SET category = 'miscellaneous'
+  WHERE category IN ('makeup', 'skincare', 'haircare', 'bodycare', 'fragrance', 'tools', 'other');
+
+-- Step 4: Create the new enum with Sophia-specific categories
 CREATE TYPE public.product_category AS ENUM (
   'mascara',
   'cleanser',
@@ -33,6 +28,7 @@ CREATE TYPE public.product_category AS ENUM (
   'miscellaneous'
 );
 
+-- Step 5: Cast the column back to the new enum type
 ALTER TABLE public.products
   ALTER COLUMN category TYPE public.product_category
   USING category::public.product_category;

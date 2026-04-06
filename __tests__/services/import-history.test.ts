@@ -228,14 +228,14 @@ describe("previewHistoryCsvImport", () => {
           id: "prod-1",
           brand: "Rare Beauty",
           name: "Soft Pinch Blush",
-          category: "makeup",
+          category: "mascara",
           archived_at: null,
         },
         {
           id: "prod-2",
           brand: "Glow Recipe",
           name: "Plum Plump",
-          category: "skincare",
+          category: "serum",
           archived_at: null,
         },
       ],
@@ -246,9 +246,9 @@ describe("previewHistoryCsvImport", () => {
 
     const csv = [
       "brand,name,category,status,finished_month,finished_year",
-      "rare beauty,soft pinch blush,makeup,empty,2,2026",
-      "Glow Recipe,Plum Plump,skincare,current_pan,,",
-      "Tower 28,Lip Gloss,makeup,backlog,,",
+      "rare beauty,soft pinch blush,mascara,empty,2,2026",
+      "Glow Recipe,Plum Plump,serum,current_pan,,",
+      "Tower 28,Lip Gloss,mascara,backlog,,",
     ].join("\n")
 
     const summary = await previewHistoryCsvImport(USER_ID, csv, NOW)
@@ -266,7 +266,7 @@ describe("previewHistoryCsvImport", () => {
           id: "prod-1",
           brand: "Glow Recipe",
           name: "Plum Plump",
-          category: "skincare",
+          category: "serum",
           archived_at: null,
         },
       ],
@@ -276,7 +276,7 @@ describe("previewHistoryCsvImport", () => {
 
     const csv = [
       "brand,name,category,status,finished_month,finished_year",
-      "Glow Recipe,Plum Plump,makeup,empty,3,2026",
+      "Glow Recipe,Plum Plump,mascara,empty,3,2026",
     ].join("\n")
 
     const summary = await previewHistoryCsvImport(USER_ID, csv, NOW)
@@ -298,7 +298,7 @@ describe("importHistoryCsv", () => {
           id: "prod-1",
           brand: "Rare Beauty",
           name: "Blush",
-          category: "makeup",
+          category: "mascara",
           archived_at: null,
         },
       ],
@@ -308,9 +308,9 @@ describe("importHistoryCsv", () => {
 
     const csv = [
       "brand,name,category,status,finished_month,finished_year,rating,would_repurchase,review_notes",
-      "Rare Beauty,Blush,makeup,empty,2,2026,5,yes,Still love it",
-      "The Ordinary,Niacinamide,skincare,current_pan,3,2026,,,",
-      "Tower 28,Lip Gloss,makeup,backlog,,,,,",
+      "Rare Beauty,Blush,mascara,empty,2,2026,5,yes,Still love it",
+      "The Ordinary,Niacinamide,serum,current_pan,3,2026,,,",
+      "Tower 28,Lip Gloss,mascara,backlog,,,,,",
     ].join("\n")
 
     const summary = await importHistoryCsv(USER_ID, csv, NOW)
@@ -342,7 +342,7 @@ describe("importHistoryCsv", () => {
           id: "prod-1",
           brand: "Rare Beauty",
           name: "Blush",
-          category: "makeup",
+          category: "mascara",
           archived_at: null,
         },
       ],
@@ -353,7 +353,7 @@ describe("importHistoryCsv", () => {
 
     const csv = [
       "brand,name,category,status,finished_month,finished_year",
-      "Rare Beauty,Blush,makeup,current_pan,,",
+      "Rare Beauty,Blush,mascara,current_pan,,",
     ].join("\n")
 
     const summary = await importHistoryCsv(USER_ID, csv, NOW)
@@ -369,14 +369,14 @@ describe("importHistoryCsv", () => {
           id: "prod-1",
           brand: "Brand 1",
           name: "Product 1",
-          category: "makeup",
+          category: "mascara",
           archived_at: null,
         },
         {
           id: "prod-2",
           brand: "Brand 2",
           name: "Product 2",
-          category: "makeup",
+          category: "mascara",
           archived_at: null,
         },
       ],
@@ -387,8 +387,8 @@ describe("importHistoryCsv", () => {
 
     const csv = [
       "brand,name,category,status,finished_month,finished_year",
-      "Brand 1,Product 1,makeup,empty,2,2026",
-      "Brand 2,Product 2,makeup,current_pan,1,2026",
+      "Brand 1,Product 1,mascara,empty,2,2026",
+      "Brand 2,Product 2,mascara,current_pan,1,2026",
     ].join("\n")
 
     const summary = await importHistoryCsv(USER_ID, csv, NOW)

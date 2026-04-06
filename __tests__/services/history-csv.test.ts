@@ -11,7 +11,7 @@ describe("parseHistoryCsvText", () => {
   it("parses valid empty rows including quoted commas", () => {
     const csv = [
       "brand,name,category,status,finished_month,finished_year,rating,would_repurchase,review_notes",
-      'Rare Beauty,"Soft Pinch, Liquid Blush",makeup,empty,2,2026,5,yes,"Loved it, would buy again"',
+      'Rare Beauty,"Soft Pinch, Liquid Blush",mascara,empty,2,2026,5,yes,"Loved it, would buy again"',
     ].join("\n")
 
     const result = parseHistoryCsvText(csv, NOW)
@@ -22,7 +22,7 @@ describe("parseHistoryCsvText", () => {
     expect(result.rows[0]).toMatchObject({
       brand: "Rare Beauty",
       name: "Soft Pinch, Liquid Blush",
-      category: "makeup",
+      category: "mascara",
       status: "empty",
       finishedMonth: 2,
       finishedYear: 2026,
@@ -35,7 +35,7 @@ describe("parseHistoryCsvText", () => {
   it("keeps backward compatibility when status header is omitted", () => {
     const csv = [
       "brand,name,category,finished_month,finished_year",
-      "Rare Beauty,Blush,makeup,2,2026",
+      "Rare Beauty,Blush,mascara,2,2026",
     ].join("\n")
 
     const result = parseHistoryCsvText(csv, NOW)
@@ -74,7 +74,7 @@ describe("parseHistoryCsvText", () => {
   it("validates status values", () => {
     const csv = [
       "brand,name,category,status,finished_month,finished_year",
-      "Rare Beauty,Blush,makeup,weird,2,2026",
+      "Rare Beauty,Blush,mascara,weird,2,2026",
     ].join("\n")
 
     const result = parseHistoryCsvText(csv, NOW)
@@ -86,7 +86,7 @@ describe("parseHistoryCsvText", () => {
     const header = "brand,name,category,status,finished_month,finished_year"
     const lines = Array.from(
       { length: 501 },
-      (_, idx) => `Brand ${idx},Name ${idx},makeup,empty,1,2026`
+      (_, idx) => `Brand ${idx},Name ${idx},mascara,empty,1,2026`
     )
     const csv = [header, ...lines].join("\n")
 
@@ -99,8 +99,8 @@ describe("parseHistoryCsvText", () => {
   it("uses rolling 36-month window boundaries for dated statuses", () => {
     const csv = [
       "brand,name,category,status,finished_month,finished_year",
-      "Brand A,Old Allowed,makeup,empty,3,2023",
-      "Brand B,Too Old,makeup,current_pan,2,2023",
+      "Brand A,Old Allowed,mascara,empty,3,2023",
+      "Brand B,Too Old,mascara,current_pan,2,2023",
     ].join("\n")
 
     const result = parseHistoryCsvText(csv, NOW)
@@ -114,8 +114,8 @@ describe("parseHistoryCsvText", () => {
   it("supports backlog rows without month/year and defaults current_pan dates", () => {
     const csv = [
       "brand,name,category,status,finished_month,finished_year",
-      "Tower 28,Gloss,makeup,backlog,,",
-      "Rare Beauty,Concealer,makeup,current_pan,,",
+      "Tower 28,Gloss,mascara,backlog,,",
+      "Rare Beauty,Concealer,mascara,current_pan,,",
     ].join("\n")
 
     const result = parseHistoryCsvText(csv, NOW)
@@ -137,11 +137,11 @@ describe("parseHistoryCsvText", () => {
   it("skips duplicate rows using status-aware rules", () => {
     const csv = [
       "brand,name,category,status,finished_month,finished_year",
-      "Rare Beauty,Blush,makeup,empty,2,2026",
-      "rare beauty,blush,makeup,empty,2,2026",
-      "Rare Beauty,Blush,makeup,current_pan,,",
-      "rare beauty,blush,makeup,current pan,,",
-      "Rare Beauty,Blush,makeup,backlog,,",
+      "Rare Beauty,Blush,mascara,empty,2,2026",
+      "rare beauty,blush,mascara,empty,2,2026",
+      "Rare Beauty,Blush,mascara,current_pan,,",
+      "rare beauty,blush,mascara,current pan,,",
+      "Rare Beauty,Blush,mascara,backlog,,",
     ].join("\n")
 
     const result = parseHistoryCsvText(csv, NOW)

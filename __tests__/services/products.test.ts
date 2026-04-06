@@ -22,7 +22,7 @@ const mockProduct = {
   user_id: USER_ID,
   brand: "NARS",
   name: "Blush",
-  category: "makeup",
+  category: "mascara",
   notes: null,
   photo_url: null,
   archived_at: null,
@@ -79,10 +79,10 @@ describe("listProducts", () => {
 
   it("applies category filter via .eq() when provided", async () => {
     const mock = setup({ products: { data: [], error: null } })
-    await listProducts(USER_ID, undefined, "skincare")
+    await listProducts(USER_ID, undefined, "serum")
 
     const b = mock._builders.products
-    expect(b.eq).toHaveBeenCalledWith("category", "skincare")
+    expect(b.eq).toHaveBeenCalledWith("category", "serum")
   })
 
   it("returns data and error from Supabase", async () => {
@@ -101,7 +101,7 @@ describe("createProduct", () => {
     await createProduct(USER_ID, {
       brand: "NARS",
       name: "Blush",
-      category: "makeup",
+      category: "mascara",
       notes: "great",
     })
 
@@ -111,7 +111,7 @@ describe("createProduct", () => {
         user_id: USER_ID,
         brand: "NARS",
         name: "Blush",
-        category: "makeup",
+        category: "mascara",
         notes: "great",
       })
     )
@@ -121,7 +121,7 @@ describe("createProduct", () => {
 
   it("defaults missing optional fields to null", async () => {
     const mock = setup()
-    await createProduct(USER_ID, { brand: "NARS", name: "Blush", category: "makeup" })
+    await createProduct(USER_ID, { brand: "NARS", name: "Blush", category: "mascara" })
 
     const b = mock._builders.products
     expect(b.insert).toHaveBeenCalledWith(
@@ -154,7 +154,7 @@ describe("getProduct", () => {
     await getProduct(USER_ID, PRODUCT_ID)
 
     const b = mock._builders.products
-    expect(b.select).toHaveBeenCalledWith("id,name,brand,category,photo_url,notes,archived_at")
+    expect(b.select).toHaveBeenCalledWith("id,name,brand,category,photo_url,notes,archived_at,expiration_date,size_weight,manufacture_date,date_in_collection")
     expect(b.eq).toHaveBeenCalledWith("id", PRODUCT_ID)
     expect(b.eq).toHaveBeenCalledWith("user_id", USER_ID)
     expect(b.is).not.toHaveBeenCalledWith("archived_at", null)

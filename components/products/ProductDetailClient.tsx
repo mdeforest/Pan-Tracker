@@ -6,6 +6,7 @@ import Image from "next/image"
 import { AlertTriangle, ArrowLeft, Star } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ProductEditSheet } from "./ProductEditSheet"
+import { ExpiryBadge } from "./ExpiryBadge"
 import { BottomSheet } from "@/components/shared/BottomSheet"
 import {
   CATEGORY_EMOJI,
@@ -45,6 +46,10 @@ interface ProductDetailClientProps {
     photo_url: string | null
     notes: string | null
     archived_at: string | null
+    expiration_date: string | null
+    size_weight: string | null
+    manufacture_date: string | null
+    date_in_collection: string | null
   }
   panHistory: PanHistoryEntry[]
   isInPan: boolean
@@ -279,18 +284,42 @@ export function ProductDetailClient({
         </div>
       )}
 
-      {/* Category chip */}
+      {/* Category chip + expiry badge */}
       <div className="px-4 pt-3">
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 items-center">
           <span className="rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
             {CATEGORY_LABELS[cat]}
           </span>
+          <ExpiryBadge expirationDate={product.expiration_date} alwaysShow />
           {isArchived && (
             <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-900">
               Archived
             </span>
           )}
         </div>
+
+        {/* Product metadata */}
+        {(product.size_weight || product.date_in_collection || product.manufacture_date) && (
+          <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
+            {product.size_weight && (
+              <p className="text-xs text-muted-foreground">
+                <span className="font-medium">Size</span> {product.size_weight}
+              </p>
+            )}
+            {product.date_in_collection && (
+              <p className="text-xs text-muted-foreground">
+                <span className="font-medium">In collection</span>{" "}
+                {new Date(product.date_in_collection + "T00:00:00").toLocaleDateString("en-US", { month: "short", year: "numeric" })}
+              </p>
+            )}
+            {product.manufacture_date && (
+              <p className="text-xs text-muted-foreground">
+                <span className="font-medium">Manufactured</span>{" "}
+                {new Date(product.manufacture_date + "T00:00:00").toLocaleDateString("en-US", { month: "short", year: "numeric" })}
+              </p>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Primary actions */}

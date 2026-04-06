@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useEffect, useState } from "react"
+import { createContext, useCallback, useContext, useEffect, useState } from "react"
 import { OnboardingTutorial } from "@/components/onboarding/OnboardingTutorial"
 
 interface TutorialContextValue {
@@ -24,18 +24,7 @@ export function TutorialProvider({ hasSeen, children }: TutorialProviderProps) {
   const [open, setOpen] = useState(false)
   const [sampleId, setSampleId] = useState<string | null>(null)
 
-  // Auto-launch for first-time users. The 600ms delay lets the page paint
-  // before the sheet appears, avoiding a jarring flash on mobile.
-  useEffect(() => {
-    if (!hasSeen) {
-      const t = setTimeout(() => {
-        handleStartTutorial()
-      }, 600)
-      return () => clearTimeout(t)
-    }
-  }, [hasSeen])
-
-  async function handleStartTutorial() {
+  const handleStartTutorial = useCallback(async () => {
     try {
       const res = await fetch("/api/tutorial/setup", { method: "POST" })
       const json = await res.json()
@@ -46,9 +35,9 @@ export function TutorialProvider({ hasSeen, children }: TutorialProviderProps) {
       console.error("Failed to setup tutorial sample:", e)
     }
     setOpen(true)
-  }
+  }, [])
 
-  async function handleCloseTutorial() {
+  const handleCloseTutorial = useCallback(async () => {
     setOpen(false)
     try {
       await fetch("/api/tutorial/cleanup", { method: "POST" })
@@ -56,11 +45,22 @@ export function TutorialProvider({ hasSeen, children }: TutorialProviderProps) {
     } catch (e) {
       console.error("Failed to cleanup tutorial sample:", e)
     }
-  }
+  }, [])
 
-  function startTutorial() {
+  // Auto-launch for first-time users. The 600ms delay lets the page paint
+  // before the sheet appears, avoiding a jarring flash on mobile.
+  useEffect(() => {
+    if (!hasSeen) {
+      const t = setTimeout(() => {
+        handleStartTutorial()
+      }, 600)
+      return () => clearTimeout(t)
+    }
+  }, [hasSeen, handleStartTutorial])
+
+  const startTutorial = useCallback(() => {
     handleStartTutorial()
-  }
+  }, [handleStartTutorial])
 
   return (
     <TutorialContext.Provider value={{ startTutorial }}>

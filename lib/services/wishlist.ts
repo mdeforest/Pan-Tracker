@@ -188,7 +188,7 @@ export async function buyWishlistItem(
         user_id: userId,
         brand: item.brand,
         name: item.name,
-        category: "other",
+        category: "miscellaneous",
         last_bought_at: now,
       })
 

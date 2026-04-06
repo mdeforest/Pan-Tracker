@@ -54,13 +54,14 @@ const MONTH_NAMES = [
 ]
 
 const CATEGORY_LABELS: Record<ProductCategory, string> = {
-  makeup: "Makeup",
-  skincare: "Skincare",
-  haircare: "Haircare",
-  bodycare: "Bodycare",
-  fragrance: "Fragrance",
-  tools: "Tools",
-  other: "Other",
+  mascara: "Mascara",
+  cleanser: "Cleanser",
+  serum: "Serum",
+  moisturizer: "Moisturizer",
+  mist: "Mist",
+  eye_cream: "Eye Cream",
+  toner: "Toner",
+  miscellaneous: "Miscellaneous",
 }
 
 // ---------------------------------------------------------------------------

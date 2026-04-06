@@ -146,7 +146,7 @@ export function SideNav({ avatarUrl, name }: SideNavProps) {
                 onClick={() => setMenuOpen(false)}
                 aria-hidden="true"
               />
-              <div className="absolute bottom-12 left-0 z-50 min-w-[140px] rounded-lg border bg-background shadow-lg">
+              <div className="absolute bottom-12 left-0 z-50 w-48 rounded-lg border bg-background shadow-lg">
                 <Link
                   href="/help"
                   onClick={() => setMenuOpen(false)}
@@ -166,7 +166,7 @@ export function SideNav({ avatarUrl, name }: SideNavProps) {
                   onClick={() => setMenuOpen(false)}
                   className="flex w-full items-center px-4 py-3 text-sm text-foreground hover:bg-muted"
                 >
-                  Import History
+                  Import
                 </Link>
                 <button
                   onClick={() => { startTutorial(); setMenuOpen(false) }}
@@ -174,7 +174,7 @@ export function SideNav({ avatarUrl, name }: SideNavProps) {
                 >
                   Take the Tour
                 </button>
-                <form action={signOut}>
+                <form action={signOut} className="contents">
                   <button
                     type="submit"
                     className="flex w-full items-center px-4 py-3 text-sm text-foreground hover:bg-muted"
@@ -187,6 +187,7 @@ export function SideNav({ avatarUrl, name }: SideNavProps) {
           )}
         </div>
       </div>
+
     </nav>
   )
 }

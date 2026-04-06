@@ -222,11 +222,15 @@ export type Database = {
           brand: string
           category: Database["public"]["Enums"]["product_category"]
           created_at: string
+          date_in_collection: string | null
+          expiration_date: string | null
           id: string
           last_bought_at: string
+          manufacture_date: string | null
           name: string
           notes: string | null
           photo_url: string | null
+          size_weight: string | null
           user_id: string
         }
         Insert: {
@@ -234,11 +238,15 @@ export type Database = {
           brand: string
           category: Database["public"]["Enums"]["product_category"]
           created_at?: string
+          date_in_collection?: string | null
+          expiration_date?: string | null
           id?: string
           last_bought_at?: string
+          manufacture_date?: string | null
           name: string
           notes?: string | null
           photo_url?: string | null
+          size_weight?: string | null
           user_id: string
         }
         Update: {
@@ -246,11 +254,15 @@ export type Database = {
           brand?: string
           category?: Database["public"]["Enums"]["product_category"]
           created_at?: string
+          date_in_collection?: string | null
+          expiration_date?: string | null
           id?: string
           last_bought_at?: string
+          manufacture_date?: string | null
           name?: string
           notes?: string | null
           photo_url?: string | null
+          size_weight?: string | null
           user_id?: string
         }
         Relationships: [
@@ -354,13 +366,14 @@ export type Database = {
     Enums: {
       pan_entry_status: "active" | "empty" | "paused"
       product_category:
-        | "makeup"
-        | "skincare"
-        | "haircare"
-        | "bodycare"
-        | "fragrance"
-        | "tools"
-        | "other"
+        | "mascara"
+        | "cleanser"
+        | "serum"
+        | "moisturizer"
+        | "mist"
+        | "eye_cream"
+        | "toner"
+        | "miscellaneous"
       usage_level:
         | "just_started"
         | "quarter"
@@ -500,13 +513,14 @@ export const Constants = {
     Enums: {
       pan_entry_status: ["active", "empty", "paused"],
       product_category: [
-        "makeup",
-        "skincare",
-        "haircare",
-        "bodycare",
-        "fragrance",
-        "tools",
-        "other",
+        "mascara",
+        "cleanser",
+        "serum",
+        "moisturizer",
+        "mist",
+        "eye_cream",
+        "toner",
+        "miscellaneous",
       ],
       usage_level: [
         "just_started",

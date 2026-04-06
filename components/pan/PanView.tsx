@@ -8,7 +8,9 @@ import { ProductDetailSheet } from "./ProductDetailSheet"
 import { EmptyLoggerSheet } from "./EmptyLoggerSheet"
 import { AddProductSheet } from "./AddProductSheet"
 import { CarryOverBanner } from "./CarryOverBanner"
+import { ExpiringSoonShelf } from "./ExpiringSoonShelf"
 import { MonthPickerSheet } from "./MonthPickerSheet"
+import type { ExpiringSoonProduct } from "@/lib/loaders/tab-data"
 import { useToast } from "@/components/shared/ToastProvider"
 import { currentYearMonth } from "@/lib/utils"
 import { MONTH_NAMES } from "./utils"
@@ -24,9 +26,10 @@ interface PanViewProps {
   error?: string
   wishlistedProductIds?: Set<string>
   monthsWithData?: Set<string>
+  expiringSoonProducts?: ExpiringSoonProduct[]
 }
 
-export function PanView({ year, month, entries, error, monthsWithData = new Set() }: PanViewProps) {
+export function PanView({ year, month, entries, error, monthsWithData = new Set(), expiringSoonProducts = [] }: PanViewProps) {
   const router = useRouter()
   const { toast } = useToast()
 
@@ -36,6 +39,7 @@ export function PanView({ year, month, entries, error, monthsWithData = new Set(
   const [showWishlistPrompt, setShowWishlistPrompt] = useState(false)
   const [activeTab, setActiveTab] = useState<ActiveTab>("active")
   const [monthPickerOpen, setMonthPickerOpen] = useState(false)
+  const [addingToPanId, setAddingToPanId] = useState<string | null>(null)
 
   const { year: nowYear, month: nowMonth } = currentYearMonth()
   const isPastMonth = year < nowYear || (year === nowYear && month < nowMonth)
@@ -94,6 +98,25 @@ export function PanView({ year, month, entries, error, monthsWithData = new Set(
       })
     }, 4000)
     setTimeout(() => setShowWishlistPrompt(false), 8000)
+  }
+
+  async function handleAddToPan(productId: string) {
+    setAddingToPanId(productId)
+    try {
+      const res = await fetch(`/api/pans/${year}/${month}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ product_id: productId, usage_level: "just_started" }),
+      })
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        toast((body as { error?: string }).error ?? "Failed to add product to pan.", "error")
+        return
+      }
+      router.refresh()
+    } finally {
+      setAddingToPanId(null)
+    }
   }
 
   // Shared header: title, subtitle, month nav, tabs
@@ -202,6 +225,12 @@ export function PanView({ year, month, entries, error, monthsWithData = new Set(
           </div>
         )}
 
+        <ExpiringSoonShelf
+          products={expiringSoonProducts}
+          onAddToPan={handleAddToPan}
+          addingId={addingToPanId}
+        />
+
         {error && (
           <div className="mx-4 mb-2 rounded-xl bg-destructive/10 px-4 py-3 text-sm text-destructive">
             {error}
@@ -251,6 +280,12 @@ export function PanView({ year, month, entries, error, monthsWithData = new Set(
             />
           </div>
         )}
+
+        <ExpiringSoonShelf
+          products={expiringSoonProducts}
+          onAddToPan={handleAddToPan}
+          addingId={addingToPanId}
+        />
 
         {error && (
           <div className="mx-6 mt-4 rounded-xl bg-destructive/10 px-4 py-3 text-sm text-destructive">

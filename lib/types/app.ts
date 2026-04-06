@@ -1,13 +1,14 @@
 // App-level types and enums
 
 export type ProductCategory =
-  | "makeup"
-  | "skincare"
-  | "haircare"
-  | "bodycare"
-  | "fragrance"
-  | "tools"
-  | "other"
+  | "mascara"
+  | "cleanser"
+  | "serum"
+  | "moisturizer"
+  | "mist"
+  | "eye_cream"
+  | "toner"
+  | "miscellaneous"
 
 export type PanEntryStatus = "active" | "empty" | "paused"
 

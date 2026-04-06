@@ -18,6 +18,7 @@ interface RawProduct {
   photo_url: string | null
   archived_at: string | null
   last_bought_at: string
+  expiration_date: string | null
 }
 
 interface ProductsClientProps {
@@ -35,6 +36,7 @@ function mapProducts(raw: RawProduct[], activeSet: Set<string>): ProductCardData
     is_in_pan: activeSet.has(p.id),
     is_archived: !!p.archived_at,
     last_bought_at: p.last_bought_at,
+    expiration_date: p.expiration_date,
   }))
 }
 
@@ -48,6 +50,7 @@ export function ProductsClient({ activeProductIds, initialProducts }: ProductsCl
     mapProducts(initialProducts, activeSet)
   )
   const [loading, setLoading] = useState(false)
+  const [sort, setSort] = useState<"default" | "expiring">("default")
   const [restoringId, setRestoringId] = useState<string | null>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
@@ -114,6 +117,17 @@ export function ProductsClient({ activeProductIds, initialProducts }: ProductsCl
       if (toastTimerRef.current) clearTimeout(toastTimerRef.current)
     }
   }, [])
+
+  const sortedProducts = useMemo(() => {
+    if (sort !== "expiring") return products
+    return [...products].sort((a, b) => {
+      if (!a.expiration_date && !b.expiration_date) return 0
+      if (!a.expiration_date) return 1
+      if (!b.expiration_date) return -1
+      // ISO YYYY-MM-DD format sorts lexicographically = chronologically
+      return a.expiration_date.localeCompare(b.expiration_date)
+    })
+  }, [products, sort])
 
   function handleCreated(productId: string) {
     setSheetOpen(false)
@@ -213,6 +227,21 @@ export function ProductsClient({ activeProductIds, initialProducts }: ProductsCl
           ))}
         </div>
 
+        {/* Sort chips */}
+        <div className="px-4 pb-2 md:px-6">
+          <button
+            type="button"
+            onClick={() => setSort((s) => (s === "expiring" ? "default" : "expiring"))}
+            className={
+              sort === "expiring"
+                ? "rounded-full border border-primary bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground"
+                : "rounded-full border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground"
+            }
+          >
+            Expiring Soon
+          </button>
+        </div>
+
         {/* Show archived toggle */}
         <div className="px-4 pb-3 md:px-6">
           <button
@@ -254,7 +283,7 @@ export function ProductsClient({ activeProductIds, initialProducts }: ProductsCl
       <div className="px-4 pb-4 pt-3 md:px-6 md:py-6">
         {loading ? (
           <ProductGridSkeleton />
-        ) : products.length === 0 ? (
+        ) : sortedProducts.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-center">
             <span className="mb-4 text-5xl">📦</span>
             <p className="text-base font-semibold text-foreground">
@@ -263,7 +292,7 @@ export function ProductsClient({ activeProductIds, initialProducts }: ProductsCl
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-            {products.map((p) => (
+            {sortedProducts.map((p) => (
               <ProductCard
                 key={p.id}
                 product={p}

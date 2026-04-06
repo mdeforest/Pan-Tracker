@@ -3,7 +3,7 @@
 import Image from "next/image"
 import { ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { USAGE_PERCENT, CATEGORY_LABELS } from "./utils"
+import { USAGE_PERCENT, CATEGORY_LABELS, CATEGORY_EMOJI } from "./utils"
 import type { PanEntryWithProduct } from "./types"
 import type { UsageLevel } from "@/lib/types/app"
 
@@ -43,12 +43,7 @@ export function PanHeroCard({ entry, justEmptied, onTap }: PanHeroCardProps) {
         ) : (
           <div className="flex h-full items-center justify-center bg-secondary">
             <span className="text-5xl opacity-40">
-              {product.category === "makeup" ? "💄" :
-               product.category === "skincare" ? "🧴" :
-               product.category === "haircare" ? "💆" :
-               product.category === "bodycare" ? "🧖" :
-               product.category === "fragrance" ? "🌸" :
-               product.category === "tools" ? "🪮" : "✨"}
+              {CATEGORY_EMOJI[product.category] ?? "✨"}
             </span>
           </div>
         )}

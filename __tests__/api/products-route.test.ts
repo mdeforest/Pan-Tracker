@@ -41,7 +41,7 @@ describe("POST /api/products", () => {
       body: JSON.stringify({
         brand: "Rare Beauty",
         name: "Blush",
-        category: "makeup",
+        category: "mascara",
       }),
     })
 
@@ -63,7 +63,7 @@ describe("POST /api/products", () => {
       body: JSON.stringify({
         brand: "Rare Beauty",
         name: "Blush",
-        category: "makeup",
+        category: "mascara",
       }),
     })
 

@@ -27,13 +27,14 @@ import type { ProductCategory } from "@/lib/types/app"
 // ---------------------------------------------------------------------------
 
 const CATEGORY_COLORS: Record<ProductCategory, string> = {
-  makeup: "#f472b6",    // pink-400
-  skincare: "#34d399",  // emerald-400
-  haircare: "#a78bfa",  // violet-400
-  bodycare: "#fb923c",  // orange-400
-  fragrance: "#38bdf8", // sky-400
-  tools: "#94a3b8",     // slate-400
-  other: "#d1d5db",     // gray-300
+  mascara: "#1f2937",    // gray-800
+  cleanser: "#60a5fa",   // blue-400
+  serum: "#a78bfa",      // violet-400
+  moisturizer: "#f472b6", // pink-400
+  mist: "#38bdf8",       // sky-400
+  eye_cream: "#818cf8",  // indigo-400
+  toner: "#34d399",      // emerald-400
+  miscellaneous: "#d1d5db", // gray-300
 }
 
 const TREND_COLOR = "#8b5cf6" // violet-500

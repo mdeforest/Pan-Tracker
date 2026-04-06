@@ -19,17 +19,18 @@ export const IMPORT_CSV_OPTIONAL_HEADERS = [
 export const IMPORT_CSV_MAX_BYTES = 1024 * 1024
 export const IMPORT_CSV_MAX_ROWS = 500
 
-const PRODUCT_CATEGORIES: ProductCategory[] = [
-  "makeup",
-  "skincare",
-  "haircare",
-  "bodycare",
-  "fragrance",
-  "tools",
-  "other",
+export const PRODUCT_CATEGORIES: ProductCategory[] = [
+  "mascara",
+  "cleanser",
+  "serum",
+  "moisturizer",
+  "mist",
+  "eye_cream",
+  "toner",
+  "miscellaneous",
 ]
 
-const WOULD_REPURCHASE_VALUES: WouldRepurchase[] = ["yes", "no", "maybe"]
+export const WOULD_REPURCHASE_VALUES: WouldRepurchase[] = ["yes", "no", "maybe"]
 
 const PRODUCT_CATEGORY_SET = new Set(PRODUCT_CATEGORIES)
 const WOULD_REPURCHASE_SET = new Set(WOULD_REPURCHASE_VALUES)
@@ -39,6 +40,10 @@ export type ImportProductStatus = "empty" | "current_pan" | "backlog"
 export interface ImportCsvError {
   row: number
   message: string
+  /** Raw cell values from the row (populated for data-row errors, not header errors) */
+  rawValues?: Record<string, string>
+  /** True for file-level errors (bad/missing headers) that prevent any rows from being parsed */
+  isFatal?: boolean
 }
 
 export interface ParsedHistoryCsvRow {
@@ -103,7 +108,7 @@ export function parseHistoryCsvText(csvText: string, now = new Date()): ParseHis
     return {
       rows: [],
       skipped: 0,
-      errors: [{ row: 1, message: "CSV file is empty" }],
+      errors: [{ row: 1, message: "CSV file is empty", isFatal: true }],
     }
   }
 
@@ -112,7 +117,7 @@ export function parseHistoryCsvText(csvText: string, now = new Date()): ParseHis
     return {
       rows: [],
       skipped: 0,
-      errors: [{ row: 1, message: "CSV file is empty" }],
+      errors: [{ row: 1, message: "CSV file is empty", isFatal: true }],
     }
   }
 
@@ -126,6 +131,8 @@ export function parseHistoryCsvText(csvText: string, now = new Date()): ParseHis
 
   const missingHeaders = IMPORT_CSV_REQUIRED_HEADERS.filter((header) => !headerMap.has(header))
   if (missingHeaders.length > 0) {
+    // Check if this looks like a Sophia-format collection CSV (has "product" column)
+    const looksLikeSophiaFormat = headerMap.has("product") && !headerMap.has("brand") && !headerMap.has("name")
     return {
       rows: [],
       skipped: 0,
@@ -133,6 +140,8 @@ export function parseHistoryCsvText(csvText: string, now = new Date()): ParseHis
         {
           row: headerIndex + 1,
           message: `Missing required header(s): ${missingHeaders.join(", ")}`,
+          isFatal: true,
+          rawValues: looksLikeSophiaFormat ? { _sophiaFormat: "true" } : undefined,
         },
       ],
     }
@@ -151,6 +160,7 @@ export function parseHistoryCsvText(csvText: string, now = new Date()): ParseHis
         {
           row: dataRows[IMPORT_CSV_MAX_ROWS].rowNumber,
           message: `CSV can include at most ${IMPORT_CSV_MAX_ROWS} rows`,
+          isFatal: true,
         },
       ],
     }
@@ -274,6 +284,17 @@ export function parseHistoryCsvText(csvText: string, now = new Date()): ParseHis
       errors.push({
         row: rowNumber,
         message: rowErrors.join("; "),
+        rawValues: {
+          brand: getCell(row, headerMap, "brand"),
+          name: getCell(row, headerMap, "name"),
+          category: getCell(row, headerMap, "category"),
+          status: getCell(row, headerMap, "status"),
+          finished_month: getCell(row, headerMap, "finished_month"),
+          finished_year: getCell(row, headerMap, "finished_year"),
+          rating: getCell(row, headerMap, "rating"),
+          would_repurchase: getCell(row, headerMap, "would_repurchase"),
+          review_notes: getCell(row, headerMap, "review_notes"),
+        },
       })
       continue
     }
